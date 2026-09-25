@@ -10,7 +10,7 @@ Hoje a DDA controla as pastilhas usadas na usinagem em planilhas preenchidas à 
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | v1.0, validado |
 | 02 | [Requisitos](docs/02-requisitos.md) | v1.0, validado |
-| 03 | [System design e stack](docs/03-system-design.md) | Em elaboração |
+| 03 | [System design e stack](docs/03-system-design.md) | v1.0, em revisão |
 | 04 | Segurança | A fazer |
 | 05 | Plano de testes e QA | A fazer |
 

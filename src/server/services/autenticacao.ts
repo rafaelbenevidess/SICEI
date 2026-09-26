@@ -59,11 +59,9 @@ export async function entrar(
     return falhar(MENSAGEM_LOGIN_INVALIDO, null)
   }
   const confere = await senhaConfere(usuario.senhaHash, v.dados.senha)
-  if (usuario.bloqueadoEm) {
-    return falhar(confere ? MENSAGEM_CONTA_BLOQUEADA : MENSAGEM_LOGIN_INVALIDO, usuario.id, {
-      bloqueado: true,
-    })
-  }
+  // conta bloqueada: a resposta é sempre a mesma, com ou sem a senha certa.
+  // Assim ninguém continua testando senhas depois do bloqueio (RN-22).
+  if (usuario.bloqueadoEm) return falhar(MENSAGEM_CONTA_BLOQUEADA, usuario.id, { bloqueado: true })
   if (!confere) {
     const falhas = usuario.falhasLogin + 1
     const bloquear = deveBloquear(falhas)
@@ -122,6 +120,7 @@ export async function trocarSenha(
   usuarioId: string,
   entrada: unknown,
   origem: Origem,
+  sessaoAtualId?: string,
 ): Promise<void> {
   const v = validar(schemaTrocaSenha, entrada)
   if (!v.ok) throw new ErroDeNegocio('Confira os campos destacados.', v.erros)
@@ -155,6 +154,10 @@ export async function trocarSenha(
       data: { senhaHash: novoHash, deveTrocarSenha: false },
     })
     await tx.historicoSenha.create({ data: { usuarioId, senhaHash: novoHash } })
+    // as outras sessões (outros aparelhos) caem; a atual continua
+    await tx.sessao.deleteMany({
+      where: { usuarioId, ...(sessaoAtualId ? { id: { not: sessaoAtualId } } : {}) },
+    })
     await registrarAuditoria(tx, {
       acao: 'SENHA_ALTERADA',
       entidade: 'usuario',

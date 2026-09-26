@@ -154,7 +154,7 @@ export default async function PaginaItem({ params }: { params: Promise<{ id: str
                       </strong>
                     </span>
                   )}
-                  <span>última compra: {formatarData(f.dataUltimaCompra)}</span>
+                  {d.verPrecos && <span>última compra: {formatarData(f.dataUltimaCompra)}</span>}
                   <span>lead time: {f.leadTimeDias ?? '—'} dias</span>
                   {f.codigoNoFornecedor && (
                     <span className="text-slate-500">cód.: {f.codigoNoFornecedor}</span>
@@ -256,65 +256,67 @@ export default async function PaginaItem({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      <Cartao
-        titulo={
-          <span className="flex items-center justify-between">
-            Últimas movimentações
-            {pode(u.perfil, 'historico:ver') && (
-              <Link
-                href={`/movimentacoes?item=${encodeURIComponent(item.codigo)}`}
-                className="text-sm font-normal underline"
-              >
-                ver todas
-              </Link>
-            )}
-          </span>
-        }
-      >
-        {d.movimentacoes.length === 0 ? (
-          <Vazio>Nenhuma movimentação.</Vazio>
-        ) : (
-          <Tabela rotulo="Movimentações do item">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Tipo</th>
-                <th className="text-right">Qtd.</th>
-                <th className="text-right">Saldo</th>
-                <th className="hidden sm:table-cell">Destino / colaborador</th>
-                <th className="hidden sm:table-cell">Usuário</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.movimentacoes.map((m) => (
-                <tr key={m.id} className={m.estornadaPor ? 'text-slate-400' : ''}>
-                  <td className="whitespace-nowrap">
-                    {pode(u.perfil, 'historico:ver') ? (
-                      <Link href={`/movimentacoes/${m.id}`} className="underline">
-                        {formatarDataHora(m.criadoEm)}
-                      </Link>
-                    ) : (
-                      formatarDataHora(m.criadoEm)
-                    )}
-                  </td>
-                  <td>
-                    {NOME_TIPO[m.tipo]}
-                    {m.estornadaPor && ' (estornada)'}
-                  </td>
-                  <td className="text-right">{m.quantidade}</td>
-                  <td className="text-right">
-                    {m.saldoAnterior} → {m.saldoPosterior}
-                  </td>
-                  <td className="hidden sm:table-cell">
-                    {[m.destino?.nome, m.colaborador?.nome].filter(Boolean).join(' · ') || '—'}
-                  </td>
-                  <td className="hidden sm:table-cell">{m.usuario.login}</td>
+      {pode(u.perfil, 'historico:ver') && (
+        <Cartao
+          titulo={
+            <span className="flex items-center justify-between">
+              Últimas movimentações
+              {pode(u.perfil, 'historico:ver') && (
+                <Link
+                  href={`/movimentacoes?item=${encodeURIComponent(item.codigo)}`}
+                  className="text-sm font-normal underline"
+                >
+                  ver todas
+                </Link>
+              )}
+            </span>
+          }
+        >
+          {d.movimentacoes.length === 0 ? (
+            <Vazio>Nenhuma movimentação.</Vazio>
+          ) : (
+            <Tabela rotulo="Movimentações do item">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th className="text-right">Qtd.</th>
+                  <th className="text-right">Saldo</th>
+                  <th className="hidden sm:table-cell">Destino / colaborador</th>
+                  <th className="hidden sm:table-cell">Usuário</th>
                 </tr>
-              ))}
-            </tbody>
-          </Tabela>
-        )}
-      </Cartao>
+              </thead>
+              <tbody>
+                {d.movimentacoes.map((m) => (
+                  <tr key={m.id} className={m.estornadaPor ? 'text-slate-400' : ''}>
+                    <td className="whitespace-nowrap">
+                      {pode(u.perfil, 'historico:ver') ? (
+                        <Link href={`/movimentacoes/${m.id}`} className="underline">
+                          {formatarDataHora(m.criadoEm)}
+                        </Link>
+                      ) : (
+                        formatarDataHora(m.criadoEm)
+                      )}
+                    </td>
+                    <td>
+                      {NOME_TIPO[m.tipo]}
+                      {m.estornadaPor && ' (estornada)'}
+                    </td>
+                    <td className="text-right">{m.quantidade}</td>
+                    <td className="text-right">
+                      {m.saldoAnterior} → {m.saldoPosterior}
+                    </td>
+                    <td className="hidden sm:table-cell">
+                      {[m.destino?.nome, m.colaborador?.nome].filter(Boolean).join(' · ') || '—'}
+                    </td>
+                    <td className="hidden sm:table-cell">{m.usuario.login}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Tabela>
+          )}
+        </Cartao>
+      )}
     </Pagina>
   )
 }

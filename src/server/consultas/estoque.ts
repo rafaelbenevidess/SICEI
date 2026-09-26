@@ -85,7 +85,9 @@ export async function detalheItem(id: string, perfil: Perfil) {
       compras: porFornecedor(v.fornecedorId),
     })),
   )
-  const fornecedores = lista.map((l) => {
+  // sem permissão de ver preços, a ordem não pode entregar quem é o mais barato
+  const ordenada = verPrecos ? lista : [...lista].sort((a, b) => a.nome.localeCompare(b.nome))
+  const fornecedores = ordenada.map((l) => {
     const vinculo = item.fornecedores.find((v) => v.fornecedorId === l.fornecedorId)!
     const historico = historicoComVariacao(porFornecedor(l.fornecedorId)).map((h) => ({
       ...h,
@@ -98,6 +100,7 @@ export async function detalheItem(id: string, perfil: Perfil) {
       ativo: vinculo.fornecedor.ativo,
       // perfil Consulta não vê preços (decisão 10 do doc 01)
       ultimoPreco: verPrecos ? l.ultimoPreco : null,
+      dataUltimaCompra: verPrecos ? l.dataUltimaCompra : null,
       historico: verPrecos ? historico : [],
     }
   })
@@ -119,17 +122,20 @@ export async function detalheItem(id: string, perfil: Perfil) {
     embalagem: item.embalagem,
   })
 
-  const movimentacoes = await prisma.movimentacao.findMany({
-    where: { itemId: id },
-    include: {
-      usuario: { select: { login: true } },
-      destino: { select: { nome: true } },
-      colaborador: { select: { nome: true } },
-      estornadaPor: { select: { id: true } },
-    },
-    orderBy: { criadoEm: 'desc' },
-    take: 15,
-  })
+  // o perfil Consulta não vê o histórico de movimentações (doc 02, seção 5)
+  const movimentacoes = !pode(perfil, 'historico:ver')
+    ? []
+    : await prisma.movimentacao.findMany({
+        where: { itemId: id },
+        include: {
+          usuario: { select: { login: true } },
+          destino: { select: { nome: true } },
+          colaborador: { select: { nome: true } },
+          estornadaPor: { select: { id: true } },
+        },
+        orderBy: { criadoEm: 'desc' },
+        take: 15,
+      })
 
   return {
     item,

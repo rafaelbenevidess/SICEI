@@ -13,6 +13,8 @@ describe('Doc 03 seção 5.6 · Redirecionamento só para caminhos internos', ()
     ['/login?volta=/x', '/painel'],
     ['/itens\r\nSet-Cookie: x', '/painel'],
     ['/javascript:alert(1)', '/painel'],
+    ['/\t/site-malicioso.com', '/painel'],
+    ['/\u0000x', '/painel'],
   ])('volta=%s → %s', (volta, esperado) => {
     expect(destinoSeguro(volta)).toBe(esperado)
   })

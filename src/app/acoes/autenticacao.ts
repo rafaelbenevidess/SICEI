@@ -31,7 +31,7 @@ export async function acaoTrocarSenha(_: EstadoAcao, form: FormData): Promise<Es
   const u = await usuarioAtual()
   if (!u) redirect('/login')
   const estado = await executarAcao(async () => {
-    await trocarSenha(u.id, dadosDoFormulario(form), await origemDaRequisicao())
+    await trocarSenha(u.id, dadosDoFormulario(form), await origemDaRequisicao(), u.sessaoId)
   })
   if (!estado.ok) return estado
   redirect('/painel')

@@ -11,6 +11,9 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        resolve: {
+          alias: { 'server-only': path.resolve(import.meta.dirname, 'tests/vazio.ts') },
+        },
         test: {
           name: 'unidade',
           include: ['src/**/*.test.{ts,tsx}'],

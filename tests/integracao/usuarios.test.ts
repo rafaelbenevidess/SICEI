@@ -100,6 +100,25 @@ describe('RF-01 · Login, troca obrigatória e bloqueio', () => {
     expect(await validarToken(s2.token)).toMatchObject({ login: u.login })
   })
 
+  it('trocar a senha encerra as sessões em outros aparelhos, mas não a atual', async () => {
+    const u = await criarAtor('GESTOR', 'SenhaCorreta2026')
+    const celular = await entrar({ login: u.login, senha: 'SenhaCorreta2026' }, origem())
+    const computador = await entrar({ login: u.login, senha: 'SenhaCorreta2026' }, origem())
+    const atual = await validarToken(computador.token)
+    await trocarSenha(
+      u.usuarioId,
+      {
+        senhaAtual: 'SenhaCorreta2026',
+        novaSenha: 'SenhaNovinha2026',
+        confirmacao: 'SenhaNovinha2026',
+      },
+      origem(),
+      atual!.sessaoId,
+    )
+    expect(await validarToken(celular.token)).toBeNull()
+    expect(await validarToken(computador.token)).not.toBeNull()
+  })
+
   it('RN-22: nova senha igual à atual (uma das 3 últimas) é recusada', async () => {
     const sobrenome = unico('Costa').replace(/[^a-z]/gi, '')
     const u = await criarUsuario(admin, {

@@ -1,0 +1,6 @@
+node_modules
+.next
+public/relatorio-testes
+package-lock.json
+docs
+*.md

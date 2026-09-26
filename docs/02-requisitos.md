@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SIMI, controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.0 (validada) |
+| **Versão** | 1.1 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -204,6 +204,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 | RNF-10 | Acessibilidade | Contraste e navegação por teclado nas telas principais conforme WCAG 2.1 AA. O status do item não depende só de cor: sempre tem texto junto. | Verificação automática e manual |
 | RNF-11 | Observabilidade | Logs técnicos estruturados de erros e acessos, separados do log de auditoria do negócio. | Revisão da configuração |
 | RNF-12 | Retenção | Movimentações, histórico de preços e log de auditoria guardados por 7 anos (RN-24), sem prejudicar o desempenho do RNF-03. | Teste de carga com volume de 7 anos |
+| RNF-13 | Demonstração dos testes | O resultado dos testes unitários fica publicado numa página web, com a lista de testes, o resultado de cada um e a cobertura. O avaliador abre sem instalar nada e sem login. Cada teste leva no nome a regra (RN) ou o requisito (RF) que verifica. | Página `/testes` acessível no endereço do sistema e atualizada a cada versão publicada |
 
 O RNF-09 (interoperabilidade com ERP) saiu junto com os RF-23 e RF-24.
 
@@ -305,3 +306,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 |---|---|---|
 | 0.1 | 25/09/2026 | Primeira versão. |
 | 1.0 | 25/09/2026 | RF-23, RF-24 e RNF-09 fora do escopo. Novos RF-27 (colaboradores) e RF-28 (posições). RF-14, RF-22 e RF-25 passam a Must. RF-02 reescrito com login e senha gerados pelo sistema. Saída com OP e colaborador, NF obrigatória, relatórios só em quantidade. |
+| 1.1 | 26/09/2026 | Novo RNF-13: testes unitários publicados na web para a avaliação. |

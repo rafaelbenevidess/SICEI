@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SIMI, controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.0 (para revisão) |
+| **Versão** | 1.1 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SIMI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 10.
@@ -58,7 +58,7 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 | PDF | Página de impressão com CSS `@media print` | Relatórios e etiquetas saem pelo "Imprimir → Salvar como PDF" do navegador, sem biblioteca nem serviço extra. |
 | E-mail | **Nodemailer** (SMTP) | Funciona com qualquer e-mail corporativo. No desenvolvimento, o **Mailpit** captura os e-mails localmente. |
 | Logs técnicos | **pino** (JSON) | Logs estruturados de erro e acesso (RNF-11), separados do log de auditoria. |
-| Testes | **Vitest** (unidade e integração) + **Playwright** (ponta a ponta) | Ver seção 9. |
+| Testes | **Vitest 5** (unidade e integração, com repórter HTML e Vitest UI) + **Playwright** (ponta a ponta) | Ver seção 9. O relatório dos testes unitários fica publicado na web (seção 9.1). |
 | Qualidade | ESLint, Prettier, `tsc --noEmit`, GitHub Actions | Rodam em todo push. |
 | Hospedagem | **Vercel** (plano Hobby) + **Neon** (PostgreSQL, plano Free) | Custo zero para um projeto acadêmico. |
 | Execução local | **Docker Compose** (app, PostgreSQL, Mailpit) | Sobe o sistema inteiro com um comando, para desenvolver ou apresentar sem internet. |
@@ -340,6 +340,43 @@ Numa implantação real na empresa, dá para trocar por um servidor local com Do
 
 **CI (GitHub Actions)**, em todo push e pull request: instalar, rodar lint, typecheck, testes de unidade e integração (PostgreSQL como serviço), build, e2e. Só entra na branch principal o que passar.
 
+### 9.1 Testes unitários publicados na web (RNF-13)
+
+O professor que avalia o trabalho precisa ver os testes sem instalar nada. Por isso os testes unitários ficam disponíveis de duas formas.
+
+**1. Relatório publicado em `/testes`, no próprio endereço do SIMI.**
+
+- O build da Vercel roda os testes unitários antes do `next build`:
+
+  ```
+  npm run build  →  vitest run --project unidade --coverage  →  next build
+  ```
+
+- O repórter HTML do Vitest gera uma página em `public/testes/` com a lista de testes, o resultado de cada um, a duração e o relatório de cobertura embutido. O Next.js publica essa pasta junto com o sistema, e o relatório fica em `https://<domínio-do-simi>/testes`.
+- Se algum teste falhar, o build falha e a versão nova não entra no ar. A versão publicada é sempre uma que passou em todos os testes, e o relatório mostra exatamente o que está rodando.
+- A página é pública e não pede login, para o professor abrir direto. Ela não mostra dados do estoque. A cobertura inclui só `src/domain/`, que contém as regras puras e nenhum segredo.
+- A pasta `public/testes/` é gerada a cada build e fica no `.gitignore`.
+
+**2. Execução ao vivo na apresentação.** O comando `npm run test:ui` abre o **Vitest UI** no navegador. Dá para rodar os testes na frente do professor, abrir um teste, ver o código dele e mostrar o que acontece quando uma regra é quebrada de propósito: o teste fica vermelho na hora.
+
+**Nomes dos testes ligados às regras.** Os testes são escritos em português, e cada grupo leva o identificador da regra ou do requisito que testa. Quem lê o relatório vê a ligação direta com os documentos 01 e 02:
+
+```ts
+describe('RN-15 · Ponto de reposição', () => {
+  it('exemplo do doc 01: mínimo 20, consumo 3/dia, lead time 7 → 41', () => {
+    expect(pontoDeReposicao({ minimo: 20, consumoDiario: 3, leadTime: 7 })).toBe(41)
+  })
+  it('sem consumo registrado, o ponto de reposição é igual ao mínimo', () => { /* ... */ })
+})
+
+describe('RN-21 · Geração de login', () => {
+  it('"Maria Aparecida" + "de Souza" → maria.souza', () => { /* ... */ })
+  it('login já existente recebe número: joao.silva → joao.silva2', () => { /* ... */ })
+})
+```
+
+O README também exibe o selo da CI do GitHub Actions, que mostra se a última versão passou em todos os testes.
+
 ## 10. Decisões de arquitetura (ADRs)
 
 | ADR | Decisão | Alternativa descartada | Motivo |
@@ -353,9 +390,11 @@ Numa implantação real na empresa, dá para trocar por um servidor local com Do
 | 07 | QR aponta para a posição | QR aponta para o item | A etiqueta fica presa na gaveta. Apontando para a posição, o QR continua levando ao item certo mesmo depois de uma troca. |
 | 08 | PDF pela impressão do navegador | Biblioteca de geração de PDF | Atende o RF-20 sem dependência extra. |
 | 09 | Vercel + Neon, com Docker Compose como alternativa | VPS paga | Custo zero para o trabalho, com um plano B que roda sem internet. |
+| 10 | Relatório de testes do Vitest publicado em `/testes`, gerado no build | GitHub Pages; só a aba Actions do GitHub | Mesmo endereço do sistema, sem depender da visibilidade do repositório nem de conta no GitHub. E o build só publica o que passou nos testes. |
 
 ## 11. Histórico do documento
 
 | Versão | Data | Mudança |
 |---|---|---|
 | 1.0 | 25/09/2026 | Primeira versão: stack, arquitetura, modelo de dados, fluxos críticos, segurança, deploy e testes. |
+| 1.1 | 26/09/2026 | Testes unitários publicados na web para a avaliação (seção 9.1, ADR-10). |

@@ -52,4 +52,6 @@ Foi feita com a skill `security-review`, cobrindo todo o código desde o primeir
 
 - **Estilos inline no CSP** (`style-src 'unsafe-inline'`): o Next.js e o React usam atributos `style`, que não aceitam nonce. Scripts continuam restritos ao nonce, que é o que barra XSS.
 - **Laboratório de testes público** (`/testes`): roda só funções puras no navegador, sem acesso ao banco e sem dados do estoque.
+- **Bloqueio proposital de contas**: como os logins seguem o padrão `nome.sobrenome`, alguém pode bloquear a conta de outra pessoa errando a senha 5 vezes. É o preço da regra RN-22, que exige desbloqueio pelo Administrador. O limite por IP reduz o alcance, e o bloqueio do próprio Administrador tem saída pelo script `npm run admin:recuperar` (doc 06).
+- **Mensagem de conta bloqueada revela que o login existe**: é exigência do critério 3 do RF-01 (orientar o usuário a procurar o Administrador). A resposta não revela se a senha estava certa.
 - **Backup com dados pessoais**: o dump contém nomes e logins, então precisa ficar em local privado (doc 06).

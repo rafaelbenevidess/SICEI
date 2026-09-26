@@ -5,7 +5,7 @@
 | **Projeto** | SIMI, controle de estoque de pastilhas industriais |
 | **Cliente** | DDA Metalúrgica (Santa Catarina). Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.0 (validada) |
+| **Versão** | 1.1 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
@@ -35,7 +35,7 @@ Este documento define **o que o sistema precisa respeitar**, sem entrar em como 
 | **Destino** | Setor, máquina ou centro de custo que recebeu a pastilha numa saída. |
 | **Ordem de produção (OP)** | Número da ordem de fabricação para a qual a pastilha foi retirada. |
 | **Saldo** | Quantidade disponível do item, calculada a partir das movimentações. |
-| **Estoque mínimo** | Quantidade abaixo da qual o item é considerado crítico. |
+| **Estoque mínimo** | Quantidade a partir da qual (igual ou abaixo) o item é considerado crítico. |
 | **Ponto de reposição** | Quantidade em que já é hora de comprar, para a pastilha chegar antes de o saldo cair ao mínimo. |
 | **Estoque máximo** | Teto opcional, usado para calcular quanto comprar. |
 | **Inventário** | Contagem física das pastilhas para conferir se o saldo do sistema bate com a prateleira. |
@@ -171,7 +171,7 @@ Saídas estornadas não entram na conta. Perdas e ajustes também ficam de fora,
 | `ATENCAO` | saldo ≤ ponto de reposição |
 | `OK` | saldo acima do ponto de reposição |
 
-**RN-18. Alertas sem repetição.** Quando um item entra em `ATENCAO`, `CRITICO` ou `ZERADO`, o sistema abre um alerta. Enquanto esse alerta estiver aberto, não surge outro para o mesmo item: se a situação piorar (de `ATENCAO` para `CRITICO`, por exemplo), o nível do alerta existente sobe e a mudança fica registrada. Quando o saldo volta para `OK`, o alerta fecha sozinho. O Gestor pode marcar o alerta como "ciente" (por exemplo, quando o pedido já foi feito), e o alerta continua aberto até o saldo se normalizar.
+**RN-18. Alertas sem repetição.** Quando um item entra em `ATENCAO`, `CRITICO` ou `ZERADO`, o sistema abre um alerta. Enquanto esse alerta estiver aberto, não surge outro para o mesmo item: se a situação piorar (de `ATENCAO` para `CRITICO`, por exemplo), o nível do alerta existente sobe e a mudança fica registrada. Se a situação melhora mas o item continua em alerta (de `ZERADO` para `ATENCAO`, por exemplo, depois de uma compra parcial), o nível do alerta aberto é atualizado para o atual, sem novo e-mail. Quando o saldo volta para `OK`, o alerta fecha sozinho. O Gestor pode marcar o alerta como "ciente" (por exemplo, quando o pedido já foi feito), e o alerta continua aberto até o saldo se normalizar.
 
 **RN-19. Onde os alertas aparecem.** Os alertas ficam no painel do sistema, visíveis para todos os perfis, com um contador no topo da tela e destaque para o Gestor. Além disso, quando um item entra em `CRITICO` ou `ZERADO`, o sistema envia um aviso para o **e-mail corporativo** da DDA configurado pelo Administrador. Esse e-mail serve só para avisar e **nunca é usado para login ou recuperação de senha** (RN-21).
 
@@ -243,3 +243,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 |---|---|---|
 | 0.1 | 25/09/2026 | Primeira versão, com vários fornecedores por item e histórico de preços, log inalterável, contas geridas internamente e retenção de 7 anos. |
 | 1.0 | 25/09/2026 | Decisões validadas: endereçamento de 3 níveis e etiqueta QR (RN-25, RN-26), saída com OP e colaborador, NF obrigatória, só quantidades, login e senha gerados pelo sistema, integração fora do escopo. |
+| 1.1 | 26/09/2026 | RN-18: alerta que melhora sem sair do alerta é atualizado para o nível atual. Glossário: crítico é saldo igual ou abaixo do mínimo. |

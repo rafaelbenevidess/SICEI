@@ -100,3 +100,4 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 | Conferir se alguém mexeu no banco | Auditoria → Verificar agora |
 | Ligar os avisos por e-mail | Parâmetros → E-mail corporativo para avisos |
 | Carga inicial da planilha | Importação (baixe o modelo CSV) |
+| O próprio Administrador foi bloqueado | No servidor, com acesso ao banco: `npm run admin:recuperar -- admin` (gera nova senha provisória e registra no log) |

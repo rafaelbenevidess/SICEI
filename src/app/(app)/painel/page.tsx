@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { pode } from '@/domain/permissoes'
 import { BadgeStatus, Cartao, Pagina, Tabela, Vazio } from '@/components/ui'
 import { formatarDataHora, NOME_STATUS, NOME_TIPO } from '@/lib/formatar'
 import { resumoDoPainel } from '@/server/consultas/painel'
@@ -8,8 +9,10 @@ import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 export const metadata: Metadata = { title: 'Painel' }
 
 export default async function Painel() {
-  await exigirPermissaoDaPagina('painel:ver')
+  const u = await exigirPermissaoDaPagina('painel:ver')
   const r = await resumoDoPainel()
+  // o histórico de movimentações é negado ao perfil Consulta (doc 02, seção 5)
+  const verHistorico = pode(u.perfil, 'historico:ver')
   const variacao =
     r.consumoMesAnterior > 0
       ? Math.round(((r.consumoMes - r.consumoMesAnterior) / r.consumoMesAnterior) * 100)
@@ -95,38 +98,40 @@ export default async function Painel() {
         </Cartao>
       </div>
 
-      <Cartao titulo="Últimas movimentações">
-        {r.ultimas.length === 0 ? (
-          <Vazio>Nenhuma movimentação ainda.</Vazio>
-        ) : (
-          <Tabela rotulo="Últimas movimentações">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Item</th>
-                <th>Tipo</th>
-                <th className="text-right">Qtd.</th>
-                <th>Usuário</th>
-              </tr>
-            </thead>
-            <tbody>
-              {r.ultimas.map((m) => (
-                <tr key={m.id}>
-                  <td className="whitespace-nowrap">{formatarDataHora(m.criadoEm)}</td>
-                  <td>
-                    <Link href={`/itens/${m.item.id}`} className="underline">
-                      {m.item.codigo}
-                    </Link>
-                  </td>
-                  <td>{NOME_TIPO[m.tipo]}</td>
-                  <td className="text-right">{m.quantidade}</td>
-                  <td>{m.usuario.login}</td>
+      {verHistorico && (
+        <Cartao titulo="Últimas movimentações">
+          {r.ultimas.length === 0 ? (
+            <Vazio>Nenhuma movimentação ainda.</Vazio>
+          ) : (
+            <Tabela rotulo="Últimas movimentações">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Item</th>
+                  <th>Tipo</th>
+                  <th className="text-right">Qtd.</th>
+                  <th>Usuário</th>
                 </tr>
-              ))}
-            </tbody>
-          </Tabela>
-        )}
-      </Cartao>
+              </thead>
+              <tbody>
+                {r.ultimas.map((m) => (
+                  <tr key={m.id}>
+                    <td className="whitespace-nowrap">{formatarDataHora(m.criadoEm)}</td>
+                    <td>
+                      <Link href={`/itens/${m.item.id}`} className="underline">
+                        {m.item.codigo}
+                      </Link>
+                    </td>
+                    <td>{NOME_TIPO[m.tipo]}</td>
+                    <td className="text-right">{m.quantidade}</td>
+                    <td>{m.usuario.login}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Tabela>
+          )}
+        </Cartao>
+      )}
     </Pagina>
   )
 }

@@ -7,7 +7,8 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
-    seed: 'tsx prisma/seed.ts',
+    // react-server: o seed importa módulos marcados com "server-only"
+    seed: 'tsx --conditions=react-server prisma/seed.ts',
   },
   datasource: {
     // sem DIRECT_URL (ex.: prisma generate na CI) usa um endereço vazio; generate não conecta no banco

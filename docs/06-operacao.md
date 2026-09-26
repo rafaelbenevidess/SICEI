@@ -51,6 +51,7 @@ No primeiro acesso, entre com `admin` e a senha provisória mostrada pelo seed. 
 | `npm run test:cobertura` | Unitários com cobertura (meta ≥ 90% em `src/domain`) |
 | `npm run test:ui` | Vitest UI no navegador, para rodar ao vivo na apresentação |
 | `npm run test:integracao` | Testes com PostgreSQL real: concorrência, triggers, permissões, sessões, fraude detectada |
+| `npm run test:e2e` | Ponta a ponta com Playwright no build de produção (banco `simi_e2e`; rode `npm run build:app` antes) |
 | `npm run verificar` | Lint, tipos, formatação e testes unitários (rode antes de cada commit) |
 
 Os testes de integração usam o banco `simi_teste`, que é apagado e recriado a cada execução. As URLs podem ser trocadas com `DATABASE_URL_TESTE` e `DIRECT_URL_TESTE`.

@@ -45,7 +45,8 @@ async function administrador(): Promise<Ator> {
       userAgent: 'seed',
     }
   }
-  const senha = gerarSenhaProvisoria()
+  // SEED_SENHA_ADMIN só existe para os testes ponta a ponta; na instalação real a senha é aleatória
+  const senha = process.env.SEED_SENHA_ADMIN || gerarSenhaProvisoria()
   const senhaHash = await hashDeSenha(senha)
   const admin = await prisma.$transaction(async (tx) => {
     const u = await tx.usuario.create({

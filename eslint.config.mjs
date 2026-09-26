@@ -16,7 +16,11 @@ const eslintConfig = defineConfig([
     '.vitest/**',
     'src/generated/**',
     'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
     'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
   ]),
 ])
 

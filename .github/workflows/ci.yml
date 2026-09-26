@@ -57,3 +57,39 @@ jobs:
           psql -h localhost -U postgres -c "CREATE DATABASE simi_teste OWNER simi_owner"
       - run: npm ci
       - run: npm run test:integracao
+
+  ponta-a-ponta:
+    name: Testes ponta a ponta (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Papéis e banco de teste
+        run: |
+          psql -h localhost -U postgres -c "CREATE ROLE simi_owner LOGIN PASSWORD 'simi_owner_dev' CREATEDB"
+          psql -h localhost -U postgres -c "CREATE ROLE simi_app LOGIN PASSWORD 'simi_app_dev'"
+          psql -h localhost -U postgres -c "CREATE DATABASE simi_e2e OWNER simi_owner"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build:app
+      - run: npm run test:e2e
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14

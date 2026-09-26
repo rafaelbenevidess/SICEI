@@ -52,3 +52,7 @@ next-env.d.ts
 
 # cliente Prisma gerado (npm run postinstall)
 /src/generated/
+
+# Playwright
+/playwright-report/
+/test-results/

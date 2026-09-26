@@ -21,7 +21,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "test:integracao": "vitest run --project integracao",
-    "verificar": "npm run lint && npm run typecheck && npm run format:check && npm test"
+    "verificar": "npm run lint && npm run typecheck && npm run format:check && npm test",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=22"

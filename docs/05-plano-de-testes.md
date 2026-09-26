@@ -14,7 +14,7 @@
 | Unidade: laboratório, formatação, proxy | `src/lab`, `src/lib`, `src/proxy.test.ts` | Vitest | Sim |
 | Unidade: componentes | `src/app/testes/Laboratorio.test.tsx` | Vitest + Testing Library | Sim |
 | Integração | `tests/integracao/*.test.ts` | Vitest + PostgreSQL real | Sim, com PostgreSQL como serviço |
-| Aceitação no navegador | roteiro da seção 4 | Chromium (Playwright) | Manual, antes de cada entrega |
+| Ponta a ponta | `tests/e2e/fluxos.spec.ts` (roteiro da seção 4, no celular 390 px, contra o build de produção) | Playwright | Sim, com PostgreSQL como serviço |
 
 A regra do projeto (RNF-08) é: tudo o que pode ser testado em unidade tem teste unitário, e código novo só entra com os testes dele. As decisões de negócio ficam em funções puras em `src/domain`, e por isso quase tudo é testável sem banco.
 
@@ -51,7 +51,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 
 ## 4. Roteiro de aceitação no navegador (celular 390 px)
 
-Executado antes de cada entrega, com os dados de demonstração (`SEED_DEMO=1`):
+Automatizado em `tests/e2e/fluxos.spec.ts` (`npm run test:e2e`), com os dados de demonstração (`SEED_DEMO=1`):
 
 1. Entrar com a senha provisória → o sistema exige a troca → senha curta é recusada → senha válida leva ao painel.
 2. Painel mostra itens por status, alertas, consumo do mês e últimas movimentações, sem rolagem horizontal.
@@ -63,4 +63,4 @@ Executado antes de cada entrega, com os dados de demonstração (`SEED_DEMO=1`):
 8. Auditoria → Verificar agora → cadeia íntegra, movimentações e saldos batem.
 9. `/testes` → Executar todos → todos os casos passam.
 
-Resultado da última execução: todos os passos passaram, sem erros no console do navegador.
+A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalhos de segurança. Resultado da última execução: 9 de 9 passaram.

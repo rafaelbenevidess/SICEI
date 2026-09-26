@@ -32,6 +32,13 @@ export async function enviarNotificacoesPendentes(): Promise<{ enviadas: number;
   const t = transporte()
   const base = process.env.APP_URL ?? ''
   for (const n of pendentes) {
+    // reserva atômica: se outra execução (outra movimentação ou a rotina diária) pegou
+    // esta notificação primeiro, o contador de tentativas já mudou e esta pula
+    const reservada = await prisma.notificacao.updateMany({
+      where: { id: n.id, tentativas: n.tentativas, status: { in: ['PENDENTE', 'FALHOU'] } },
+      data: { tentativas: { increment: 1 } },
+    })
+    if (reservada.count === 0) continue
     const item = n.alerta.item
     try {
       await t.sendMail({
@@ -53,7 +60,6 @@ export async function enviarNotificacoesPendentes(): Promise<{ enviadas: number;
         data: {
           status: 'ENVIADO',
           enviadoEm: new Date(),
-          tentativas: { increment: 1 },
           erro: null,
         },
       })
@@ -63,7 +69,6 @@ export async function enviarNotificacoesPendentes(): Promise<{ enviadas: number;
         where: { id: n.id },
         data: {
           status: 'FALHOU',
-          tentativas: { increment: 1 },
           erro: (e as Error).message.slice(0, 500),
         },
       })

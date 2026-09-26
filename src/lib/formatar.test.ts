@@ -51,6 +51,13 @@ describe('RF-20 · CSV', () => {
     expect(celulaCsv(null)).toBe('')
     expect(celulaCsv(10)).toBe('10')
   })
+  it('neutraliza fórmulas em texto (injeção de CSV), mas não mexe em números', () => {
+    expect(celulaCsv('=HYPERLINK("http://x")')).toBe(`"'=HYPERLINK(""http://x"")"`)
+    expect(celulaCsv('+1+1')).toBe("'+1+1")
+    expect(celulaCsv('-2+3')).toBe("'-2+3")
+    expect(celulaCsv('@SUM(A1)')).toBe("'@SUM(A1)")
+    expect(celulaCsv(-5)).toBe('-5')
+  })
   it('gera CSV com BOM, separador ; e CRLF', () => {
     expect(gerarCsv(['a', 'b'], [[1, 'x;y']])).toBe('﻿a;b\r\n1;"x;y"')
   })

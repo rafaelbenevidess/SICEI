@@ -226,6 +226,7 @@ export async function estornarMovimentacao(
         },
         saldoAtual: item.saldo,
         justificativa,
+        itemAtivo: item.ativo,
       })
       if (!decisao.ok) throw new ErroDeNegocio(decisao.motivo)
 

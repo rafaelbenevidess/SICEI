@@ -39,6 +39,9 @@ export interface ResultadoRecalculo {
  * da movimentação, ou na rotina diária.
  */
 export async function recalcularItem(tx: Tx, itemId: string): Promise<ResultadoRecalculo> {
+  // trava a linha do item (na mesma transação é reentrante): o recálculo lê o saldo mais
+  // recente e dois recálculos do mesmo item nunca disputam a abertura do alerta
+  await tx.$queryRaw`SELECT id FROM item WHERE id = ${itemId}::uuid FOR UPDATE`
   const item = await tx.item.findUniqueOrThrow({
     where: { id: itemId },
     include: { fornecedores: true },

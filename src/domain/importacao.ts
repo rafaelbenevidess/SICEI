@@ -69,6 +69,7 @@ export type ResultadoLinha =
 /** Valida as linhas (a numeração considera o cabeçalho como linha 1). Também acusa código repetido no arquivo. */
 export function validarLinhasImportacao(linhas: Record<string, unknown>[]): ResultadoLinha[] {
   const vistos = new Map<string, number>()
+  const posicoes = new Map<string, number>()
   return linhas.map((bruta, i) => {
     const linha = i + 2
     const r = schemaLinhaImportacao.safeParse(bruta)
@@ -83,7 +84,19 @@ export function validarLinhasImportacao(linhas: Record<string, unknown>[]): Resu
     const anterior = vistos.get(codigo)
     if (anterior)
       return { linha, ok: false, erros: [`codigo: repetido (já aparece na linha ${anterior}).`] }
+    const posicao = r.data.posicao?.toUpperCase()
+    const donaDaPosicao = posicao ? posicoes.get(posicao) : undefined
+    if (donaDaPosicao) {
+      return {
+        linha,
+        ok: false,
+        erros: [
+          `posicao: repetida (já usada na linha ${donaDaPosicao}); um item por compartimento (RN-25).`,
+        ],
+      }
+    }
     vistos.set(codigo, linha)
+    if (posicao) posicoes.set(posicao, linha)
     return { linha, ok: true, dados: r.data }
   })
 }

@@ -3,6 +3,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { pode, type Permissao } from '@/domain/permissoes'
+import { ipDoCliente } from '@/lib/ip'
 import { COOKIE_SESSAO, validarToken, type UsuarioDaSessao } from '../auth/sessao'
 import type { Ator } from '../contexto'
 
@@ -32,8 +33,7 @@ export async function origemDaRequisicao(): Promise<{
   userAgent: string | null
 }> {
   const h = await headers()
-  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || null
-  return { ip, userAgent: h.get('user-agent')?.slice(0, 300) ?? null }
+  return { ip: ipDoCliente(h), userAgent: h.get('user-agent')?.slice(0, 300) ?? null }
 }
 
 /** O Ator de uma Server Action: confere a sessão de novo (toda Action é uma porta de entrada). */

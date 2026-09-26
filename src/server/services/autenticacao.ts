@@ -1,6 +1,7 @@
 import 'server-only'
 import {
   JANELA_TENTATIVAS_IP_MINUTOS,
+  LIMITE_FALHAS_LOGIN,
   deveBloquear,
   excedeuLimiteDoIp,
   problemasDaSenha,
@@ -63,33 +64,44 @@ export async function entrar(
   // Assim ninguém continua testando senhas depois do bloqueio (RN-22).
   if (usuario.bloqueadoEm) return falhar(MENSAGEM_CONTA_BLOQUEADA, usuario.id, { bloqueado: true })
   if (!confere) {
-    const falhas = usuario.falhasLogin + 1
-    const bloquear = deveBloquear(falhas)
-    await prisma.$transaction(async (tx) => {
-      await tx.usuario.update({
-        where: { id: usuario.id },
-        data: { falhasLogin: falhas, bloqueadoEm: bloquear ? new Date() : null },
-      })
-      if (bloquear) {
+    // incremento atômico: tentativas em paralelo não se sobrescrevem, e só uma delas faz o bloqueio
+    const [r] = await prisma.$queryRaw<{ falhas: number; bloqueou: boolean }[]>`
+      UPDATE usuario
+         SET falhas_login = falhas_login + 1,
+             bloqueado_em = CASE
+               WHEN bloqueado_em IS NULL AND falhas_login + 1 >= ${LIMITE_FALHAS_LOGIN} THEN now()
+               ELSE bloqueado_em END
+       WHERE id = ${usuario.id}::uuid
+   RETURNING falhas_login AS falhas,
+             (bloqueado_em IS NOT NULL AND falhas_login = ${LIMITE_FALHAS_LOGIN}) AS bloqueou`
+    const bloqueada = deveBloquear(r.falhas)
+    if (r.bloqueou) {
+      await prisma.$transaction(async (tx) => {
         await tx.sessao.deleteMany({ where: { usuarioId: usuario.id } })
         await registrarAuditoria(tx, {
           acao: 'USUARIO_BLOQUEADO',
           entidade: 'usuario',
           entidadeId: usuario.id,
-          depois: { falhasLogin: falhas },
+          depois: { falhasLogin: r.falhas },
           usuarioId: usuario.id,
           ...origem,
         })
-      }
-    })
-    return falhar(bloquear ? MENSAGEM_CONTA_BLOQUEADA : MENSAGEM_LOGIN_INVALIDO, usuario.id, {
-      falhasLogin: falhas,
+      })
+    }
+    return falhar(bloqueada ? MENSAGEM_CONTA_BLOQUEADA : MENSAGEM_LOGIN_INVALIDO, usuario.id, {
+      falhasLogin: r.falhas,
     })
   }
 
+  // zera as falhas só se a conta não foi bloqueada por uma tentativa em paralelo
+  const liberada = await prisma.usuario.updateMany({
+    where: { id: usuario.id, bloqueadoEm: null },
+    data: { falhasLogin: 0 },
+  })
+  if (liberada.count === 0) return falhar(MENSAGEM_CONTA_BLOQUEADA, usuario.id, { bloqueado: true })
+
   const sessao = await criarSessao(usuario.id, origem)
   await prisma.$transaction(async (tx) => {
-    await tx.usuario.update({ where: { id: usuario.id }, data: { falhasLogin: 0 } })
     await tx.tentativaLogin.create({ data: { ip, login, sucesso: true } })
     await registrarAuditoria(tx, {
       acao: 'LOGIN',
@@ -133,10 +145,11 @@ export async function trocarSenha(
       senhaAtual: 'A senha atual não confere.',
     })
   }
-  const recentes = [usuario.senhaHash, ...usuario.historicoSenhas.map((h) => h.senhaHash)].slice(
-    0,
-    3,
-  )
+  // o histórico já inclui a senha atual (toda senha nova é gravada nele); a atual entra
+  // de novo só por segurança, sem duplicar, e o corte é em 3 senhas diferentes
+  const recentes = [
+    ...new Set([...usuario.historicoSenhas.map((h) => h.senhaHash), usuario.senhaHash]),
+  ].slice(0, 3)
   let repete = false
   for (const h of recentes) if (await senhaConfere(h, v.dados.novaSenha)) repete = true
   const problemas = problemasDaSenha({

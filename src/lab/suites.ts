@@ -467,6 +467,13 @@ export const SUITES: SuiteLab[] = [
           tipo: 'texto',
           padrao: 'NF lançada em duplicidade',
         },
+        {
+          nome: 'itemAtivo',
+          rotulo: 'Item ativo?',
+          tipo: 'opcoes',
+          opcoes: OPCOES_SIM_NAO,
+          padrao: 'sim',
+        },
       ],
       esperado: {
         nome: 'esperado',
@@ -483,6 +490,7 @@ export const SUITES: SuiteLab[] = [
           },
           saldoAtual: num(v.saldoAtual),
           justificativa: v.justificativa ?? '',
+          itemAtivo: v.itemAtivo !== 'nao',
         })
         return r.ok
           ? { resultado: 'aceita', explicacao: formatarSaldos(r.valor) }

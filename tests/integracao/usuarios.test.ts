@@ -175,6 +175,78 @@ describe('RF-01 · Login, troca obrigatória e bloqueio', () => {
     ).toBe(1)
   })
 
+  it('RN-22: 8 falhas em paralelo não burlam o bloqueio (incremento atômico)', async () => {
+    const u = await criarAtor('ALMOXARIFE', 'SenhaCorreta2026')
+    await Promise.allSettled(
+      Array.from({ length: 8 }, () => entrar({ login: u.login, senha: 'errada-errada' }, origem())),
+    )
+    const guardado = await prisma.usuario.findUniqueOrThrow({ where: { id: u.usuarioId } })
+    expect(guardado.bloqueadoEm).not.toBeNull()
+    expect(
+      await prisma.auditLog.count({
+        where: { acao: 'USUARIO_BLOQUEADO', entidadeId: u.usuarioId },
+      }),
+    ).toBe(1)
+    await expect(entrar({ login: u.login, senha: 'SenhaCorreta2026' }, origem())).rejects.toThrow(
+      MENSAGEM_CONTA_BLOQUEADA,
+    )
+  })
+
+  it('RN-22: depois de A → B → C, voltar para A é recusado (3 últimas de verdade)', async () => {
+    const u = await criarAtor('GESTOR', 'SenhaInicial-A1')
+    // o criarAtor não grava histórico; a senha A entra como a atual
+    await trocarSenha(
+      u.usuarioId,
+      {
+        senhaAtual: 'SenhaInicial-A1',
+        novaSenha: 'SenhaSegunda-B2',
+        confirmacao: 'SenhaSegunda-B2',
+      },
+      origem(),
+    )
+    await trocarSenha(
+      u.usuarioId,
+      {
+        senhaAtual: 'SenhaSegunda-B2',
+        novaSenha: 'SenhaTerceira-C3',
+        confirmacao: 'SenhaTerceira-C3',
+      },
+      origem(),
+    )
+    await expect(
+      trocarSenha(
+        u.usuarioId,
+        {
+          senhaAtual: 'SenhaTerceira-C3',
+          novaSenha: 'SenhaInicial-A1',
+          confirmacao: 'SenhaInicial-A1',
+        },
+        origem(),
+      ),
+    ).rejects.toThrow('A senha não pode repetir nenhuma das 3 últimas.')
+    // depois de mais uma troca, A sai da janela das 3 últimas
+    await trocarSenha(
+      u.usuarioId,
+      {
+        senhaAtual: 'SenhaTerceira-C3',
+        novaSenha: 'SenhaQuarta-D4',
+        confirmacao: 'SenhaQuarta-D4',
+      },
+      origem(),
+    )
+    await expect(
+      trocarSenha(
+        u.usuarioId,
+        {
+          senhaAtual: 'SenhaQuarta-D4',
+          novaSenha: 'SenhaInicial-A1',
+          confirmacao: 'SenhaInicial-A1',
+        },
+        origem(),
+      ),
+    ).resolves.toBeUndefined()
+  })
+
   it('rate limit: 20 tentativas do mesmo IP em 15 minutos barram a 21ª', async () => {
     const ip = origem().ip
     await prisma.tentativaLogin.createMany({

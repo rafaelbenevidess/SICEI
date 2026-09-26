@@ -45,7 +45,7 @@ export const casosMovimentacao: CasoDeTeste<
 ]
 
 export const casosEstorno: CasoDeTeste<
-  { original: MovimentacaoOriginal; saldoAtual: number; justificativa: string },
+  { original: MovimentacaoOriginal; saldoAtual: number; justificativa: string; itemAtivo: boolean },
   Decisao<Saldos>
 >[] = [
   {
@@ -54,6 +54,7 @@ export const casosEstorno: CasoDeTeste<
       original: { tipo: 'CONSUMO_PRODUCAO', quantidade: 4, jaEstornada: false },
       saldoAtual: 8,
       justificativa: 'Lançado no item errado',
+      itemAtivo: true,
     },
     esperado: { ok: true, valor: { saldoAnterior: 8, saldoPosterior: 12 } },
   },
@@ -63,6 +64,7 @@ export const casosEstorno: CasoDeTeste<
       original: { tipo: 'CONSUMO_PRODUCAO', quantidade: 4, jaEstornada: true },
       saldoAtual: 8,
       justificativa: 'Lançado no item errado',
+      itemAtivo: true,
     },
     esperado: { ok: false, motivo: 'Esta movimentação já foi estornada.' },
   },
@@ -72,6 +74,7 @@ export const casosEstorno: CasoDeTeste<
       original: { tipo: 'ESTORNO', quantidade: 4, jaEstornada: false },
       saldoAtual: 8,
       justificativa: 'Tentativa de desfazer',
+      itemAtivo: true,
     },
     esperado: { ok: false, motivo: 'Um estorno não pode ser estornado.' },
   },
@@ -81,6 +84,7 @@ export const casosEstorno: CasoDeTeste<
       original: { tipo: 'COMPRA', quantidade: 30, jaEstornada: false },
       saldoAtual: 10,
       justificativa: 'NF lançada em duplicidade',
+      itemAtivo: true,
     },
     esperado: { ok: false, motivo: 'Saldo disponível: 10' },
   },
@@ -90,10 +94,22 @@ export const casosEstorno: CasoDeTeste<
       original: { tipo: 'COMPRA', quantidade: 5, jaEstornada: false },
       saldoAtual: 10,
       justificativa: '  ',
+      itemAtivo: true,
     },
     esperado: { ok: false, motivo: 'Informe a justificativa do estorno.' },
   },
 ]
+
+casosEstorno.push({
+  descricao: 'RN-03: item inativo não recebe estorno',
+  entrada: {
+    original: { tipo: 'CONSUMO_PRODUCAO', quantidade: 4, jaEstornada: false },
+    saldoAtual: 0,
+    justificativa: 'Lançado no item errado',
+    itemAtivo: false,
+  },
+  esperado: { ok: false, motivo: 'Item inativo não recebe movimentação.' },
+})
 
 export const casosInventario: CasoDeTeste<
   { saldo: number; contado: number },

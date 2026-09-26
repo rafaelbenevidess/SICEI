@@ -98,7 +98,9 @@ export const NOME_TIPO_DESTINO: Record<string, string> = {
 
 /** Escapa um valor para CSV com ponto e vírgula (padrão do Excel em português). */
 export function celulaCsv(v: unknown): string {
-  const t = v === null || v === undefined ? '' : String(v)
+  let t = v === null || v === undefined ? '' : String(v)
+  // texto que começa com = + - @ (ou tab/CR) viraria fórmula no Excel: prefixa com apóstrofo
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(t)) t = `'${t}`
   return /[";\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t
 }
 

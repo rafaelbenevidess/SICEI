@@ -48,8 +48,10 @@ export function avaliarEstorno(entrada: {
   original: MovimentacaoOriginal
   saldoAtual: number
   justificativa: string
+  itemAtivo: boolean
 }): Decisao<{ saldoAnterior: number; saldoPosterior: number }> {
-  const { original, saldoAtual, justificativa } = entrada
+  const { original, saldoAtual, justificativa, itemAtivo } = entrada
+  if (!itemAtivo) return recusada('Item inativo não recebe movimentação.')
   if (original.tipo === 'ESTORNO') return recusada('Um estorno não pode ser estornado.')
   if (original.jaEstornada) return recusada('Esta movimentação já foi estornada.')
   if (justificativa.trim().length < 5) return recusada('Informe a justificativa do estorno.')

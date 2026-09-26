@@ -24,6 +24,7 @@ describe('RN-12 · Estorno', () => {
       original: { tipo: 'AJUSTE_NEGATIVO', quantidade: 2, jaEstornada: false },
       saldoAtual: 0,
       justificativa: 'Contagem refeita',
+      itemAtivo: true,
     })
     expect(r).toEqual({ ok: true, valor: { saldoAnterior: 0, saldoPosterior: 2 } })
   })

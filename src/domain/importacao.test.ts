@@ -62,6 +62,17 @@ describe('RF-25 · Importação da planilha', () => {
       erros: ['codigo: repetido (já aparece na linha 2).'],
     })
   })
+  it('RN-25: a mesma posição em duas linhas do arquivo é recusada', () => {
+    const r = validarLinhasImportacao([
+      valida,
+      { ...valida, codigo: 'PST-002', posicao: 'a01-g03-c04' },
+    ])
+    expect(r[1]).toEqual({
+      linha: 3,
+      ok: false,
+      erros: ['posicao: repetida (já usada na linha 2); um item por compartimento (RN-25).'],
+    })
+  })
   it('aplicação "Furação" com acento é aceita', () => {
     const [r] = validarLinhasImportacao([{ ...valida, aplicacao: 'Furação' }])
     expect(r.ok && r.dados.aplicacao).toBe('FURACAO')

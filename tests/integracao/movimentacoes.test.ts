@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import type { Ator } from '@/server/contexto'
 import { prisma } from '@/server/db'
 import { ErroDeNegocio } from '@/server/erros'
+import { enviarNotificacoesPendentes } from '@/server/notificacao/email'
 import {
   estornarMovimentacao,
   registrarInventario,
@@ -223,6 +224,19 @@ describe('RF-09 / RN-12 · Estorno no banco real', () => {
     expect(Number(v.ultimoPreco)).toBe(37.4)
   })
 
+  it('RN-03: não estorna movimentação de item inativo', async () => {
+    const c = await cenario(admin)
+    await compra(admin, c, 4)
+    const { movimentacao } = await consumo(almoxarife, c, 4)
+    await prisma.item.update({ where: { id: c.item.id }, data: { ativo: false } })
+    await expect(
+      estornarMovimentacao(admin, {
+        movimentacaoId: movimentacao.id,
+        justificativa: 'Tentativa depois de inativar',
+      }),
+    ).rejects.toThrow('Item inativo não recebe movimentação.')
+  })
+
   it('critério do RF-09: Almoxarife não estorna', async () => {
     const c = await cenario(admin)
     const { movimentacao } = await compra(admin, c, 5)
@@ -319,5 +333,27 @@ describe('RN-17 / RN-18 · Status e alertas no banco real', () => {
       destinatario: 'estoque@dda.com.br',
     })
     await prisma.parametro.update({ where: { chave: 'email_avisos' }, data: { valor: '' } })
+  })
+
+  it('RF-14: duas execuções simultâneas do envio não mandam o mesmo aviso duas vezes', async () => {
+    const pendentes = await prisma.notificacao.findMany({ where: { status: 'PENDENTE' } })
+    expect(pendentes.length).toBeGreaterThan(0)
+    const antes = { host: process.env.SMTP_HOST, porta: process.env.SMTP_PORT }
+    process.env.SMTP_HOST = '127.0.0.1' // porta fechada: o envio falha rápido
+    process.env.SMTP_PORT = '9'
+    try {
+      const [a, b] = await Promise.all([
+        enviarNotificacoesPendentes(),
+        enviarNotificacoesPendentes(),
+      ])
+      expect(a.falhas + b.falhas).toBe(pendentes.length) // cada aviso foi tentado uma vez só
+      const depois = await prisma.notificacao.findMany({
+        where: { id: { in: pendentes.map((p) => p.id) } },
+      })
+      expect(depois.every((n) => n.tentativas === 1 && n.status === 'FALHOU')).toBe(true)
+    } finally {
+      process.env.SMTP_HOST = antes.host
+      process.env.SMTP_PORT = antes.porta
+    }
   })
 })

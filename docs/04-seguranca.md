@@ -48,7 +48,22 @@ Foi feita com a skill `security-review`, cobrindo todo o código desde o primeir
 | 3 | Trocar a senha não encerrava as sessões em outros aparelhos. | A troca apaga as outras sessões e mantém a atual. | `tests/integracao/usuarios.test.ts` |
 | 4 | O parâmetro `volta` aceitava tabulação, e o navegador podia transformar `/\t/site` em `//site`. | Qualquer caractere de controle é recusado. | `src/lib/redirecionamento.test.ts` |
 
-## 3. Riscos aceitos
+## 3. Revisão de código (26/09/2026)
+
+Feita com a skill `code-review` sobre `src/`, `prisma/`, `scripts/` e `tests/`. Os 8 achados foram corrigidos, cada um com teste:
+
+| # | Achado | Correção | Teste |
+|---|---|---|---|
+| 1 | Tentativas de login erradas em paralelo sobrescreviam o contador de falhas e a conta nunca bloqueava. | Incremento atômico no banco (`UPDATE ... SET falhas_login = falhas_login + 1 ... RETURNING`); só a tentativa que chega a 5 faz o bloqueio. | integração: 8 falhas em paralelo bloqueiam uma vez |
+| 2 | A regra das 3 últimas senhas conferia só 2, porque a atual entrava duas vezes. | A janela passa a ter 3 senhas diferentes. | integração: A → B → C → A recusado; depois de D, A volta a valer |
+| 3 | A mesma posição repetida no CSV de importação era aceita, e um item perdia a posição. | A validação recusa posição repetida no arquivo. | unitário em `importacao.test.ts` |
+| 4 | Dava para estornar movimentação de item inativo, deixando saldo num item inativo. | `avaliarEstorno` recusa item inativo (RN-03). | unitário, laboratório e integração |
+| 5 | Duas execuções do envio de e-mail ao mesmo tempo mandavam o mesmo aviso duas vezes. | Reserva atômica de cada notificação antes de enviar. | integração: duas execuções simultâneas tentam cada aviso uma vez |
+| 6 | Vincular fornecedor e mudar limites recalculavam o item sem travá-lo, podendo gravar status com saldo antigo. | `recalcularItem` trava a linha do item antes de ler. | coberto pelos testes de concorrência |
+| 7 | O IP vinha do primeiro valor de `X-Forwarded-For`, que o cliente escolhe, burlando o limite por IP e sujando o log. | Vale o `X-Real-IP` do proxy de borda, ou o último valor de `X-Forwarded-For`. | unitário em `ip.test.ts` |
+| 8 | Texto começando com `=`, `+`, `-` ou `@` virava fórmula ao abrir o CSV no Excel. | Células de texto nesse formato recebem um apóstrofo na frente. | unitário em `formatar.test.ts` |
+
+## 4. Riscos aceitos
 
 - **Estilos inline no CSP** (`style-src 'unsafe-inline'`): o Next.js e o React usam atributos `style`, que não aceitam nonce. Scripts continuam restritos ao nonce, que é o que barra XSS.
 - **Laboratório de testes público** (`/testes`): roda só funções puras no navegador, sem acesso ao banco e sem dados do estoque.

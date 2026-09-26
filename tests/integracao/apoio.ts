@@ -18,6 +18,7 @@ export const unico = (prefixo: string) => `${prefixo}-${Date.now().toString(36)}
 /** Cria um usuário direto no banco e devolve o Ator correspondente. */
 export async function criarAtor(perfil: Perfil, senha = 'SenhaDeTeste2026'): Promise<Ator> {
   const login = unico(`teste.${perfil.toLowerCase()}`)
+  const senhaHash = await hashDeSenha(senha)
   const u = await prisma.usuario.create({
     data: {
       nome: 'Teste',
@@ -25,8 +26,10 @@ export async function criarAtor(perfil: Perfil, senha = 'SenhaDeTeste2026'): Pro
       login,
       setor: 'Testes',
       perfil,
-      senhaHash: await hashDeSenha(senha),
+      senhaHash,
       deveTrocarSenha: false,
+      // como no sistema real, toda senha definida entra no histórico
+      historicoSenhas: { create: { senhaHash } },
     },
   })
   return { usuarioId: u.id, login, perfil, ip: '127.0.0.1', userAgent: 'vitest' }

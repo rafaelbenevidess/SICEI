@@ -42,7 +42,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['src/domain/**/*.ts', 'src/lab/**/*.ts'],
+      include: ['src/domain/**/*.ts', 'src/lab/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/**/*.casos.ts'],
       reporter: ['text', 'html'],
       reportsDirectory: './coverage',

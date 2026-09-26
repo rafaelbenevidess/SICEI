@@ -16,15 +16,30 @@
     "test:watch": "vitest --project unidade",
     "test:ui": "vitest --ui --project unidade",
     "test:cobertura": "vitest run --project unidade --coverage",
-    "test:relatorio": "vitest run --project unidade --coverage --reporter=default --reporter=html && node scripts/publicar-relatorio.mjs"
+    "test:relatorio": "vitest run --project unidade --coverage --reporter=default --reporter=html && node scripts/publicar-relatorio.mjs",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "test:integracao": "vitest run --project integracao",
+    "verificar": "npm run lint && npm run typecheck && npm run format:check && npm test"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.2.1",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^18.0.4",
     "next": "^16.3.6",
+    "nodemailer": "^10.0.10",
+    "papaparse": "^5.7.0",
+    "pg": "^8.23.0",
+    "prisma": "^7.10.0",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -35,6 +50,10 @@
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
     "@types/node": "^22.20.4",
+    "@types/nodemailer": "^8.0.2",
+    "@types/papaparse": "^5.5.2",
+    "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
@@ -45,7 +64,12 @@
     "jsdom": "^30.1.1",
     "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^5.0.2"
+  },
+  "overrides": {
+    "mysql2": "^3.24.4",
+    "deepmerge-ts": "^8.0.2"
   }
 }

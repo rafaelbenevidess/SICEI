@@ -12,7 +12,10 @@ type Json = null | boolean | number | string | Json[] | { [k: string]: Json }
 export function jsonCanonico(valor: unknown): string {
   const normalizar = (v: unknown): Json => {
     if (v === null || v === undefined) return null
-    if (v instanceof Date) return v.toISOString()
+    // Date, Decimal e similares sabem se serializar (Date → ISO, Decimal → texto)
+    if (typeof v === 'object' && typeof (v as { toJSON?: unknown }).toJSON === 'function') {
+      return normalizar((v as { toJSON: () => unknown }).toJSON())
+    }
     if (Array.isArray(v)) return v.map(normalizar)
     if (typeof v === 'object') {
       const obj = v as Record<string, unknown>

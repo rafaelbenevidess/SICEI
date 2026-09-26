@@ -6,6 +6,7 @@ on:
 
 jobs:
   qualidade:
+    name: Lint, tipos e testes unitários
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,3 +28,32 @@ jobs:
           path: public/relatorio-testes
           retention-days: 30
       - run: npm run build:app
+
+  integracao:
+    name: Testes de integração (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      DIRECT_URL_TESTE: postgresql://simi_owner:simi_owner_dev@localhost:5432/simi_teste
+      DATABASE_URL_TESTE: postgresql://simi_app:simi_app_dev@localhost:5432/simi_teste
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Papéis e banco de teste
+        run: |
+          psql -h localhost -U postgres -c "CREATE ROLE simi_owner LOGIN PASSWORD 'simi_owner_dev' CREATEDB"
+          psql -h localhost -U postgres -c "CREATE ROLE simi_app LOGIN PASSWORD 'simi_app_dev'"
+          psql -h localhost -U postgres -c "CREATE DATABASE simi_teste OWNER simi_owner"
+      - run: npm ci
+      - run: npm run test:integracao

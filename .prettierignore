@@ -6,3 +6,4 @@ docs
 *.md
 .vitest
 coverage
+src/generated

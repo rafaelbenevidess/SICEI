@@ -49,3 +49,6 @@ next-env.d.ts
 
 # relatório bruto do Vitest
 /.vitest/
+
+# cliente Prisma gerado (npm run postinstall)
+/src/generated/

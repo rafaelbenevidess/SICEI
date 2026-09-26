@@ -20,6 +20,9 @@ describe('RN-09a · JSON canônico', () => {
       jsonCanonico({ d: new Date('2026-09-26T12:00:00Z'), u: undefined, n: 10n, l: [1, null] }),
     ).toBe('{"d":"2026-09-26T12:00:00.000Z","l":[1,null],"n":"10"}')
   })
+  it('objetos com toJSON (como Decimal) usam a própria serialização', () => {
+    expect(jsonCanonico({ preco: { toJSON: () => '38.90' } })).toBe('{"preco":"38.90"}')
+  })
   it('undefined solto vira null', () => {
     expect(jsonCanonico(undefined)).toBe('null')
   })

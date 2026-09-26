@@ -1,0 +1,329 @@
+// Modelo de dados do SIMI (doc 03, seção 4).
+// Restrições que o Prisma não expressa (CHECKs, índices parciais, triggers de imutabilidade
+// e permissões do banco) estão na migration "regras_do_banco".
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Perfil {
+  ADMIN
+  GESTOR
+  ALMOXARIFE
+  CONSULTA
+}
+
+enum TipoMovimentacao {
+  COMPRA
+  DEVOLUCAO_PRODUCAO
+  AJUSTE_POSITIVO
+  CONSUMO_PRODUCAO
+  PERDA_QUEBRA
+  AJUSTE_NEGATIVO
+  ESTORNO
+}
+
+enum StatusItem {
+  OK
+  ATENCAO
+  CRITICO
+  ZERADO
+}
+
+enum NivelAlerta {
+  ATENCAO
+  CRITICO
+  ZERADO
+}
+
+enum Aplicacao {
+  TORNEAMENTO
+  FRESAMENTO
+  FURACAO
+  ROSQUEAMENTO
+  OUTRA
+}
+
+enum TipoDestino {
+  SETOR
+  MAQUINA
+  CENTRO_CUSTO
+}
+
+enum StatusNotificacao {
+  PENDENTE
+  ENVIADO
+  FALHOU
+}
+
+model Usuario {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  nome            String
+  sobrenome       String
+  login           String    @unique
+  setor           String
+  perfil          Perfil
+  ativo           Boolean   @default(true)
+  deveTrocarSenha Boolean   @default(true) @map("deve_trocar_senha")
+  senhaHash       String    @map("senha_hash")
+  falhasLogin     Int       @default(0) @map("falhas_login")
+  bloqueadoEm     DateTime? @map("bloqueado_em") @db.Timestamptz
+  criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm    DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz
+
+  sessoes         Sessao[]
+  historicoSenhas HistoricoSenha[]
+  movimentacoes   Movimentacao[]
+  alertasCientes  Alerta[]         @relation("AlertaCiente")
+
+  @@map("usuario")
+}
+
+model HistoricoSenha {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  usuarioId String   @map("usuario_id") @db.Uuid
+  senhaHash String   @map("senha_hash")
+  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamptz
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId, criadoEm])
+  @@map("historico_senha")
+}
+
+/// O id é o SHA-256 do token do cookie: o token em si nunca é guardado.
+model Sessao {
+  id        String   @id
+  usuarioId String   @map("usuario_id") @db.Uuid
+  criadaEm  DateTime @default(now()) @map("criada_em") @db.Timestamptz
+  ultimoUso DateTime @default(now()) @map("ultimo_uso") @db.Timestamptz
+  expiraEm  DateTime @map("expira_em") @db.Timestamptz
+  ip        String?
+  userAgent String?  @map("user_agent")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("sessao")
+}
+
+model TentativaLogin {
+  id       BigInt   @id @default(autoincrement())
+  ip       String
+  login    String
+  sucesso  Boolean
+  criadoEm DateTime @default(now()) @map("criado_em") @db.Timestamptz
+
+  @@index([ip, criadoEm])
+  @@map("tentativa_login")
+}
+
+model Fabricante {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  nome      String
+  /// nome em minúsculas, sem espaços nas pontas: garante a unicidade da RN-04
+  nomeChave String  @unique @map("nome_chave")
+  ativo     Boolean @default(true)
+  itens     Item[]
+
+  @@map("fabricante")
+}
+
+model Fornecedor {
+  id            String           @id @default(uuid(7)) @db.Uuid
+  razaoSocial   String           @map("razao_social")
+  nomeFantasia  String?          @map("nome_fantasia")
+  cnpj          String           @unique
+  telefone      String?
+  contato       String?
+  ativo         Boolean          @default(true)
+  itens         ItemFornecedor[]
+  movimentacoes Movimentacao[]
+
+  @@map("fornecedor")
+}
+
+model Item {
+  id             String      @id @default(uuid(7)) @db.Uuid
+  codigo         String      @unique
+  descricao      String
+  iso            String?
+  classe         String?
+  cobertura      String?
+  aplicacao      Aplicacao
+  fabricanteId   String      @map("fabricante_id") @db.Uuid
+  embalagem      Int
+  estoqueMinimo  Int         @map("estoque_minimo")
+  estoqueMaximo  Int?        @map("estoque_maximo")
+  saldo          Int         @default(0)
+  pontoReposicao Int         @default(0) @map("ponto_reposicao")
+  status         StatusItem  @default(ZERADO)
+  ativo          Boolean     @default(true)
+  criadoEm       DateTime    @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm   DateTime    @updatedAt @map("atualizado_em") @db.Timestamptz
+
+  fabricante    Fabricante       @relation(fields: [fabricanteId], references: [id])
+  fornecedores  ItemFornecedor[]
+  posicao       Posicao?
+  movimentacoes Movimentacao[]
+  alertas       Alerta[]
+
+  @@index([status])
+  @@map("item")
+}
+
+model ItemFornecedor {
+  itemId             String    @map("item_id") @db.Uuid
+  fornecedorId       String    @map("fornecedor_id") @db.Uuid
+  codigoNoFornecedor String?   @map("codigo_no_fornecedor")
+  leadTimeDias       Int?      @map("lead_time_dias")
+  preferencial       Boolean   @default(false)
+  ultimoPreco        Decimal?  @map("ultimo_preco") @db.Decimal(12, 2)
+  dataUltimaCompra   DateTime? @map("data_ultima_compra") @db.Timestamptz
+
+  item       Item       @relation(fields: [itemId], references: [id])
+  fornecedor Fornecedor @relation(fields: [fornecedorId], references: [id])
+
+  @@id([itemId, fornecedorId])
+  @@map("item_fornecedor")
+}
+
+model Posicao {
+  id            String  @id @default(uuid(7)) @db.Uuid
+  armario       Int
+  gaveta        Int
+  compartimento Int
+  codigo        String  @unique
+  itemId        String? @unique @map("item_id") @db.Uuid
+  ativo         Boolean @default(true)
+  item          Item?   @relation(fields: [itemId], references: [id])
+
+  @@unique([armario, gaveta, compartimento])
+  @@map("posicao")
+}
+
+model Destino {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  tipo          TipoDestino
+  codigo        String         @unique
+  nome          String
+  ativo         Boolean        @default(true)
+  movimentacoes Movimentacao[]
+
+  @@map("destino")
+}
+
+model Colaborador {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  nome          String
+  matricula     String?        @unique
+  setor         String
+  ativo         Boolean        @default(true)
+  movimentacoes Movimentacao[]
+
+  @@map("colaborador")
+}
+
+/// Imutável: não existe UPDATE nem DELETE (RN-09a, RN-12). Correção é feita por ESTORNO.
+model Movimentacao {
+  id             String           @id @default(uuid(7)) @db.Uuid
+  itemId         String           @map("item_id") @db.Uuid
+  tipo           TipoMovimentacao
+  quantidade     Int
+  saldoAnterior  Int              @map("saldo_anterior")
+  saldoPosterior Int              @map("saldo_posterior")
+  fornecedorId   String?          @map("fornecedor_id") @db.Uuid
+  precoUnitario  Decimal?         @map("preco_unitario") @db.Decimal(12, 2)
+  notaFiscal     String?          @map("nota_fiscal")
+  destinoId      String?          @map("destino_id") @db.Uuid
+  ordemProducao  String?          @map("ordem_producao")
+  colaboradorId  String?          @map("colaborador_id") @db.Uuid
+  motivo         String?
+  observacao     String?
+  estornaId      String?          @unique @map("estorna_id") @db.Uuid
+  usuarioId      String           @map("usuario_id") @db.Uuid
+  ip             String?
+  userAgent      String?          @map("user_agent")
+  criadoEm       DateTime         @default(now()) @map("criado_em") @db.Timestamptz
+
+  item         Item          @relation(fields: [itemId], references: [id])
+  fornecedor   Fornecedor?   @relation(fields: [fornecedorId], references: [id])
+  destino      Destino?      @relation(fields: [destinoId], references: [id])
+  colaborador  Colaborador?  @relation(fields: [colaboradorId], references: [id])
+  usuario      Usuario       @relation(fields: [usuarioId], references: [id])
+  estorna      Movimentacao? @relation("Estorno", fields: [estornaId], references: [id])
+  estornadaPor Movimentacao? @relation("Estorno")
+
+  @@index([itemId, criadoEm])
+  @@index([tipo, criadoEm])
+  @@index([destinoId, criadoEm])
+  @@index([colaboradorId, criadoEm])
+  @@index([ordemProducao])
+  @@index([criadoEm])
+  @@map("movimentacao")
+}
+
+model Alerta {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  itemId       String         @map("item_id") @db.Uuid
+  nivel        NivelAlerta
+  abertoEm     DateTime       @default(now()) @map("aberto_em") @db.Timestamptz
+  atualizadoEm DateTime       @default(now()) @map("atualizado_em") @db.Timestamptz
+  fechadoEm    DateTime?      @map("fechado_em") @db.Timestamptz
+  cientePorId  String?        @map("ciente_por_id") @db.Uuid
+  cienteEm     DateTime?      @map("ciente_em") @db.Timestamptz
+  item         Item           @relation(fields: [itemId], references: [id])
+  cientePor    Usuario?       @relation("AlertaCiente", fields: [cientePorId], references: [id])
+  notificacoes Notificacao[]
+
+  @@index([fechadoEm])
+  @@map("alerta")
+}
+
+model Notificacao {
+  id           String            @id @default(uuid(7)) @db.Uuid
+  alertaId     String            @map("alerta_id") @db.Uuid
+  nivel        NivelAlerta
+  destinatario String
+  status       StatusNotificacao @default(PENDENTE)
+  tentativas   Int               @default(0)
+  erro         String?
+  criadoEm     DateTime          @default(now()) @map("criado_em") @db.Timestamptz
+  enviadoEm    DateTime?         @map("enviado_em") @db.Timestamptz
+  alerta       Alerta            @relation(fields: [alertaId], references: [id])
+
+  @@index([status])
+  @@map("notificacao")
+}
+
+/// Imutável e encadeado por hash (RN-09a). seq é definido pela aplicação sob advisory lock.
+model AuditLog {
+  seq        BigInt   @id
+  acao       String
+  entidade   String
+  entidadeId String?  @map("entidade_id")
+  antes      Json?
+  depois     Json?
+  usuarioId  String?  @map("usuario_id") @db.Uuid
+  ip         String?
+  userAgent  String?  @map("user_agent")
+  criadoEm   DateTime @map("criado_em") @db.Timestamptz
+  prevHash   String   @map("prev_hash")
+  hash       String   @unique
+
+  @@index([criadoEm])
+  @@index([usuarioId, criadoEm])
+  @@index([entidade, entidadeId])
+  @@map("audit_log")
+}
+
+model Parametro {
+  chave        String   @id
+  valor        String
+  atualizadoEm DateTime @default(now()) @updatedAt @map("atualizado_em") @db.Timestamptz
+
+  @@map("parametro")
+}

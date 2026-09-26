@@ -18,6 +18,27 @@ export default defineConfig({
           setupFiles: ['./vitest.setup.ts'],
         },
       },
+      {
+        extends: true,
+        resolve: {
+          alias: { 'server-only': path.resolve(import.meta.dirname, 'tests/vazio.ts') },
+        },
+        test: {
+          name: 'integracao',
+          include: ['tests/integracao/**/*.test.ts'],
+          environment: 'node',
+          globalSetup: ['./tests/integracao/preparar.ts'],
+          fileParallelism: false,
+          testTimeout: 60_000,
+          hookTimeout: 120_000,
+          env: {
+            DATABASE_URL:
+              process.env.DATABASE_URL_TESTE ??
+              'postgresql://simi_app:simi_app_dev@localhost:5432/simi_teste',
+            SMTP_HOST: '',
+          },
+        },
+      },
     ],
     coverage: {
       provider: 'v8',

@@ -7,10 +7,10 @@ on:
 jobs:
   qualidade:
     name: Lint, tipos e testes unitários
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -22,7 +22,7 @@ jobs:
         run: npm run test:relatorio
       - name: Relatório de testes (artifact)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: relatorio-testes
           path: public/relatorio-testes
@@ -31,7 +31,7 @@ jobs:
 
   integracao:
     name: Testes de integração (PostgreSQL)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -45,8 +45,8 @@ jobs:
       DIRECT_URL_TESTE: postgresql://simi_owner:simi_owner_dev@localhost:5432/simi_teste
       DATABASE_URL_TESTE: postgresql://simi_app:simi_app_dev@localhost:5432/simi_teste
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -60,7 +60,7 @@ jobs:
 
   ponta-a-ponta:
     name: Testes ponta a ponta (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -72,8 +72,8 @@ jobs:
     env:
       PGPASSWORD: postgres
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -88,7 +88,7 @@ jobs:
       - run: npm run test:e2e
       - name: Relatório do Playwright
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report

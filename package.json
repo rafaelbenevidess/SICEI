@@ -23,7 +23,8 @@
     "test:integracao": "vitest run --project integracao",
     "verificar": "npm run lint && npm run typecheck && npm run format:check && npm test",
     "test:e2e": "playwright test",
-    "admin:recuperar": "tsx --conditions=react-server --env-file-if-exists=.env scripts/desbloquear-admin.ts"
+    "admin:recuperar": "tsx --conditions=react-server --env-file-if-exists=.env scripts/desbloquear-admin.ts",
+    "vercel-build": "prisma migrate deploy && prisma db seed && npm run build"
   },
   "engines": {
     "node": ">=22"

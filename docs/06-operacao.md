@@ -67,10 +67,12 @@ Para o avaliador, os testes das regras também rodam no navegador, sem instalar 
    - `APP_URL`: endereço público (usado no QR das etiquetas e nos e-mails)
    - `CRON_SECRET`: texto aleatório longo (a Vercel manda no cabeçalho da rotina diária)
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`: e-mail corporativo, se houver
-3. Aplique as migrations e o seed a partir de uma máquina com acesso ao banco:
-   `DIRECT_URL=... npx prisma migrate deploy` e `DIRECT_URL=... DATABASE_URL=... npm run db:seed`.
-4. O `npm run build` roda os testes unitários antes do `next build`. Se algum teste falhar, a versão não é publicada.
-5. A rotina diária (`vercel.json`) roda às 06:00 UTC: recalcula consumo, ponto de reposição, status e alertas, e reenvia avisos que falharam.
+   - `SEED_SENHA_ADMIN`: senha provisória do `admin` no primeiro deploy (a troca é obrigatória no primeiro acesso)
+   - `SEED_DEMO`: `1` para carregar os dados de demonstração no primeiro deploy
+4. **No Neon, o `simi_app` precisa ser criado por SQL** (`CREATE ROLE simi_app LOGIN PASSWORD '...'`), e não pelo console ou pela API. Papéis criados pelo console entram no grupo `neon_superuser`, que tem `pg_write_all_data` e anularia a proteção do histórico.
+3. O build da Vercel (`npm run vercel-build`, definido no `vercel.json`) roda `prisma migrate deploy`, depois o seed e depois o build com os testes. O seed é idempotente: cria o `admin` só se não houver Administrador, com a senha de `SEED_SENHA_ADMIN` (ou uma aleatória, mostrada no log do build), e os dados de demonstração só se `SEED_DEMO=1` e o banco não tiver itens.
+5. O `npm run build` roda os testes unitários antes do `next build`. Se algum teste falhar, a versão não é publicada.
+6. A rotina diária (`vercel.json`) roda às 06:00 UTC: recalcula consumo, ponto de reposição, status e alertas, e reenvia avisos que falharam.
 
 ## 6. Backup e restauração (RNF-04)
 

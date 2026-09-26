@@ -19,6 +19,8 @@ export default defineConfig({
           include: ['src/**/*.test.{ts,tsx}'],
           environment: 'node',
           setupFiles: ['./vitest.setup.ts'],
+          // o build da Vercel roda com NODE_ENV=production, e o React de produção não tem act()
+          env: { NODE_ENV: 'test' },
         },
       },
       {

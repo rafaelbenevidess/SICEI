@@ -4,3 +4,5 @@ public/relatorio-testes
 package-lock.json
 docs
 *.md
+.vitest
+coverage

@@ -46,3 +46,6 @@ next-env.d.ts
 # exemplo de variáveis de ambiente pode ir para o repositório
 !.env.example
 .claude/settings.local.json
+
+# relatório bruto do Vitest
+/.vitest/

@@ -16,7 +16,7 @@
     "test:watch": "vitest --project unidade",
     "test:ui": "vitest --ui --project unidade",
     "test:cobertura": "vitest run --project unidade --coverage",
-    "test:relatorio": "vitest run --project unidade --coverage --reporter=default --reporter=html"
+    "test:relatorio": "vitest run --project unidade --coverage --reporter=default --reporter=html && node scripts/publicar-relatorio.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -28,6 +28,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

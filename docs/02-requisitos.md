@@ -200,11 +200,11 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 | RNF-05 | Segurança | HTTPS obrigatório. Senhas guardadas com hash forte (Argon2id), nunca em texto. Toda permissão conferida no servidor. Proteção contra as falhas do OWASP Top 10 (injeção, XSS, CSRF, controle de acesso quebrado etc.). Sessão com expiração. Limite de tentativas de login por IP. | Revisão de segurança e testes automatizados |
 | RNF-06 | Privacidade (LGPD) | Só os dados pessoais necessários: nome, sobrenome e setor dos usuários; nome, setor e matrícula dos colaboradores. Nenhum e-mail pessoal. A finalidade do tratamento fica documentada. | Revisão do modelo de dados |
 | RNF-07 | Custo | Baixo custo de implantação e manutenção: até cerca de R$ 100 por mês em nuvem, ou um servidor local. Nenhuma licença paga obrigatória. | Estimativa de custos no doc 03 |
-| RNF-08 | Manutenibilidade | Código versionado no Git, regras de negócio cobertas por testes automatizados (pelo menos 80% de cobertura na camada de domínio), integração contínua e documentação atualizada. | Relatório de cobertura; pipeline de CI |
+| RNF-08 | Manutenibilidade | Código versionado no Git, integração contínua e documentação atualizada. Toda regra de negócio tem pelo menos um teste unitário, e a camada de domínio tem pelo menos 90% de cobertura de linhas. Código novo só entra junto com os testes dele. | Relatório de cobertura; pipeline de CI |
 | RNF-10 | Acessibilidade | Contraste e navegação por teclado nas telas principais conforme WCAG 2.1 AA. O status do item não depende só de cor: sempre tem texto junto. | Verificação automática e manual |
 | RNF-11 | Observabilidade | Logs técnicos estruturados de erros e acessos, separados do log de auditoria do negócio. | Revisão da configuração |
 | RNF-12 | Retenção | Movimentações, histórico de preços e log de auditoria guardados por 7 anos (RN-24), sem prejudicar o desempenho do RNF-03. | Teste de carga com volume de 7 anos |
-| RNF-13 | Demonstração dos testes | O resultado dos testes unitários fica publicado numa página web, com a lista de testes, o resultado de cada um e a cobertura. O avaliador abre sem instalar nada e sem login. Cada teste leva no nome a regra (RN) ou o requisito (RF) que verifica. | Página `/testes` acessível no endereço do sistema e atualizada a cada versão publicada |
+| RNF-13 | Testes demonstráveis pelo avaliador | Toda parte do sistema que pode ter teste unitário tem teste unitário. O avaliador acessa pela web, sem instalar nada e sem login, uma página onde pode: (1) **executar** os testes das regras de negócio no próprio navegador e ver o resultado de cada um; (2) **criar os próprios casos de teste**, informando entradas e resultado esperado; (3) ver o relatório completo da suíte, com a cobertura. Cada teste leva no nome a regra (RN) ou o requisito (RF) que verifica. | Página `/testes` no endereço do sistema, atualizada a cada versão publicada |
 
 O RNF-09 (interoperabilidade com ERP) saiu junto com os RF-23 e RF-24.
 
@@ -306,4 +306,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 |---|---|---|
 | 0.1 | 25/09/2026 | Primeira versão. |
 | 1.0 | 25/09/2026 | RF-23, RF-24 e RNF-09 fora do escopo. Novos RF-27 (colaboradores) e RF-28 (posições). RF-14, RF-22 e RF-25 passam a Must. RF-02 reescrito com login e senha gerados pelo sistema. Saída com OP e colaborador, NF obrigatória, relatórios só em quantidade. |
-| 1.1 | 26/09/2026 | Novo RNF-13: testes unitários publicados na web para a avaliação. |
+| 1.1 | 26/09/2026 | Novo RNF-13: testes unitários em todo o sistema, executáveis pelo avaliador na web, com criação de casos próprios. RNF-08 com meta de 90% no domínio. |

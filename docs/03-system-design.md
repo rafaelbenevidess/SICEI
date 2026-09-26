@@ -58,7 +58,7 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 | PDF | Página de impressão com CSS `@media print` | Relatórios e etiquetas saem pelo "Imprimir → Salvar como PDF" do navegador, sem biblioteca nem serviço extra. |
 | E-mail | **Nodemailer** (SMTP) | Funciona com qualquer e-mail corporativo. No desenvolvimento, o **Mailpit** captura os e-mails localmente. |
 | Logs técnicos | **pino** (JSON) | Logs estruturados de erro e acesso (RNF-11), separados do log de auditoria. |
-| Testes | **Vitest 5** (unidade e integração, com repórter HTML e Vitest UI) + **Playwright** (ponta a ponta) | Ver seção 9. O relatório dos testes unitários fica publicado na web (seção 9.1). |
+| Testes | **Vitest 5** (unidade e integração, com repórter HTML e Vitest UI) + **Playwright** (ponta a ponta) | Ver seção 9. Os testes das regras também rodam no navegador do avaliador (seção 9.3). |
 | Qualidade | ESLint, Prettier, `tsc --noEmit`, GitHub Actions | Rodam em todo push. |
 | Hospedagem | **Vercel** (plano Hobby) + **Neon** (PostgreSQL, plano Free) | Custo zero para um projeto acadêmico. |
 | Execução local | **Docker Compose** (app, PostgreSQL, Mailpit) | Sobe o sistema inteiro com um comando, para desenvolver ou apresentar sem internet. |
@@ -73,10 +73,17 @@ src/
 │   ├── (app)/cadastros/    fabricantes, fornecedores, destinos, colaboradores, posicoes
 │   ├── (app)/admin/        usuarios, parametros, auditoria, importacao
 │   ├── p/[codigo]/         destino do QR: resolve a posição e abre o item
+│   ├── testes/             Laboratório de testes público (seção 9.3)
 │   └── api/cron/           rotina diária (protegida por segredo)
 ├── components/             componentes de interface
 ├── domain/                 regras puras, sem banco e sem framework
 │   ├── estoque.ts          consumo médio, ponto de reposição, status, sugestão (RN-15 a RN-20)
+│   ├── movimentacao.ts     decisões de entrada, saída e estorno (RN-08, RN-10 a RN-13)
+│   ├── alertas.ts          abrir / escalar / fechar alerta (RN-18, RN-19)
+│   ├── precos.ts           último preço e histórico por fornecedor (RN-05a, RN-05b)
+│   ├── posicao.ts          endereçamento (RN-25)
+│   ├── auditoria.ts        hash encadeado e verificação (RN-09a)
+│   ├── *.casos.ts          casos de teste como dados, usados pelo Vitest e pelo Laboratório
 │   ├── login.ts            geração de login a partir do nome (RN-21)
 │   ├── senha.ts            política de senha e geração da provisória (RN-21, RN-22)
 │   ├── cnpj.ts             validação de CNPJ (RN-04)
@@ -331,49 +338,93 @@ Numa implantação real na empresa, dá para trocar por um servidor local com Do
 
 ## 9. Estratégia de testes
 
+### 9.1 Regra geral: teste unitário em tudo o que for possível
+
+Todo código que dá para testar isolado tem teste unitário, e código novo só entra junto com os testes dele (RNF-08). Para isso funcionar, a arquitetura tira do banco e do framework toda decisão que puder ser tirada. Os services só abrem a transação, buscam os dados e gravam o resultado. A decisão em si ("essa saída pode ser feita?", "esse estorno é permitido?", "o alerta sobe de nível?") fica numa função pura em `domain/`, que se testa sem banco.
+
+| Parte do sistema | Tem teste unitário? | O que é testado | Aparece no Laboratório (9.3)? |
+|---|---|---|---|
+| `domain/estoque.ts` | Sim | Consumo médio, ponto de reposição, status, sugestão de compra, conversão de caixas em unidades (RN-07, RN-15 a RN-17, RN-20) | Sim |
+| `domain/movimentacao.ts` | Sim | Se uma saída, entrada ou estorno pode ser feito e qual o saldo resultante (RN-08, RN-10 a RN-13) | Sim |
+| `domain/alertas.ts` | Sim | Abrir, escalar ou fechar alerta e quando mandar e-mail (RN-18, RN-19) | Sim |
+| `domain/precos.ts` | Sim | Último preço por fornecedor, ordenação, variação entre compras, efeito do estorno (RN-05a, RN-05b) | Sim |
+| `domain/login.ts` e `domain/senha.ts` | Sim | Geração de login, sufixo numérico, política de senha, senha provisória sem caracteres ambíguos (RN-21, RN-22) | Sim |
+| `domain/cnpj.ts` | Sim | Dígitos verificadores (RN-04) | Sim |
+| `domain/posicao.ts` | Sim | Código `A01-G03-C04`, posição ocupada, troca de posição (RN-25) | Sim |
+| `domain/permissoes.ts` | Sim | Cada perfil × cada ação da matriz do documento 02 | Sim |
+| `domain/auditoria.ts` | Sim | Hash encadeado e verificação da cadeia (RN-09a) | Sim, com demonstração de adulteração |
+| `domain/schemas/` (Zod) | Sim | Campos obrigatórios por tipo de movimentação, formatos, limites (RN-10, RN-11) | Sim |
+| `domain/importacao.ts` | Sim | Validação linha a linha do CSV (RF-25) | Não, só no relatório |
+| Componentes de interface | Sim, com Testing Library | Selo de status com texto e cor (RNF-10), formulário de saída exigindo os campos, tabela de fornecedores escondendo preço do perfil Consulta | Não, só no relatório |
+| `server/services/` | Em parte | A parte de decisão já está coberta pelo `domain/`. O que depende do banco vai para a integração | Não |
+| Lock de linha, triggers, permissões do banco, sessão, e-mail | Não é possível em unidade | Dependem do PostgreSQL ou da rede: cobertos por integração e E2E | Não |
+
+### 9.2 Níveis de teste
+
 | Nível | Ferramenta | O que cobre | Meta |
 |---|---|---|---|
-| Unidade | Vitest | Tudo em `domain/`: fórmulas das RN-15 a RN-20 (os exemplos do documento 01 viram testes), geração de login, política de senha, CNPJ, matriz de permissões | ≥ 80% de cobertura em `domain/` (RNF-08) |
-| Integração | Vitest + PostgreSQL real | Services com banco de verdade: saídas concorrentes (RN-08), estorno duplo e estorno de entrada consumida (RN-12), trigger de imutabilidade, cadeia de hash e detecção de adulteração (RN-09a), alerta único por item (RN-18), inativação derrubando sessões (RN-21b), cada ação testada com cada perfil | Todos os critérios de aceite do documento 02 com regra no servidor |
-| Ponta a ponta | Playwright | Primeiro acesso com troca de senha; criar usuário; entrada; saída pelo celular (viewport 360 px) a partir da URL do QR; estorno; alerta aparecendo no painel; relatório de reposição | Fluxos principais do MVP |
+| Unidade | Vitest 5 (+ Testing Library para componentes) | Tudo da tabela 9.1 marcado com "Sim". Os exemplos numéricos do documento 01 viram testes. | Toda RN com pelo menos um teste; ≥ 90% de cobertura de linhas em `domain/` |
+| Integração | Vitest + PostgreSQL real | Services com banco de verdade: saídas concorrentes (RN-08), estorno duplo (RN-12), trigger de imutabilidade e detecção de adulteração no banco (RN-09a), alerta único por item (RN-18), inativação derrubando sessões (RN-21b), cada ação testada com cada perfil | Todos os critérios de aceite do documento 02 com regra no servidor |
+| Ponta a ponta | Playwright | Primeiro acesso com troca de senha; criar usuário; entrada; saída pelo celular (viewport 360 px) a partir da URL do QR; estorno; alerta no painel; relatório de reposição | Fluxos principais do MVP |
 | Estático | ESLint, `tsc`, Prettier | Estilo e tipos | Sem erros |
 
 **CI (GitHub Actions)**, em todo push e pull request: instalar, rodar lint, typecheck, testes de unidade e integração (PostgreSQL como serviço), build, e2e. Só entra na branch principal o que passar.
 
-### 9.1 Testes unitários publicados na web (RNF-13)
+### 9.3 Laboratório de testes para o avaliador (RNF-13)
 
-O professor que avalia o trabalho precisa ver os testes sem instalar nada. Por isso os testes unitários ficam disponíveis de duas formas.
+O professor precisa ver os testes, rodar os testes e **testar por conta própria**, sem instalar nada. Para isso o SIMI tem uma página pública em `https://<domínio-do-simi>/testes`, com três abas.
 
-**1. Relatório publicado em `/testes`, no próprio endereço do SIMI.**
+**Aba 1: Executar os testes.**
+- Mostra os testes das regras de negócio agrupados por regra (RN-15, RN-21...), cada um com a descrição em português.
+- O botão **"Executar todos"** roda os testes no próprio navegador do professor, chamando as mesmas funções de `domain/` que o sistema usa. Cada teste fica verde ou vermelho, com o valor esperado e o obtido.
+- Também dá para rodar um grupo só ou um teste só.
 
-- O build da Vercel roda os testes unitários antes do `next build`:
+**Aba 2: Criar o seu teste.**
+Para cada regra, um formulário onde o professor escolhe as entradas e diz qual resultado espera. Ao clicar em **"Testar"**, a página calcula com a função real, compara com o esperado e explica a conta. Por exemplo:
 
-  ```
-  npm run build  →  vitest run --project unidade --coverage  →  next build
-  ```
+| Regra | O professor informa | O sistema responde |
+|---|---|---|
+| RN-15 Ponto de reposição | mínimo, consumo diário, lead time, resultado esperado | valor calculado, a fórmula com os números e ✔ ou ✘ |
+| RN-17 Status | saldo, mínimo, ponto de reposição | `OK`, `ATENCAO`, `CRITICO` ou `ZERADO` |
+| RN-20 Sugestão de compra | saldo, ponto de reposição, máximo, consumo, embalagem | quantidade sugerida, arredondada em caixas |
+| RN-08 Saída | saldo atual e quantidade pedida | aceita (novo saldo) ou recusada ("saldo disponível: N") |
+| RN-12 Estorno | tipo da movimentação, se já foi estornada, saldo atual | permitido ou recusado, com o motivo |
+| RN-21 Geração de login | nome, sobrenome e logins já existentes | login gerado (ex.: `maria.souza2`) |
+| RN-22 Política de senha | uma senha, o login e as últimas senhas | aceita ou recusada, com o motivo |
+| RN-04 CNPJ | um CNPJ | válido ou inválido |
+| Permissões | perfil e ação | permitido ou negado |
+| RN-10 / RN-11 Formulários | tipo de movimentação e campos preenchidos | quais campos faltam |
 
-- O repórter HTML do Vitest gera uma página em `public/testes/` com a lista de testes, o resultado de cada um, a duração e o relatório de cobertura embutido. O Next.js publica essa pasta junto com o sistema, e o relatório fica em `https://<domínio-do-simi>/testes`.
-- Se algum teste falhar, o build falha e a versão nova não entra no ar. A versão publicada é sempre uma que passou em todos os testes, e o relatório mostra exatamente o que está rodando.
-- A página é pública e não pede login, para o professor abrir direto. Ela não mostra dados do estoque. A cobertura inclui só `src/domain/`, que contém as regras puras e nenhum segredo.
-- A pasta `public/testes/` é gerada a cada build e fica no `.gitignore`.
+Os casos criados ficam guardados só no navegador do professor e podem ser rodados de novo junto com os oficiais.
 
-**2. Execução ao vivo na apresentação.** O comando `npm run test:ui` abre o **Vitest UI** no navegador. Dá para rodar os testes na frente do professor, abrir um teste, ver o código dele e mostrar o que acontece quando uma regra é quebrada de propósito: o teste fica vermelho na hora.
+**Aba 3: Demonstração do log inalterável (RN-09a).** Mostra uma pequena cadeia de registros de auditoria de exemplo. O professor edita qualquer valor (troca uma quantidade de 4 para 40, por exemplo) e clica em **"Verificar integridade"**. A página recalcula os hashes e aponta o registro exato em que a cadeia quebrou. É a mesma função que o sistema usa na verificação real.
 
-**Nomes dos testes ligados às regras.** Os testes são escritos em português, e cada grupo leva o identificador da regra ou do requisito que testa. Quem lê o relatório vê a ligação direta com os documentos 01 e 02:
+**Relatório completo.** Um link na página abre o relatório HTML do Vitest da suíte inteira de unidade (incluindo componentes e importação), com a cobertura. Ele é gerado no build: se qualquer teste falhar, o build falha e a versão nova não vai para o ar.
+
+**Como os mesmos testes rodam nos dois lugares.** Os casos de teste são escritos como dados, em arquivos `*.casos.ts` ao lado de cada módulo. O Vitest usa esses arquivos com `it.each`, e o Laboratório importa os mesmos arquivos para rodar no navegador. O que o professor executa é exatamente o que a CI executa:
 
 ```ts
-describe('RN-15 · Ponto de reposição', () => {
-  it('exemplo do doc 01: mínimo 20, consumo 3/dia, lead time 7 → 41', () => {
-    expect(pontoDeReposicao({ minimo: 20, consumoDiario: 3, leadTime: 7 })).toBe(41)
-  })
-  it('sem consumo registrado, o ponto de reposição é igual ao mínimo', () => { /* ... */ })
-})
+// src/domain/estoque.casos.ts
+export const casosPontoReposicao = [
+  { descricao: 'exemplo do doc 01: mínimo 20, consumo 3/dia, lead time 7',
+    entrada: { minimo: 20, consumoDiario: 3, leadTime: 7 }, esperado: 41 },
+  { descricao: 'sem consumo registrado, vale o mínimo',
+    entrada: { minimo: 20, consumoDiario: 0, leadTime: 7 }, esperado: 20 },
+]
 
-describe('RN-21 · Geração de login', () => {
-  it('"Maria Aparecida" + "de Souza" → maria.souza', () => { /* ... */ })
-  it('login já existente recebe número: joao.silva → joao.silva2', () => { /* ... */ })
+// src/domain/estoque.test.ts
+describe('RN-15 · Ponto de reposição', () => {
+  it.each(casosPontoReposicao)('$descricao', ({ entrada, esperado }) => {
+    expect(pontoDeReposicao(entrada)).toBe(esperado)
+  })
 })
 ```
+
+Para que isso seja possível, `domain/` só usa recursos que existem tanto no Node quanto no navegador. O SHA-256 da cadeia de hash, por exemplo, usa a Web Crypto (`crypto.subtle`).
+
+**Segurança da página.** O Laboratório roda só funções puras, no navegador. Ele não acessa o banco, não chama Server Actions e não mostra dados do estoque, então pode ficar aberto sem login.
+
+**Na apresentação.** Além da página, o `npm run test:ui` abre o Vitest UI para rodar a suíte inteira ao vivo e mostrar o código de cada teste.
 
 O README também exibe o selo da CI do GitHub Actions, que mostra se a última versão passou em todos os testes.
 
@@ -390,11 +441,12 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 | 07 | QR aponta para a posição | QR aponta para o item | A etiqueta fica presa na gaveta. Apontando para a posição, o QR continua levando ao item certo mesmo depois de uma troca. |
 | 08 | PDF pela impressão do navegador | Biblioteca de geração de PDF | Atende o RF-20 sem dependência extra. |
 | 09 | Vercel + Neon, com Docker Compose como alternativa | VPS paga | Custo zero para o trabalho, com um plano B que roda sem internet. |
-| 10 | Relatório de testes do Vitest publicado em `/testes`, gerado no build | GitHub Pages; só a aba Actions do GitHub | Mesmo endereço do sistema, sem depender da visibilidade do repositório nem de conta no GitHub. E o build só publica o que passou nos testes. |
+| 10 | Laboratório de testes em `/testes`: testes rodando no navegador do avaliador + relatório do Vitest gerado no build | Só um relatório estático; GitHub Pages; só a aba Actions do GitHub | O avaliador executa e cria testes sem instalar nada, no mesmo endereço do sistema. E o build só publica o que passou nos testes. |
+| 11 | Casos de teste escritos como dados (`*.casos.ts`) e decisões extraídas para funções puras | Testes só no formato tradicional; lógica dentro dos services | Os mesmos casos rodam na CI e no navegador, e quase todo o sistema fica testável em unidade. |
 
 ## 11. Histórico do documento
 
 | Versão | Data | Mudança |
 |---|---|---|
 | 1.0 | 25/09/2026 | Primeira versão: stack, arquitetura, modelo de dados, fluxos críticos, segurança, deploy e testes. |
-| 1.1 | 26/09/2026 | Testes unitários publicados na web para a avaliação (seção 9.1, ADR-10). |
+| 1.1 | 26/09/2026 | Testes unitários em todo o sistema (9.1) e Laboratório de testes para o avaliador executar e criar testes na web (9.3, ADR-10 e ADR-11). |

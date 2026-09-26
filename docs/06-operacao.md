@@ -60,7 +60,7 @@ Para o avaliador, os testes das regras também rodam no navegador, sem instalar 
 
 ## 5. Publicação (Vercel + Neon)
 
-1. No Neon, crie o projeto e os usuários `simi_owner` e `simi_app` (seção 2).
+1. No Neon, crie o projeto e os usuários `simi_owner` e `simi_app` (seção 2). **O `simi_app` precisa ser criado por SQL** (`CREATE ROLE simi_app LOGIN PASSWORD '...'`), e não pelo console ou pela API. Papéis criados pelo console entram no grupo `neon_superuser`, que tem `pg_write_all_data` e anularia a proteção do histórico.
 2. Na Vercel, importe o repositório e configure as variáveis:
    - `DATABASE_URL`: URL com pooling, usuário `simi_app`
    - `DIRECT_URL`: URL direta, usuário `simi_owner`
@@ -69,8 +69,10 @@ Para o avaliador, os testes das regras também rodam no navegador, sem instalar 
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`: e-mail corporativo, se houver
    - `SEED_SENHA_ADMIN`: senha provisória do `admin` no primeiro deploy (a troca é obrigatória no primeiro acesso)
    - `SEED_DEMO`: `1` para carregar os dados de demonstração no primeiro deploy
-4. **No Neon, o `simi_app` precisa ser criado por SQL** (`CREATE ROLE simi_app LOGIN PASSWORD '...'`), e não pelo console ou pela API. Papéis criados pelo console entram no grupo `neon_superuser`, que tem `pg_write_all_data` e anularia a proteção do histórico.
+
+   Se a integração Neon da Vercel estiver ligada, ela cria sozinha um `DATABASE_URL` com o usuário dono do banco. Troque o valor de produção pela URL do `simi_app`; o `DATABASE_URL_UNPOOLED` que ela cria não é usado pelo SIMI.
 3. O build da Vercel (`npm run vercel-build`, definido no `vercel.json`) roda `prisma migrate deploy`, depois o seed e depois o build com os testes. O seed é idempotente: cria o `admin` só se não houver Administrador, com a senha de `SEED_SENHA_ADMIN` (ou uma aleatória, mostrada no log do build), e os dados de demonstração só se `SEED_DEMO=1` e o banco não tiver itens.
+4. As senhas provisórias dos usuários de demonstração aparecem no log do build. Todas exigem troca no primeiro acesso.
 5. O `npm run build` roda os testes unitários antes do `next build`. Se algum teste falhar, a versão não é publicada.
 6. A rotina diária (`vercel.json`) roda às 06:00 UTC: recalcula consumo, ponto de reposição, status e alertas, e reenvia avisos que falharam.
 

@@ -10,10 +10,19 @@ export async function entrar(page: Page, login: string, senha: string) {
   await page.getByRole('button', { name: 'Entrar' }).click()
 }
 
+/** RF-13: depois do login, Gestor e Admin só seguem passando pela tela de alertas (VER). */
+export async function passarPeloAvisoDeAlertas(page: Page) {
+  if (await page.getByRole('alertdialog').count()) {
+    await page.getByRole('button', { name: 'VER' }).click()
+    await page.waitForURL('**/alertas')
+  }
+}
+
 export async function entrarComoAdmin(page: Page) {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
   await expect(page.getByRole('heading', { name: 'Painel' })).toBeVisible()
+  await passarPeloAvisoDeAlertas(page)
 }
 
 /** CNPJ numérico com dígitos verificadores corretos e raiz aleatória. */

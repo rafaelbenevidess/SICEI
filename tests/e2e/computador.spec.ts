@@ -47,6 +47,68 @@ test('RF-07 / RN-05: compra com fornecedor cadastrado na hora, sem sair da tela'
   await expect(page.getByRole('status', { name: 'Entrada registrada' })).toBeVisible()
 })
 
+test('RF-03: novo item com o próximo código e fabricante e fornecedor cadastrados na hora', async ({
+  page,
+}) => {
+  await entrarComoAdmin(page)
+  await page.goto('/cadastros')
+  await expect(page.getByRole('table', { name: 'Itens' })).toBeVisible()
+  await page.getByRole('link', { name: 'Cadastrar item' }).click()
+  const codigo = page.locator('input[name=codigo]')
+  await expect(codigo).toHaveValue('PST-007')
+  await codigo.fill('PST-001')
+  await expect(page.getByText('PST-001 já está em uso.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Cadastrar item' })).toBeDisabled()
+  await codigo.fill('PST-007')
+
+  await page.locator('input[name=descricao]').fill('Pastilha criada no teste ponta a ponta')
+  await page.locator('select[name=aplicacao]').selectOption('TORNEAMENTO')
+  await page.locator('input[name=estoqueMinimo]').fill('4')
+  await page.getByRole('button', { name: 'Fabricante não está na lista?' }).click()
+  const fabricante = page.getByRole('region', { name: 'Cadastrar fabricante' })
+  await fabricante.getByLabel(/Nome do fabricante/).fill('Walter E2E')
+  await fabricante.getByRole('button', { name: 'Salvar e usar' }).click()
+  await expect(page.locator('select[name=fabricanteId] option:checked')).toHaveText('Walter E2E')
+
+  await page.getByRole('button', { name: 'Fornecedor não está na lista?' }).click()
+  const fornecedor = page.getByRole('region', { name: 'Cadastrar fornecedor' })
+  await fornecedor.getByLabel(/Razão social/).fill('Distribuidora E2E Ltda')
+  await fornecedor.getByLabel(/^CNPJ/).fill(cnpjAleatorio())
+  await fornecedor.getByRole('button', { name: 'Salvar e usar' }).click()
+  await expect(page.locator('select[name=fornecedorId] option:checked')).toHaveText(
+    'Distribuidora E2E Ltda',
+  )
+  await page.getByRole('button', { name: 'Cadastrar item' }).click()
+  await expect(page.getByRole('heading', { name: /PST-007/ })).toBeVisible()
+})
+
+test('RN-26: item em posição nova avisa da etiqueta até ela ser impressa', async ({ page }) => {
+  await entrarComoAdmin(page)
+  await page.goto('/cadastros')
+  await page.getByRole('link', { name: 'PST-007' }).click()
+  await page.getByText('Posição no almoxarifado').click()
+  await page.locator('select[name=posicaoId]').selectOption({ label: 'A04-G02-C01' })
+  await page.getByRole('button', { name: 'Salvar posição' }).click()
+  const aviso = page.getByText('Etiqueta QR desta posição ainda não impressa')
+  await expect(aviso).toBeVisible()
+
+  await page.getByRole('link', { name: 'Imprimir etiqueta' }).click()
+  await page.waitForURL(/etiquetas\?codigos=A04-G02-C01/)
+  await page.getByRole('button', { name: 'Imprimir 1 etiqueta' }).click()
+  await expect(page.getByText('Etiqueta de A04-G02-C01 registrada como impressa.')).toBeVisible()
+  await page.goto('/p/A04-G02-C01')
+  await expect(page.getByRole('heading', { name: /PST-007/ })).toBeVisible()
+  await expect(aviso).toHaveCount(0)
+
+  // RF-21: a impressão fica no log e o filtro de ação acha pelo nome
+  await page.goto('/admin/auditoria')
+  await page
+    .getByRole('combobox', { name: 'Ação', exact: true })
+    .selectOption({ label: 'Etiqueta QR impressa' })
+  await page.waitForURL(/acao=ETIQUETA_IMPRESSA/)
+  await expect(page.locator('tbody tr').first()).toContainText('A04-G02-C01 (PST-007)')
+})
+
 test('RF-26: parâmetros avisam o limite e a mudança vai para as últimas alterações', async ({
   page,
 }) => {

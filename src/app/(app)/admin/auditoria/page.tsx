@@ -83,7 +83,7 @@ export default async function Auditoria({
           </fieldset>
           <label className="min-w-40 flex-1 basis-56">
             <span className="sr-only">Ação</span>
-            <select name="acao" defaultValue={f.acao ?? ''} className={campo}>
+            <select name="acao" aria-label="Ação" defaultValue={f.acao ?? ''} className={campo}>
               <option value="">Todas as ações</option>
               {gruposDeAcao.map((g) => (
                 <optgroup key={g.grupo} label={g.grupo}>

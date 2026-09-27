@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { entrar, SENHA_ADMIN } from './apoio'
+import { entrar, passarPeloAvisoDeAlertas, SENHA_ADMIN } from './apoio'
 import { SENHA_INICIAL_ADMIN } from './preparar'
 
 async function trocarSenha(page: Page, atual: string, nova: string) {
@@ -33,11 +33,23 @@ test('RF-01: primeiro acesso exige troca de senha; senha fraca é recusada', asy
   await salvar.click()
   await page.waitForURL('**/painel')
   await expect(page.getByRole('heading', { name: 'Painel' })).toBeVisible()
+
+  // RF-13: alertas sem ciente aparecem num pop-up que só sai indo à tela de alertas
+  const aviso = page.getByRole('alertdialog')
+  await expect(aviso).toContainText(/Existem? \d+ alertas? sem ciente/)
+  await page.goto('/itens')
+  await expect(aviso).toBeVisible()
+  await page.getByRole('button', { name: 'VER' }).click()
+  await page.waitForURL('**/alertas')
+  await page.goto('/itens')
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
 })
 
 test('RF-16 / RNF-02: painel no celular de 360 px sem rolagem horizontal', async ({ page }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
+  await page.goto('/painel')
   await expect(page.getByRole('heading', { name: 'Alertas abertos' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360)
 })
@@ -47,6 +59,7 @@ test('RF-08 / RF-09 / RN-26: pela etiqueta QR, saída acima do saldo é barrada,
 }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
   // o QR da gaveta leva direto ao item (RN-26)
   await page.goto('/p/A01-G01-C02')
   await expect(page.getByRole('heading', { name: /PST-002/ })).toBeVisible()
@@ -86,6 +99,7 @@ test('RF-08 / RF-09 / RN-26: pela etiqueta QR, saída acima do saldo é barrada,
 test('RN-26: Ler QR abre a câmera dentro do SICEI e a etiqueta leva ao item', async ({ page }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
   await page
     .getByRole('navigation', { name: 'Atalhos' })
     .getByRole('link', { name: 'Ler QR' })
@@ -102,6 +116,7 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
 }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
   await page.goto('/admin/usuarios')
   const form = page.locator('form[aria-label="Novo usuário"]')
   await form.locator('input[name=nome]').fill('Pedro')
@@ -122,6 +137,7 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
   await entrar(outra, 'pedro.consulta', senha)
   await trocarSenha(outra, senha, 'PedroConsulta2026')
   await outra.waitForURL('**/painel')
+  await expect(outra.getByRole('alertdialog')).toHaveCount(0)
   await outra.goto('/p/A01-G01-C02')
   await expect(outra.getByText('O seu perfil não vê preços.')).toBeVisible()
   await expect(outra.getByText(/R\$/)).toHaveCount(0)
@@ -136,6 +152,7 @@ test('RF-21: verificação de integridade confere o log, as movimentações e os
 }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
   await page.goto('/admin/auditoria')
   await page.getByRole('button', { name: 'Verificar agora' }).click()
   const resultado = (texto: RegExp) => page.getByRole('status').filter({ hasText: texto })
@@ -148,6 +165,7 @@ test('RF-21: verificação de integridade confere o log, as movimentações e os
 test('RF-20: relatório de reposição exporta CSV', async ({ page }) => {
   await entrar(page, 'admin', SENHA_ADMIN)
   await page.waitForURL('**/painel')
+  await passarPeloAvisoDeAlertas(page)
   await page.goto('/relatorios?tipo=reposicao')
   const [download] = await Promise.all([
     page.waitForEvent('download'),

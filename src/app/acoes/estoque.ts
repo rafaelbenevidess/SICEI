@@ -21,12 +21,22 @@ import {
   registrarMovimentacao,
 } from '@/server/services/movimentacoes'
 import { dadosDoFormulario, executarAcao, type EstadoAcao } from '@/server/web/acao'
-import { atorDaAcao } from '@/server/web/sessao-atual'
+import { sugerirItens } from '@/server/consultas/estoque'
+import { atorDaAcao, exigirUsuario } from '@/server/web/sessao-atual'
 import { NOME_TIPO } from '@/lib/formatar'
 
 /** Envia os avisos por e-mail depois da resposta (a falha de e-mail nunca desfaz a movimentação). */
 function enviarAvisosDepois(notificacoes: string[]) {
   if (notificacoes.length) after(() => enviarNotificacoesPendentes())
+}
+
+export type SugestaoDeItem = Awaited<ReturnType<typeof sugerirItens>>[number]
+
+/** RF-11: sugestões da busca do topo enquanto a pessoa digita. Só lê; exige sessão. */
+export async function acaoSugerirItens(termo: unknown): Promise<SugestaoDeItem[]> {
+  await exigirUsuario()
+  if (typeof termo !== 'string' || termo.length > 60) return []
+  return sugerirItens(termo)
 }
 
 export async function acaoMovimentar(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {

@@ -9,6 +9,7 @@ import {
   alterarSituacaoItem,
   atribuirPosicao,
   cadastrarFornecedorParaItem,
+  criarItem,
   criarPosicao,
   desvincularFornecedor,
   salvarFabricante,
@@ -74,6 +75,49 @@ describe('RF-03 a RF-05 · Cadastros', () => {
     await expect(alterarItem(admin, c.item.id, { ...dados, codigo: 'OUTRO' })).rejects.toThrow(
       /RN-01/,
     )
+  })
+
+  it('RN-01: código escrito de outro jeito é o mesmo código; o novo entra no padrão da sequência', async () => {
+    const c = await cenario(admin)
+    // prefixo só com letras, para formar a sequência XXXX-001
+    const letras = Array.from({ length: 8 }, () =>
+      String.fromCharCode(65 + Math.floor(Math.random() * 26)),
+    ).join('')
+    const dados = (codigo: string) => ({
+      codigo,
+      descricao: 'Pastilha da sequência',
+      aplicacao: 'TORNEAMENTO',
+      fabricanteId: c.fabricante.id,
+      embalagem: 10,
+      estoqueMinimo: 5,
+    })
+    const primeiro = await criarItem(admin, dados(`${letras}-001`), {
+      fornecedorId: c.fornecedor.id,
+    })
+    await expect(
+      criarItem(admin, dados(`${letras.toLowerCase()}1`), { fornecedorId: c.fornecedor.id }),
+    ).rejects.toThrow(`O código ${letras}-001 já existe (RN-01).`)
+    const segundo = await criarItem(admin, dados(`${letras.toLowerCase()} 2`), {
+      fornecedorId: c.fornecedor.id,
+    })
+    expect(segundo.codigo).toBe(`${letras}-002`)
+    // editar para o código de outro item, escrito de outro jeito, também é recusado
+    await expect(alterarItem(admin, segundo.id, dados(`${letras}1`))).rejects.toThrow(/RN-01/)
+    // o próprio código escrito de outro jeito não conta como repetido
+    const mesmo = await alterarItem(admin, primeiro.id, dados(`${letras}01`))
+    expect(mesmo.codigo).toBe(`${letras}-001`)
+
+    // RF-25: na planilha, "XXXX1" também bate com XXXX-001
+    const cab =
+      'codigo;descricao;iso;classe;cobertura;aplicacao;fabricante;embalagem;estoque_minimo;estoque_maximo;fornecedor_cnpj;lead_time_dias;posicao;saldo_inicial'
+    const [linha] = await previaImportacao(
+      admin,
+      `${cab}\n${letras}1;Pastilha;;;;TORNEAMENTO;Iscar;10;5;;${c.fornecedor.cnpj};;;0`,
+    )
+    expect(linha).toMatchObject({
+      ok: false,
+      erros: [`codigo: é o mesmo código que ${letras}-001, já cadastrado.`],
+    })
   })
 
   it('critério do RF-03: item com saldo não pode ser inativado (RN-03)', async () => {

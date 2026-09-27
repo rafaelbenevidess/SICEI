@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { LinkBotao, Pagina, Vazio } from '@/components/ui'
-import { lerCodigoDaPosicao } from '@/domain/posicao'
+import { interpretarCodigoDePosicao } from '@/domain/posicao'
 import { itemDaPosicao } from '@/server/consultas/cadastros'
 import { exigirUsuario } from '@/server/web/sessao-atual'
 
@@ -11,8 +11,12 @@ export const metadata: Metadata = { title: 'Posição' }
 export default async function QrDaPosicao({ params }: { params: Promise<{ codigo: string }> }) {
   await exigirUsuario()
   const { codigo } = await params
-  const cod = decodeURIComponent(codigo).toUpperCase()
-  const posicao = lerCodigoDaPosicao(cod) ? await itemDaPosicao(cod) : null
+  const digitado = decodeURIComponent(codigo)
+  const padrao = interpretarCodigoDePosicao(digitado)
+  // /p/a1g3c4 vira /p/A01-G03-C04, o mesmo endereço do QR impresso
+  if (padrao && padrao !== digitado) redirect(`/p/${padrao}`)
+  const cod = padrao ?? digitado.toUpperCase()
+  const posicao = padrao ? await itemDaPosicao(padrao) : null
   if (posicao?.itemId) redirect(`/itens/${posicao.itemId}?qr=${encodeURIComponent(cod)}`)
   return (
     <Pagina titulo={`Posição ${cod}`}>

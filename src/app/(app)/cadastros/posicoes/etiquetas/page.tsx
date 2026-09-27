@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import QRCode from 'qrcode'
-import { lerCodigoDaPosicao } from '@/domain/posicao'
+import { interpretarCodigoDePosicao } from '@/domain/posicao'
 import { Aviso, Pagina, Vazio } from '@/components/ui'
 import { nomeDaPastilha } from '@/lib/formatar'
 import { posicoesOcupadas } from '@/server/consultas/cadastros'
@@ -17,10 +17,11 @@ export default async function Etiquetas({
 }) {
   await exigirPermissaoDaPagina('etiquetas:imprimir')
   const { codigos = '' } = await searchParams
+  // RN-25: aceita "a4g2c1" do mesmo jeito que A04-G02-C01
   const pedidos = codigos
     .split(',')
-    .map((c) => c.trim().toUpperCase())
-    .filter((c) => lerCodigoDaPosicao(c) !== null)
+    .map((c) => interpretarCodigoDePosicao(c.trim()))
+    .filter((c): c is string => c !== null)
   const posicoes = await posicoesOcupadas()
   const base = process.env.APP_URL ?? ''
   const etiquetas = await Promise.all(

@@ -78,6 +78,25 @@ describe('RF-25 · Importação da planilha', () => {
       erros: ['posicao: repetida (já usada na linha 2); um item por compartimento (RN-25).'],
     })
   })
+  it('RN-01: "PST1" e "PST-001" no mesmo arquivo são o mesmo código', () => {
+    const r = validarLinhasImportacao([
+      valida,
+      { ...valida, codigo: 'PST1', posicao: 'A01-G03-C05' },
+    ])
+    expect(r[1]).toEqual({
+      linha: 3,
+      ok: false,
+      erros: ['codigo: repetido (já aparece na linha 2).'],
+    })
+  })
+  it('RN-25: posição "a1g3c4" entra no padrão A01-G03-C04', () => {
+    const [r] = validarLinhasImportacao([{ ...valida, posicao: 'a1g3c4' }])
+    expect(r.ok && r.dados.posicao).toBe('A01-G03-C04')
+  })
+  it('RN-25: "A1-G3" sem compartimento continua recusada', () => {
+    const [r] = validarLinhasImportacao([{ ...valida, posicao: 'A1-G3' }])
+    expect(!r.ok && r.erros).toEqual(['posicao: Posição deve estar no formato A01-G03-C04.'])
+  })
   it('aplicação "Furação" com acento é aceita', () => {
     const [r] = validarLinhasImportacao([{ ...valida, aplicacao: 'Furação' }])
     expect(r.ok && r.dados.aplicacao).toBe('FURACAO')
@@ -114,7 +133,7 @@ describe('RF-25 · Resumo da linha na prévia', () => {
           iso: 'CNMG 120408',
           classe: 'P25',
           fornecedor_cnpj: '11.222.333/0001-81',
-          posicao: 'a01-g03-c04',
+          posicao: 'a1-g3-c4',
           estoque_minimo: '20',
           saldo_inicial: '35',
         },

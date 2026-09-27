@@ -4,6 +4,12 @@ import type { Prisma } from '@/generated/prisma/client'
 import { fimDoDia, inicioDoDia } from '@/lib/formatar'
 import { prisma } from '../db'
 import { ehUuid } from '../erros'
+import {
+  idsDeColaboradoresParecidos,
+  idsDeItensParecidos,
+  idsDeUsuariosParecidos,
+  opsParecidas,
+} from './busca'
 
 export interface FiltroMovimentacoes {
   de?: string
@@ -20,24 +26,35 @@ export interface FiltroMovimentacoes {
 
 export const POR_PAGINA = 50
 
-export function filtroParaWhere(f: FiltroMovimentacoes): Prisma.MovimentacaoWhereInput {
+/**
+ * Monta o filtro do banco. Os campos de texto (item, usuário, OP e a busca livre) usam a regra
+ * tolerante do RF-11: primeiro acham os candidatos, depois filtram pelos ids.
+ */
+export async function filtroParaWhere(
+  f: FiltroMovimentacoes,
+): Promise<Prisma.MovimentacaoWhereInput> {
   const where: Prisma.MovimentacaoWhereInput = {}
   const de = f.de ? inicioDoDia(f.de) : null
   const ate = f.ate ? fimDoDia(f.ate) : null
   if (de || ate) where.criadoEm = { ...(de ? { gte: de } : {}), ...(ate ? { lte: ate } : {}) }
-  if (f.item?.trim()) where.item = { codigo: { contains: f.item.trim(), mode: 'insensitive' } }
+  if (f.item?.trim()) where.itemId = { in: await idsDeItensParecidos(f.item.trim()) }
   if (f.tipo && (TIPOS_MOVIMENTACAO as readonly string[]).includes(f.tipo))
     where.tipo = f.tipo as Prisma.MovimentacaoWhereInput['tipo']
-  if (f.usuario?.trim()) where.usuario = { login: { contains: f.usuario.trim().toLowerCase() } }
+  if (f.usuario?.trim()) where.usuarioId = { in: await idsDeUsuariosParecidos(f.usuario.trim()) }
   if (f.destino && ehUuid(f.destino)) where.destinoId = f.destino
   if (f.colaborador && ehUuid(f.colaborador)) where.colaboradorId = f.colaborador
-  if (f.op?.trim()) where.ordemProducao = { contains: f.op.trim(), mode: 'insensitive' }
+  if (f.op?.trim()) where.ordemProducao = { in: await opsParecidas(f.op.trim()) }
   const busca = f.busca?.trim()
   if (busca) {
+    const [itens, ops, colaboradores] = await Promise.all([
+      idsDeItensParecidos(busca),
+      opsParecidas(busca),
+      idsDeColaboradoresParecidos(busca),
+    ])
     where.OR = [
-      { item: { codigo: { contains: busca, mode: 'insensitive' } } },
-      { ordemProducao: { contains: busca, mode: 'insensitive' } },
-      { colaborador: { nome: { contains: busca, mode: 'insensitive' } } },
+      { itemId: { in: itens } },
+      { ordemProducao: { in: ops } },
+      { colaboradorId: { in: colaboradores } },
     ]
   }
   return where
@@ -45,7 +62,7 @@ export function filtroParaWhere(f: FiltroMovimentacoes): Prisma.MovimentacaoWher
 
 /** RF-15: histórico com filtros e paginação no servidor. */
 export async function listarMovimentacoes(f: FiltroMovimentacoes, pagina = 1) {
-  const where = filtroParaWhere(f)
+  const where = await filtroParaWhere(f)
   const [total, linhas] = await Promise.all([
     prisma.movimentacao.count({ where }),
     prisma.movimentacao.findMany({
@@ -96,9 +113,9 @@ export async function opcoesDeFiltro() {
 }
 
 /** Exportação: todas as linhas do filtro (até 20 mil), sem paginação. */
-export function listarTodasAsMovimentacoes(f: FiltroMovimentacoes) {
+export async function listarTodasAsMovimentacoes(f: FiltroMovimentacoes) {
   return prisma.movimentacao.findMany({
-    where: filtroParaWhere(f),
+    where: await filtroParaWhere(f),
     include: {
       item: { select: { codigo: true } },
       usuario: { select: { login: true } },

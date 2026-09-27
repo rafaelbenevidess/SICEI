@@ -1,5 +1,6 @@
 import 'server-only'
 import { prisma } from '../db'
+import { formatarCnpj } from '@/domain/cnpj'
 
 export const listarFabricantes = () =>
   prisma.fabricante.findMany({
@@ -53,6 +54,21 @@ export const listarItensDoCadastro = () =>
     },
     take: 1000,
   })
+
+/** Fornecedor como opção do campo com busca (RF-11): acha pelo nome, razão social ou CNPJ. */
+export function opcaoDeFornecedor(f: {
+  id: string
+  cnpj: string
+  razaoSocial: string
+  nomeFantasia: string | null
+}) {
+  return {
+    valor: f.id,
+    rotulo: f.nomeFantasia ?? f.razaoSocial,
+    detalhe: formatarCnpj(f.cnpj),
+    busca: [f.cnpj, f.razaoSocial],
+  }
+}
 
 /** Dados do cadastro de item: todos os códigos já usados (para sugerir o próximo) e os CNPJs. */
 export async function dadosDoNovoItem() {

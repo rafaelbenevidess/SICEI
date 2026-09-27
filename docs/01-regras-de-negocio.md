@@ -88,7 +88,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 
 ### 5.1 Cadastros
 
-**RN-01. Código interno único.** Todo item tem um código interno obrigatório, e dois itens não podem ter o mesmo código. Depois da primeira movimentação do item, o código fica travado, porque o histórico e os relatórios dependem dele. O código de um item inativo também continua ocupado. No cadastro, o sistema sugere o próximo número da sequência em uso (depois de PST-006 vem PST-007) e avisa na hora se o código digitado já existe.
+**RN-01. Código interno único.** Todo item tem um código interno obrigatório, e dois itens não podem ter o mesmo código. Depois da primeira movimentação do item, o código fica travado, porque o histórico e os relatórios dependem dele. O código de um item inativo também continua ocupado. No cadastro, o sistema sugere o próximo número da sequência em uso (depois de PST-006 vem PST-007) e avisa na hora se o código digitado já existe. O mesmo código escrito de outro jeito conta como repetido: com PST-001 cadastrado, "pst1", "PST 01" e "Pst-001" são recusados no cadastro, na edição e na importação da planilha. No cadastro e na edição, o código entra no padrão da sequência: "pst8" é gravado como PST-008. Na importação, o código fica como está no arquivo.
 
 **RN-02. Nada com histórico é apagado.** Item, fabricante, fornecedor, destino, colaborador, posição ou usuário que já aparece em alguma movimentação ou registro de log não pode ser excluído. O que existe é a **inativação**. Um cadastro criado por engano e que nunca foi usado pode ser excluído, e a exclusão fica no log.
 
@@ -109,6 +109,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 - As posições são cadastradas no sistema antes de receber itens.
 - Um compartimento guarda **um único item**, e cada item ativo fica em **uma única posição**.
 - Mudar um item de posição é permitido, e a mudança fica no log.
+- O código da posição pode ser digitado sem traços e sem zeros à esquerda: "a1g3c4" e "A1 G3 C4" viram A01-G03-C04. Vale na escolha da posição do item, no campo da tela "Ler QR", no endereço `/p/…`, na lista de etiquetas e na importação.
 - A organização física recomendada é agrupar por aplicação (torneamento, fresamento, furação, rosca) e, dentro dela, por formato. O sistema não obriga essa organização.
 
 **RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR abre a página do item no SICEI, desde que o usuário esteja logado. A leitura pode ser feita pela tela "Ler QR" do próprio SICEI, que usa a câmera de qualquer celular (Android ou iPhone), ou pela câmera do celular fora do sistema. Se a etiqueta estiver apagada, o código da posição pode ser digitado. Se o item mudar de posição, a etiqueta precisa ser reimpressa: a posição fica com a etiqueta pendente, o sistema avisa na página do item e na tela de etiquetas, e a pendência só some quando a etiqueta é mandada para a impressora pela tela de etiquetas. A impressão fica no log.
@@ -248,3 +249,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. O SICEI pertence à Benevides Soluções Industriais, e a DDA passa a constar como cliente licenciada. Nenhuma regra mudou. |
 | 1.3 | 27/09/2026 | RN-26: a etiqueta pode ser lida dentro do SICEI, pela tela "Ler QR", com a câmera de qualquer celular, ou digitada quando estiver apagada. |
 | 1.4 | 27/09/2026 | RN-01: sugestão do próximo código e aviso de código já usado. RN-26: etiqueta pendente quando o item muda de posição, até ser impressa. |
+| 1.5 | 27/09/2026 | RN-01: o mesmo código escrito de outro jeito ("pst1" e PST-001) conta como repetido, e o código novo entra no padrão da sequência. RN-25: a posição pode ser digitada sem traços e sem zeros. |

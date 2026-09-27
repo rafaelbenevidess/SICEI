@@ -37,7 +37,7 @@ test('RF-07 / RN-05: compra com fornecedor cadastrado na hora, sem sair da tela'
   await expect(novo.getByText('CNPJ válido.')).toBeVisible()
   await novo.getByRole('button', { name: 'Salvar e vincular' }).click()
   await expect(novo).toHaveCount(0)
-  await expect(form.locator('select[name=fornecedorId] option:checked')).toHaveText(
+  await expect(form.getByRole('combobox', { name: 'Fornecedor' })).toHaveValue(
     'Fornecedor Ponta a Ponta Ltda',
   )
 
@@ -68,14 +68,14 @@ test('RF-03: novo item com o próximo código e fabricante e fornecedor cadastra
   const fabricante = page.getByRole('region', { name: 'Cadastrar fabricante' })
   await fabricante.getByLabel(/Nome do fabricante/).fill('Walter E2E')
   await fabricante.getByRole('button', { name: 'Salvar e usar' }).click()
-  await expect(page.locator('select[name=fabricanteId] option:checked')).toHaveText('Walter E2E')
+  await expect(page.getByRole('combobox', { name: 'Fabricante' })).toHaveValue('Walter E2E')
 
   await page.getByRole('button', { name: 'Fornecedor não está na lista?' }).click()
   const fornecedor = page.getByRole('region', { name: 'Cadastrar fornecedor' })
   await fornecedor.getByLabel(/Razão social/).fill('Distribuidora E2E Ltda')
   await fornecedor.getByLabel(/^CNPJ/).fill(cnpjAleatorio())
   await fornecedor.getByRole('button', { name: 'Salvar e usar' }).click()
-  await expect(page.locator('select[name=fornecedorId] option:checked')).toHaveText(
+  await expect(page.getByRole('combobox', { name: 'Fornecedor' })).toHaveValue(
     'Distribuidora E2E Ltda',
   )
   await page.getByRole('button', { name: 'Cadastrar item' }).click()
@@ -87,7 +87,12 @@ test('RN-26: item em posição nova avisa da etiqueta até ela ser impressa', as
   await page.goto('/cadastros')
   await page.getByRole('link', { name: 'PST-007' }).click()
   await page.getByText('Posição no almoxarifado').click()
-  await page.locator('select[name=posicaoId]').selectOption({ label: 'A04-G02-C01' })
+  // RN-25 / RF-11: a posição digitada sem zeros e sem traços é reconhecida ao sair do campo
+  const posicao = page.getByRole('combobox', { name: /^Posição/ })
+  await posicao.fill('a4g2c1')
+  await expect(page.getByRole('option', { name: /A04-G02-C01/ })).toBeVisible()
+  await posicao.blur()
+  await expect(posicao).toHaveValue('A04-G02-C01')
   await page.getByRole('button', { name: 'Salvar posição' }).click()
   const aviso = page.getByText('Etiqueta QR desta posição ainda não impressa')
   await expect(aviso).toBeVisible()
@@ -127,6 +132,16 @@ test('RF-08 / RF-11: registrar saída acha o item digitado de qualquer jeito, co
   await page.goto('/itens?q=a01g01c02')
   await expect(page.locator('tbody tr')).toHaveCount(1)
   await expect(page.locator('tbody tr')).toContainText('PST-002')
+
+  // a busca do topo sugere enquanto digita e abre o item
+  const topo = page.getByRole('combobox', { name: 'Buscar itens' })
+  await topo.fill('pst2')
+  await page.getByRole('option', { name: /PST-002/ }).click()
+  await expect(page.getByRole('heading', { name: /PST-002/ })).toBeVisible()
+
+  // o filtro das movimentações acha a OP digitada sem traços (criada na suíte do celular)
+  await page.goto('/movimentacoes?busca=ope2e1')
+  await expect(page.locator('tbody tr').first()).toContainText('PST-002')
 })
 
 test('RF-26: parâmetros avisam o limite e a mudança vai para as últimas alterações', async ({

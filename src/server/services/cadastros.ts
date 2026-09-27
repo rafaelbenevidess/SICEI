@@ -1,4 +1,5 @@
 import 'server-only'
+import { codigoEquivalente, padronizarCodigo } from '@/domain/codigo'
 import { avaliarAtribuicao, codigoDaPosicao } from '@/domain/posicao'
 import { exigirPermissao } from '@/domain/permissoes'
 import { validar } from '@/domain/schemas/comum'
@@ -219,6 +220,35 @@ export async function alterarSituacao(
 
 // ---------------- Itens (RF-03, RF-12, RN-01, RN-03, RN-14) ----------------
 
+/**
+ * RN-01: o código entra no padrão da sequência ("pst8" vira PST-008) e não pode ser o mesmo de
+ * outro item escrito de outro jeito ("PST1" e PST-001). O índice único do banco só pega a
+ * igualdade exata; esta checagem pega o resto.
+ */
+async function codigoPadronizadoELivre(
+  tx: Tx,
+  codigo: string,
+  ignorarId?: string,
+): Promise<string> {
+  const outros = (
+    await tx.item.findMany({
+      where: ignorarId ? { id: { not: ignorarId } } : undefined,
+      select: { codigo: true },
+    })
+  ).map((i) => i.codigo)
+  const padronizado = padronizarCodigo(codigo, outros)
+  const igual = codigoEquivalente(padronizado, outros)
+  if (igual) {
+    throw new ErroDeNegocio(`O código ${igual} já existe (RN-01).`, {
+      codigo:
+        igual === padronizado
+          ? `${igual} já está em uso.`
+          : `${codigo} é o mesmo código que ${igual}, já em uso.`,
+    })
+  }
+  return padronizado
+}
+
 /** Na criação, o item já nasce com o primeiro fornecedor (RN-05). */
 export async function criarItem(
   ator: Ator,
@@ -252,9 +282,10 @@ export async function criarItem(
         throw new ErroDeNegocio('Fornecedor inválido.', {
           fornecedorId: 'Escolha um fornecedor ativo.',
         })
+      const codigo = await codigoPadronizadoELivre(tx, dados.codigo)
       const item = await tx.item.create({
         data: {
-          codigo: dados.codigo,
+          codigo,
           descricao: dados.descricao,
           iso: dados.iso ?? null,
           classe: dados.classe ?? null,
@@ -291,11 +322,12 @@ export async function alterarItem(ator: Ator, id: string, entrada: unknown) {
     prisma.$transaction(async (tx) => {
       const antes = await tx.item.findUnique({ where: { id } })
       if (!antes) throw naoEncontrado('Item')
+      const codigo =
+        dados.codigo === antes.codigo
+          ? antes.codigo
+          : await codigoPadronizadoELivre(tx, dados.codigo, id)
       // RN-01: depois da primeira movimentação, o código fica travado
-      if (
-        dados.codigo !== antes.codigo &&
-        (await tx.movimentacao.count({ where: { itemId: id } })) > 0
-      ) {
+      if (codigo !== antes.codigo && (await tx.movimentacao.count({ where: { itemId: id } })) > 0) {
         throw new ErroDeNegocio(
           'O código não pode mudar depois da primeira movimentação (RN-01).',
           {
@@ -306,7 +338,7 @@ export async function alterarItem(ator: Ator, id: string, entrada: unknown) {
       const item = await tx.item.update({
         where: { id },
         data: {
-          codigo: dados.codigo,
+          codigo,
           descricao: dados.descricao,
           iso: dados.iso ?? null,
           classe: dados.classe ?? null,

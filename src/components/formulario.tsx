@@ -12,7 +12,8 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { ChevronDown, Eye, EyeOff } from 'lucide-react'
+import { buscarOpcoes, pontuarTexto } from '@/domain/busca'
 import type { EstadoAcao } from '@/server/web/acao'
 import { classeBotao, type VarianteBotao } from './ui'
 
@@ -261,6 +262,202 @@ export function Selecao({
           </option>
         ))}
       </select>
+      {ajuda && !erro && <span className="text-xs font-normal text-ink-3">{ajuda}</span>}
+      {erro && (
+        <span id={`${id}-erro`} className="text-[13px] font-normal text-crit-ink">
+          {erro}
+        </span>
+      )}
+    </div>
+  )
+}
+
+export interface OpcaoComBusca {
+  valor: string
+  rotulo: string
+  /** linha de apoio embaixo do nome (CNPJ, matrícula…) */
+  detalhe?: string
+  /** outros textos que também acham a opção */
+  busca?: string[]
+}
+
+/**
+ * RF-11: lista de escolha com busca. A pessoa digita e as opções se filtram com a mesma
+ * tolerância da busca de itens (maiúsculas, acentos, traços, zeros à esquerda, CNPJ só com
+ * números). Só um valor da lista é enviado: ao sair do campo, o texto digitado vira a opção
+ * reconhecida ou volta para a escolhida.
+ */
+export function SelecaoComBusca({
+  nome,
+  rotulo,
+  opcoes,
+  padrao = '',
+  valor,
+  aoMudar,
+  obrigatorio,
+  ajuda,
+  placeholder = 'Digite para buscar…',
+  opcaoVazia,
+}: {
+  nome: string
+  rotulo: string
+  opcoes: OpcaoComBusca[]
+  padrao?: string
+  /** com valor, a escolha fica controlada pela tela */
+  valor?: string
+  aoMudar?: (valor: string) => void
+  obrigatorio?: boolean
+  ajuda?: ReactNode
+  placeholder?: string
+  /** opção que deixa o campo vazio de propósito (ex.: "Retirar da posição") */
+  opcaoVazia?: string
+}) {
+  const erro = useErro(nome)
+  const id = `busca-${nome}-${useId()}`
+  const [interno, setInterno] = useState(padrao)
+  const atual = valor !== undefined ? valor : interno
+  const escolhida = opcoes.find((o) => o.valor === atual)
+  const [texto, setTexto] = useState<string | null>(null) // null = mostrando a escolhida
+  const [aberto, setAberto] = useState(false)
+  const [ativo, setAtivo] = useState(0)
+  const digitado = texto ?? ''
+  const achadas = buscarOpcoes(texto === null ? '' : digitado, opcoes)
+  const lista: OpcaoComBusca[] =
+    opcaoVazia && texto === null ? [{ valor: '', rotulo: opcaoVazia }, ...achadas] : achadas
+  const indice = Math.min(ativo, Math.max(lista.length - 1, 0))
+  const idOpcao = (i: number) => `${id}-opcao-${i}`
+  const campo = useRef<HTMLInputElement>(null)
+
+  // form.reset() (limparAoConcluir) não mexe no estado do React: volta à escolha inicial aqui
+  useEffect(() => {
+    const form = campo.current?.form
+    if (!form) return
+    const limpar = () => {
+      setInterno(padrao)
+      setTexto(null)
+    }
+    form.addEventListener('reset', limpar)
+    return () => form.removeEventListener('reset', limpar)
+  }, [padrao])
+
+  const escolher = (v: string) => {
+    if (valor === undefined) setInterno(v)
+    aoMudar?.(v)
+    setTexto(null)
+    setAberto(false)
+  }
+  const sair = () => {
+    setAberto(false)
+    if (texto === null) return
+    if (texto.trim() === '') {
+      if (!obrigatorio || opcaoVazia) escolher('')
+      else setTexto(null)
+      return
+    }
+    // texto que reconhece uma opção só (nome exato, CNPJ, matrícula, código) vira a escolha
+    const exatas = opcoes.filter((o) => pontuarTexto(texto, [o.rotulo, ...(o.busca ?? [])]) >= 95)
+    if (exatas.length === 1) escolher(exatas[0].valor)
+    else if (achadas.length === 1) escolher(achadas[0].valor)
+    else setTexto(null)
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
+      <label htmlFor={id}>
+        {rotulo}
+        {obrigatorio && (
+          <span aria-hidden className="text-crit-ink">
+            {' '}
+            *
+          </span>
+        )}
+      </label>
+      <input type="hidden" name={nome} value={atual} />
+      <div className="relative">
+        <input
+          ref={campo}
+          id={id}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={aberto}
+          aria-controls={`${id}-lista`}
+          aria-activedescendant={aberto && lista.length ? idOpcao(indice) : undefined}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={erro ? `${id}-erro` : undefined}
+          aria-required={obrigatorio}
+          autoComplete="off"
+          spellCheck={false}
+          value={texto ?? escolhida?.rotulo ?? (atual === '' && opcaoVazia ? opcaoVazia : '')}
+          placeholder={placeholder}
+          onFocus={(e) => {
+            e.currentTarget.select()
+            setAberto(true)
+          }}
+          onClick={() => setAberto(true)}
+          onChange={(e) => {
+            setTexto(e.target.value)
+            setAtivo(0)
+            setAberto(true)
+          }}
+          onBlur={sair}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              if (!aberto) setAberto(true)
+              else setAtivo(Math.min(indice + 1, lista.length - 1))
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              setAtivo(Math.max(indice - 1, 0))
+            } else if (e.key === 'Enter' && aberto) {
+              e.preventDefault()
+              if (lista[indice]) escolher(lista[indice].valor)
+            } else if (e.key === 'Escape') {
+              setTexto(null)
+              setAberto(false)
+            }
+          }}
+          className={`${estiloEntrada} pr-9 ${erro ? 'border-crit' : 'border-line-2'}`}
+        />
+        <ChevronDown
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-ink-3"
+        />
+        {aberto && (
+          <ul
+            id={`${id}-lista`}
+            role="listbox"
+            aria-label={rotulo}
+            className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-line bg-surface py-1 shadow-pop"
+          >
+            {lista.length === 0 ? (
+              <li className="px-3 py-2.5 text-[13px] font-normal text-ink-3">
+                Nada com “{digitado.trim()}”.
+              </li>
+            ) : (
+              lista.map((o, i) => (
+                <li
+                  key={o.valor || 'vazia'}
+                  id={idOpcao(i)}
+                  role="option"
+                  aria-selected={o.valor === atual}
+                  // mousedown antes do blur: a escolha não se perde ao sair do campo
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    escolher(o.valor)
+                  }}
+                  onMouseEnter={() => setAtivo(i)}
+                  className={`cursor-pointer px-3 py-2 font-normal ${i === indice ? 'bg-accent-soft' : ''} ${o.valor === atual ? 'font-semibold' : ''} ${o.valor === '' ? 'text-ink-2 italic' : ''}`}
+                >
+                  <span className="block truncate text-sm">{o.rotulo}</span>
+                  {o.detalhe && (
+                    <span className="block truncate text-xs text-ink-3">{o.detalhe}</span>
+                  )}
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+      </div>
       {ajuda && !erro && <span className="text-xs font-normal text-ink-3">{ajuda}</span>}
       {erro && (
         <span id={`${id}-erro`} className="text-[13px] font-normal text-crit-ink">

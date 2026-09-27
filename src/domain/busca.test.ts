@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { buscarItens, buscarOpcoes, mesmaSequencia, normalizarBusca, pontuarBusca } from './busca'
+import {
+  buscarItens,
+  buscarOpcoes,
+  chaveDeSequencia,
+  mesmaSequencia,
+  normalizarBusca,
+  pontuarBusca,
+} from './busca'
 import { casosBusca, casosOpcoes, ITENS_DE_EXEMPLO, OPCOES_DE_EXEMPLO } from './busca.casos'
 
 describe('RF-11 · Busca tolerante de itens', () => {
@@ -56,5 +63,24 @@ describe('RF-11 · Busca nas listas de escolha (fornecedor, colaborador, destino
 
   it('duas palavras em textos diferentes: "carlos usinagem" → Carlos Pereira', () => {
     expect(buscarOpcoes('carlos usinagem', OPCOES_DE_EXEMPLO).map((o) => o.valor)).toEqual(['c1'])
+  })
+})
+
+describe('RN-01 · Chave do código (importação)', () => {
+  it.each([
+    ['PST-001', 'PST·1'],
+    ['pst1', 'PST·1'],
+    ['PST 01', 'PST·1'],
+    ['A01-G03-C04', 'A·1·G·3·C·4'],
+  ])('"%s" → "%s"', (codigo, chave) => {
+    expect(chaveDeSequencia(codigo)).toBe(chave)
+  })
+  it('chave igual quer dizer mesma sequência', () => {
+    expect(chaveDeSequencia('PST1')).toBe(chaveDeSequencia('PST-001'))
+    expect(mesmaSequencia('PST1', 'PST-001')).toBe(true)
+    expect(chaveDeSequencia('PST-010')).not.toBe(chaveDeSequencia('PST-001'))
+  })
+  it('só símbolos dá chave vazia', () => {
+    expect(chaveDeSequencia('--')).toBe('')
   })
 })

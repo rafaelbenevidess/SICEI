@@ -3,11 +3,12 @@
 import { X } from 'lucide-react'
 import { useState, useTransition, type ReactNode } from 'react'
 import { acaoFabricanteRapido, acaoFornecedorNovo } from '@/app/acoes/cadastros'
+import type { OpcaoComBusca } from '@/components/formulario'
 import { classeBotao } from '@/components/ui'
 import { mascararCnpj, situacaoDoCnpj } from '@/domain/cnpj'
 import type { EstadoAcao } from '@/server/web/acao'
 
-type Opcao = { valor: string; rotulo: string }
+type Opcao = OpcaoComBusca
 
 const estiloCampo =
   'h-10 w-full min-w-0 rounded-lg border border-line-2 bg-surface px-3 text-base text-ink sm:text-sm'
@@ -158,8 +159,14 @@ export function FornecedorRapidoDoItem({
       dados.set('nomeFantasia', fantasia)
       dados.set('cnpj', cnpj)
       const r = await acaoFornecedorNovo({}, dados)
-      if (r.ok && r.dados?.id) aoCriar({ valor: String(r.dados.id), rotulo: String(r.dados.nome) })
-      else setErro(mensagemDeErro(r))
+      if (r.ok && r.dados?.id) {
+        aoCriar({
+          valor: String(r.dados.id),
+          rotulo: String(r.dados.nome),
+          detalhe: cnpj,
+          busca: [cnpj, razao],
+        })
+      } else setErro(mensagemDeErro(r))
     })
   return (
     <Painel

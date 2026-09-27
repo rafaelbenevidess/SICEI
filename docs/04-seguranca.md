@@ -33,7 +33,7 @@
 
 Foi feita com a skill `security-review`, cobrindo todo o código desde o primeiro commit. Foram conferidos:
 
-- as 25 Server Actions;
+- as 25 Server Actions (hoje são 36; as novas estão na seção 5);
 - todas as páginas;
 - as rotas de CSV, do QR e da rotina diária;
 - todo o SQL manual;
@@ -82,11 +82,14 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | Fornecedor cadastrado na tela da compra (`acaoFornecedorRapido`) | Exige `cadastros:editar` no service, valida com Zod e grava fornecedor, vínculo e os dois registros de log numa transação só. |
 | CSV de itens e de movimentações | Conferem sessão, troca de senha pendente e permissão (`saldo:ver`, `historico:ver`); preço só sai para quem tem `precos:ver`. Na exportação de movimentações, só os filtros conhecidos entram no log (`lib/filtros.ts`), para ninguém gravar texto qualquer no log imutável pela URL. |
 | Cookie do tema (`sicei_tema`) | O servidor só aceita `claro` ou `escuro` (`temaDoCookie`). Não guarda nada sensível. |
-| Tela "Ler QR" (`/p`) | O código digitado só vira redirecionamento depois de passar pelo formato `A01-G03-C04`, e vai codificado na URL. |
+| Tela "Ler QR" (`/p`) | O código digitado só vira redirecionamento depois de passar por `interpretarCodigoDePosicao`, que devolve um código no formato `A01-G03-C04` ou nada; o texto digitado nunca entra na URL. |
 | Câmera na tela "Ler QR" | O cabeçalho `Permissions-Policy` passou de `camera=()` para `camera=(self)`: só o próprio SICEI pode pedir a câmera, e o navegador ainda pergunta ao usuário. A imagem é analisada no aparelho e não é enviada a lugar nenhum. Do texto lido só se aproveita o código da posição (`codigoDoQr`), e a navegação é sempre para a rota interna `/p/<código>`: um QR malicioso não leva o usuário para outro site nem injeta nada na página. |
 | Pop-up de alertas | O cookie `sicei_aviso_alertas` é `HttpOnly`, `SameSite=Lax` e dura a sessão; só guarda "1". A contagem é feita no servidor e só para quem tem `alertas:ciente`. | `src/app/acoes/autenticacao.ts`, `(app)/layout.tsx` |
 | Cadastro rápido no novo item | Fabricante e fornecedor passam pelos mesmos services do cadastro normal (`cadastros:editar`, Zod, unicidade, log). | `src/app/acoes/cadastros.ts` |
 | Registro da impressão de etiquetas | Exige `etiquetas:imprimir`; os códigos passam pelo schema (formato, no máximo 500, sem repetidos) antes de ir ao banco. | `src/server/services/etiquetas.ts` |
+| Sugestões da busca do topo (`acaoSugerirItens`) | Só leitura. Confere a sessão e a troca de senha, recusa termo que não seja texto ou passe de 60 caracteres e devolve só código, descrição, posição e status de até 8 itens ativos, o mesmo que a lista de itens mostra a qualquer perfil. Nenhum preço. | `src/app/acoes/estoque.ts` |
+| Filtros de texto tolerantes (movimentações e auditoria) | O texto não vai para o SQL: é comparado em memória com a regra do domínio e o banco recebe só a lista de ids ou OPs encontrados, pelo Prisma parametrizado. | `src/server/consultas/busca.ts` |
+| Campo de escolha com busca | Envia só o id da opção escolhida; o service confere de novo se o fornecedor, colaborador, destino ou posição existe e está ativo. | `src/components/formulario.tsx` |
 | Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
 
 ## 6. Histórico do documento
@@ -97,3 +100,4 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | 1.1 | 27/09/2026 | Revisão do redesign (seção 5). O SVG do QR passou para `FolhaDeEtiquetas.tsx`. |
 | 1.2 | 27/09/2026 | Câmera liberada só para o próprio SICEI (`camera=(self)`), para ler a etiqueta na tela "Ler QR". |
 | 1.3 | 27/09/2026 | O que o IP do log representa; pop-up de alertas, cadastro rápido no novo item e registro da impressão de etiquetas na revisão (seção 5). |
+| 1.4 | 27/09/2026 | Sugestões da busca do topo, filtros de texto tolerantes e campo de escolha com busca na revisão (seção 5). |

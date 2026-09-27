@@ -89,15 +89,15 @@ src/
 │   ├── login.ts            geração de login a partir do nome (RN-21)
 │   ├── senha.ts            política de senha e geração da provisória (RN-21, RN-22)
 │   ├── cnpj.ts             validação e máscara de CNPJ (RN-04)
-│   ├── busca.ts            busca tolerante de itens: código, posição, ISO, classe (RF-11)
-│   ├── codigo.ts           próximo código interno da sequência (RN-01)
+│   ├── busca.ts            busca tolerante de itens e de opções de listas (RF-11)
+│   ├── codigo.ts           próximo código, código equivalente e padronizado (RN-01)
 │   ├── parametros.ts       limites dos parâmetros e histórico de alterações (RF-26)
 │   ├── importacao.ts       validação e resumo das linhas do CSV (RF-25)
 │   ├── permissoes.ts       matriz perfil × permissão (doc 02, seção 5)
 │   └── schemas/            schemas Zod de cada formulário
 ├── server/
 │   ├── services/           casos de uso: registrarSaida, estornar, criarUsuario...
-│   ├── consultas/          leituras do banco para as telas
+│   ├── consultas/          leituras do banco para as telas (busca.ts: candidatos dos filtros de texto)
 │   ├── auth/               sessão, hash de senha, bloqueio, rate limit
 │   ├── audit/              gravação e verificação do log encadeado
 │   ├── notificacao/        outbox de e-mail
@@ -476,10 +476,20 @@ O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na bar
 
 - Pop-up de alertas (RF-13): no login, a Server Action grava o cookie de sessão `sicei_aviso_alertas`. Enquanto ele existir e houver alerta aberto sem ciente, o layout mostra a Gestor e Administrador um diálogo `alertdialog` no centro da tela, sem botão de fechar, com "Existem N alertas sem ciente" e o botão VER. VER apaga o cookie e leva a `/alertas`; abrir `/alertas` por outro caminho também apaga. Como o menu lateral não é recarregado a cada clique (o layout do App Router fica no navegador entre as páginas), o `Shell` também guarda, no estado da tela, que a pessoa já passou por `/alertas` (`avisoJaVisto`); assim o aviso não volta ao navegar pelo menu. O cookie apagado garante o mesmo ao recarregar. Um novo login grava o cookie de novo. A regra de quando mostrar fica em `lib/avisoDeAlertas.ts`.
 - Etiqueta pendente (RN-26): aviso na página do item até a etiqueta ser impressa (seção 5.6).
-- Código interno (RN-01): o cadastro sugere o próximo da sequência (`domain/codigo.ts`) e avisa na hora se o código já existe; o banco continua recusando código repetido.
-- Busca de itens (RF-11): `domain/busca.ts` compara sem maiúsculas, acentos, traços, espaços e zeros à esquerda ("Pst001" = "PST-001"; "a01g01c02" = "A01-G01-C02") e pontua o resultado (código exato, posição, começo do código, ISO, classe, descrição). A mesma função roda no navegador, no autocompletar da escolha do item ao registrar, e no servidor, na lista de itens e na busca do topo.
+- Código interno (RN-01): o cadastro sugere o próximo da sequência (`domain/codigo.ts`) e avisa na hora se o código já existe, mesmo escrito de outro jeito (`codigoEquivalente`: "pst1" = PST-001). Ao sair do campo, `padronizarCodigo` põe o código no padrão da sequência ("pst8" → PST-008). O service faz as duas coisas de novo dentro da transação, e o índice único do banco continua recusando a igualdade exata.
+- Busca de itens (RF-11): `domain/busca.ts` compara sem maiúsculas, acentos, traços, espaços e zeros à esquerda ("Pst001" = "PST-001"; "a01g01c02" = "A01-G01-C02") e pontua o resultado (código exato, posição, começo do código, ISO, classe, descrição). A mesma função roda no navegador, no autocompletar da escolha do item ao registrar, e no servidor, na lista de itens e nas sugestões da busca do topo (`acaoSugerirItens`, só leitura, com a sessão conferida).
 
-### 10.5 Prévia no navegador, decisão no servidor
+### 10.5 A mesma busca em todos os campos (RF-11)
+
+| Onde | Como |
+|---|---|
+| Campos de escolha: fornecedor, fabricante, colaborador, destino (mais de 8), posição | `SelecaoComBusca` (`components/formulario.tsx`): combobox acessível que filtra com `buscarOpcoes`. Cada opção pode ter textos extras de busca (CNPJ, razão social, matrícula, código do destino). Envia só o id da opção, num campo oculto; ao sair do campo, o texto que reconhece uma opção só vira a escolha. Listas curtas e fixas continuam como `select`. |
+| Busca do topo | `BuscaDoTopo`: sugere até 8 itens enquanto a pessoa digita, com 150 ms de espera e descarte de respostas atrasadas. |
+| Filtros de texto de movimentações e auditoria | `server/consultas/busca.ts` acha os candidatos (itens, colaboradores, usuários, OPs) com a regra do domínio e o filtro do banco usa os ids encontrados, em vez de "contém". |
+| Posição digitada (Ler QR, `/p/…`, etiquetas, importação) | `interpretarCodigoDePosicao` transforma "a1g3c4" em A01-G03-C04. |
+| Código na importação | `chaveDeSequencia` junta os jeitos de escrever o mesmo código ("PST1" e PST-001 dão a mesma chave) para achar repetidos no arquivo e no banco. |
+
+### 10.6 Prévia no navegador, decisão no servidor
 
 Várias telas mostram o resultado antes de enviar, usando as mesmas funções puras de `domain/`: o saldo e o status depois da movimentação, a conversão de caixas, o login que será gerado, a checklist da senha, a situação do CNPJ e os limites dos parâmetros. A prévia só ajuda quem digita. O servidor valida tudo de novo e é quem decide (RN-08, RNF-05).
 
@@ -513,3 +523,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.5 | 27/09/2026 | Coluna `posicao.etiqueta_pendente` e fluxo da impressão (5.6); avisos de alertas, etiqueta e código (10.4); o que o IP do log representa (seção 6). |
 | 1.6 | 27/09/2026 | Seção 10.4: o pop-up de alertas não volta depois de VER, nem pela navegação do menu. |
 | 1.7 | 27/09/2026 | Busca tolerante de itens (`domain/busca.ts`) no navegador e no servidor, e autocompletar ao registrar (10.4). |
+| 1.8 | 27/09/2026 | A mesma busca em todos os campos que permitem (nova 10.5; a prévia passa a 10.6): campos de escolha com busca, sugestões no topo, filtros de texto tolerantes, posição digitada de qualquer jeito, código equivalente e padronizado no cadastro e na importação. |

@@ -33,6 +33,14 @@ export function mesmaSequencia(a: string, b: string): boolean {
   return pa.length > 0 && pa.length === pb.length && pa.every((p, i) => p === pb[i])
 }
 
+/**
+ * Chave que junta os jeitos de escrever o mesmo código: "PST-001", "pst1" e "PST 01" dão
+ * "PST·1". Duas chaves iguais (e não vazias) são a mesma sequência de `mesmaSequencia`.
+ */
+export function chaveDeSequencia(texto: string): string {
+  return partes(normalizarBusca(texto)).join('·')
+}
+
 /** Pontos da combinação entre o termo e o item; 0 quer dizer que não combina. */
 export function pontuarBusca(termo: string, item: ItemBuscavel): number {
   const t = normalizarBusca(termo)

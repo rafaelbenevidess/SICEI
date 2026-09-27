@@ -32,13 +32,14 @@ import {
   FormAcao,
   GrupoDeChips,
   Oculto,
-  Selecao,
+  SelecaoComBusca,
+  type OpcaoComBusca,
 } from '@/components/formulario'
 import { Aviso, BadgeStatus, ChipCodigo, classeBotao, LinkBotao } from '@/components/ui'
 import type { EstadoAcao } from '@/server/web/acao'
 import { formatarMoeda, NOME_STATUS } from '@/lib/formatar'
 
-type Opcao = { valor: string; rotulo: string }
+type Opcao = OpcaoComBusca
 
 const TIPOS: Record<
   'entrada' | 'saida',
@@ -298,11 +299,11 @@ export function FormRegistrar({
           {compra && (
             <>
               <div className="flex min-w-0 flex-col gap-2">
-                <Selecao
+                <SelecaoComBusca
                   nome="fornecedorId"
                   rotulo="Fornecedor"
                   opcoes={fornecedores}
-                  vazio="Escolha…"
+                  placeholder="Nome ou CNPJ"
                   obrigatorio
                   valor={fornecedorId}
                   aoMudar={setFornecedorId}
@@ -350,15 +351,15 @@ export function FormRegistrar({
                   <GrupoDeChips nome="destinoId" rotulo="Destino" opcoes={destinos} obrigatorio />
                 </div>
               ) : (
-                <Selecao
+                <SelecaoComBusca
                   nome="destinoId"
                   rotulo="Destino"
                   opcoes={destinos}
-                  vazio="Escolha…"
+                  placeholder="Nome ou código da máquina"
                   obrigatorio
                 />
               )}
-              <Selecao
+              <SelecaoComBusca
                 nome="colaboradorId"
                 rotulo={
                   tipo === 'CONSUMO_PRODUCAO'
@@ -366,7 +367,7 @@ export function FormRegistrar({
                     : 'Colaborador que devolveu'
                 }
                 opcoes={colaboradores}
-                vazio="Escolha…"
+                placeholder="Nome, matrícula ou setor"
                 obrigatorio
               />
             </>
@@ -576,7 +577,12 @@ function FornecedorRapido({
       dados.set('leadTimeDias', lead)
       const r = await acaoFornecedorRapido({}, dados)
       if (r.ok && r.dados?.fornecedorId) {
-        aoCriar({ valor: String(r.dados.fornecedorId), rotulo: String(r.dados.nome) })
+        aoCriar({
+          valor: String(r.dados.fornecedorId),
+          rotulo: String(r.dados.nome),
+          detalhe: cnpj,
+          busca: [cnpj, razao],
+        })
       } else {
         setErro(r.erros ? Object.values(r.erros).join(' ') : (r.erro ?? 'Não foi possível salvar.'))
       }

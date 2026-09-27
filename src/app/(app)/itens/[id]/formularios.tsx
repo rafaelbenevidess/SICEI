@@ -15,10 +15,11 @@ import {
   Campo,
   FormAcao,
   Oculto,
-  Selecao,
+  SelecaoComBusca,
+  type OpcaoComBusca,
 } from '@/components/formulario'
 
-type Opcao = { valor: string; rotulo: string }
+type Opcao = OpcaoComBusca
 
 export function FormLimites({
   itemId,
@@ -60,10 +61,12 @@ export function FormLimites({
 export function FormPosicao({
   itemId,
   atual,
+  atualId = '',
   livres,
 }: {
   itemId: string
   atual: string | null
+  atualId?: string
   livres: Opcao[]
 }) {
   return (
@@ -73,11 +76,14 @@ export function FormPosicao({
       className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end"
     >
       <Oculto nome="itemId" valor={itemId} />
-      <Selecao
+      <SelecaoComBusca
         nome="posicaoId"
         rotulo={`Posição${atual ? ` (atual: ${atual})` : ''}`}
         opcoes={livres}
-        vazio={atual ? 'Retirar da posição' : 'Sem posição'}
+        padrao={atualId}
+        opcaoVazia={atual ? 'Retirar da posição' : 'Sem posição'}
+        placeholder="Ex.: A1G3C4"
+        ajuda="Digite como quiser: a1g3c4 acha A01-G03-C04."
       />
       <BotaoEnviar variante="secundario">Salvar posição</BotaoEnviar>
     </FormAcao>
@@ -93,11 +99,11 @@ export function FormVinculo({ itemId, fornecedores }: { itemId: string; forneced
       className="grid gap-3 sm:grid-cols-2"
     >
       <Oculto nome="itemId" valor={itemId} />
-      <Selecao
+      <SelecaoComBusca
         nome="fornecedorId"
         rotulo="Fornecedor"
         opcoes={fornecedores}
-        vazio="Escolha…"
+        placeholder="Nome ou CNPJ"
         obrigatorio
       />
       <Campo nome="codigoNoFornecedor" rotulo="Código do item no fornecedor" />

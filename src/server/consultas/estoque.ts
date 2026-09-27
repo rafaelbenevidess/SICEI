@@ -1,5 +1,6 @@
 import 'server-only'
 import { buscarItens } from '@/domain/busca'
+import { formatarCnpj } from '@/domain/cnpj'
 import { pode } from '@/domain/permissoes'
 import { historicoComVariacao, listaDeFornecedores, type CompraRegistrada } from '@/domain/precos'
 import {
@@ -74,6 +75,38 @@ export async function listarItens(f: FiltroItens) {
     })
     return { ...i, consumoDiario, alvo }
   })
+}
+
+/** RF-11: sugestões da busca do topo, com a mesma regra tolerante da lista de itens. */
+export async function sugerirItens(termo: string, limite = 8) {
+  const q = termo.trim()
+  if (!q) return []
+  const todos = await prisma.item.findMany({
+    where: { ativo: true },
+    select: {
+      id: true,
+      codigo: true,
+      descricao: true,
+      iso: true,
+      classe: true,
+      status: true,
+      posicao: { select: { codigo: true } },
+    },
+    orderBy: { codigo: 'asc' },
+    take: 5000,
+  })
+  return buscarItens(
+    q,
+    todos.map((i) => ({ ...i, posicao: i.posicao?.codigo ?? null })),
+  )
+    .slice(0, limite)
+    .map((i) => ({
+      id: i.id,
+      codigo: i.codigo,
+      descricao: i.descricao,
+      posicao: i.posicao,
+      status: i.status as string,
+    }))
 }
 
 /** Contagem dos itens ativos por status, para o filtro da lista. */
@@ -215,14 +248,23 @@ export async function opcoesDeMovimentacao(itemId: string) {
     prisma.colaborador.findMany({ where: { ativo: true }, orderBy: { nome: 'asc' } }),
   ])
   return {
+    // "busca": outros textos que acham a opção no campo com busca (RF-11)
     fornecedores: vinculos.map((v) => ({
       valor: v.fornecedorId,
       rotulo: v.fornecedor.nomeFantasia ?? v.fornecedor.razaoSocial,
+      detalhe: formatarCnpj(v.fornecedor.cnpj),
+      busca: [v.fornecedor.cnpj, v.fornecedor.razaoSocial],
     })),
-    destinos: destinos.map((d) => ({ valor: d.id, rotulo: `${d.nome} (${d.codigo})` })),
+    destinos: destinos.map((d) => ({
+      valor: d.id,
+      rotulo: `${d.nome} (${d.codigo})`,
+      busca: [d.codigo],
+    })),
     colaboradores: colaboradores.map((c) => ({
       valor: c.id,
-      rotulo: c.matricula ? `${c.nome} · ${c.matricula}` : c.nome,
+      rotulo: c.nome,
+      detalhe: [c.matricula && `matrícula ${c.matricula}`, c.setor].filter(Boolean).join(' · '),
+      busca: [c.matricula ?? '', c.setor],
     })),
   }
 }

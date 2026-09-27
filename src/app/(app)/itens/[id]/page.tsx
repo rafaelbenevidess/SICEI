@@ -36,7 +36,7 @@ import {
   NOME_STATUS,
   nomeDaPastilha,
 } from '@/lib/formatar'
-import { listarFornecedores, listarPosicoes } from '@/server/consultas/cadastros'
+import { listarFornecedores, listarPosicoes, opcaoDeFornecedor } from '@/server/consultas/cadastros'
 import { detalheItem } from '@/server/consultas/estoque'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 import { BotaoCiente } from '../../alertas/BotaoCiente'
@@ -395,9 +395,7 @@ export default async function PaginaItem({
               <Recolhivel id="gestao-fornecedor" titulo="Vincular ou atualizar fornecedor">
                 <FormVinculo
                   itemId={item.id}
-                  fornecedores={todosFornecedores
-                    .filter((f) => f.ativo)
-                    .map((f) => ({ valor: f.id, rotulo: f.nomeFantasia ?? f.razaoSocial }))}
+                  fornecedores={todosFornecedores.filter((f) => f.ativo).map(opcaoDeFornecedor)}
                 />
                 {d.fornecedores.length > 0 && (
                   <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4">
@@ -426,9 +424,14 @@ export default async function PaginaItem({
                 <FormPosicao
                   itemId={item.id}
                   atual={item.posicao?.codigo ?? null}
+                  atualId={item.posicao?.id}
                   livres={posicoes
                     .filter((p) => p.ativo && (!p.item || p.item.id === item.id))
-                    .map((p) => ({ valor: p.id, rotulo: p.codigo }))}
+                    .map((p) => ({
+                      valor: p.id,
+                      rotulo: p.codigo,
+                      detalhe: p.item ? 'Posição atual' : 'Livre',
+                    }))}
                 />
               </Recolhivel>
             )}

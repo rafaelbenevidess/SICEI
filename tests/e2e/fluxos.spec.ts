@@ -87,7 +87,11 @@ test('RF-08 / RF-09 / RN-26: pela etiqueta QR, saída acima do saldo é barrada,
     .locator('label')
     .first()
     .click()
-  await form.locator('select[name=colaboradorId]').selectOption({ index: 1 })
+  // RF-11: o colaborador é achado pela matrícula
+  const colaborador = form.getByRole('combobox', { name: 'Colaborador que retirou' })
+  await colaborador.fill('1045')
+  await form.getByRole('option').first().click()
+  await expect(colaborador).toHaveValue('Juliana Martins')
   await form.locator('input[name=ordemProducao]').fill('OP-E2E-1')
   await form.getByRole('button', { name: 'Confirmar saída de 2 un.' }).click()
   const ok = page.getByRole('status', { name: 'Saída registrada' })

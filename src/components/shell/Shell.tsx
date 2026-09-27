@@ -16,7 +16,6 @@ import {
   Package,
   QrCode,
   ScanLine,
-  Search,
   ShieldCheck,
   ShoppingCart,
   SlidersHorizontal,
@@ -26,13 +25,14 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useState, type ReactNode } from 'react'
 import { avisoJaVisto, mostrarAvisoDeAlertas } from '@/lib/avisoDeAlertas'
 import type { Tema } from '@/lib/tema'
 import { Avatar, classeBotao } from '../ui'
 import { Marca } from '../Marca'
 import { AvisoDeAlertas } from './AvisoDeAlertas'
+import { BuscaDoTopo } from './BuscaDoTopo'
 import { BotaoTema } from './BotaoTema'
 import { hrefAtivo, trilha, type GrupoMenu, type NomeIcone } from './menu'
 
@@ -221,7 +221,7 @@ export function Shell({
             </p>
           )}
           <div className="flex flex-1 justify-end gap-2.5">
-            <Busca />
+            <BuscaDoTopo />
             <Link
               href="/alertas"
               className={`${classeBotao('secundario')} h-[38px] max-sm:px-3`}
@@ -288,50 +288,5 @@ export function Shell({
         caminho,
       }) && <AvisoDeAlertas semCiente={alertasSemCiente} />}
     </div>
-  )
-}
-
-/** Busca do topo: vai para a lista de itens. A tecla "/" põe o foco aqui. */
-function Busca() {
-  const ref = useRef<HTMLInputElement>(null)
-  const router = useRouter()
-  useEffect(() => {
-    const aoTeclar = (e: KeyboardEvent) => {
-      const alvo = e.target as HTMLElement
-      if (e.key !== '/' || alvo.closest('input, textarea, select, [contenteditable=true]')) return
-      e.preventDefault()
-      ref.current?.focus()
-    }
-    window.addEventListener('keydown', aoTeclar)
-    return () => window.removeEventListener('keydown', aoTeclar)
-  }, [])
-  return (
-    <form
-      role="search"
-      className="relative flex max-w-[400px] min-w-0 flex-1"
-      onSubmit={(e) => {
-        e.preventDefault()
-        const q = ref.current?.value.trim() ?? ''
-        router.push(q ? `/itens?q=${encodeURIComponent(q)}` : '/itens')
-      }}
-    >
-      <Search
-        aria-hidden
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3"
-      />
-      <label htmlFor="busca-topo" className="sr-only">
-        Buscar itens
-      </label>
-      <input
-        ref={ref}
-        id="busca-topo"
-        type="search"
-        placeholder="Buscar código, ISO, classe ou posição"
-        className="h-[38px] w-full min-w-0 rounded-lg border border-line-2 bg-surface pr-9 pl-9 text-base text-ink placeholder:text-ink-3 sm:text-sm"
-      />
-      <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-line-2 px-1.5 font-mono text-[11px] text-ink-3 sm:block">
-        /
-      </kbd>
-    </form>
   )
 }

@@ -3,12 +3,20 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { acaoAlterarItem, acaoCriarItem } from '@/app/acoes/estoque'
-import { BotaoEnviar, Campo, FormAcao, Oculto, Selecao } from '@/components/formulario'
-import { codigoEmUso, proximoCodigo } from '@/domain/codigo'
+import {
+  BotaoEnviar,
+  Campo,
+  FormAcao,
+  Oculto,
+  Selecao,
+  SelecaoComBusca,
+  type OpcaoComBusca,
+} from '@/components/formulario'
+import { codigoEquivalente, padronizarCodigo, proximoCodigo } from '@/domain/codigo'
 import { NOME_APLICACAO } from '@/lib/formatar'
 import { FabricanteRapido, FornecedorRapidoDoItem } from './CadastroRapido'
 
-type Opcao = { valor: string; rotulo: string }
+type Opcao = OpcaoComBusca
 
 export interface ValoresItem {
   id?: string
@@ -62,7 +70,9 @@ export function FormItem({
   const [fornecedores, setFornecedores] = useState(fornecedoresIniciais ?? [])
   const [fornecedorId, setFornecedorId] = useState('')
   const [novoFornecedor, setNovoFornecedor] = useState(false)
-  const repetido = novo && codigoEmUso(codigo, codigosExistentes)
+  // RN-01: "pst1" é o mesmo código que PST-001, então também conta como repetido
+  const emUso = novo ? codigoEquivalente(codigo, codigosExistentes) : null
+  const repetido = emUso !== null
   return (
     <FormAcao
       acao={novo ? acaoCriarItem : acaoAlterarItem}
@@ -75,7 +85,11 @@ export function FormItem({
         rotulo="Código interno"
         value={codigo}
         onChange={(e) => setCodigo(e.target.value)}
+        // ao sair do campo, "pst8" vira PST-008, no padrão da sequência cadastrada
+        onBlur={() => !codigoTravado && setCodigo(padronizarCodigo(codigo, codigosExistentes))}
         readOnly={codigoTravado}
+        autoCapitalize="characters"
+        spellCheck={false}
         className="font-mono"
         aria-invalid={repetido || undefined}
         ajuda={
@@ -83,7 +97,10 @@ export function FormItem({
             'Travado: o item já tem movimentações (RN-01).'
           ) : repetido ? (
             <span role="alert" className="text-crit-ink">
-              {codigo.trim().toUpperCase()} já está em uso. Próximo livre:{' '}
+              {emUso === codigo.trim().toUpperCase()
+                ? `${emUso} já está em uso.`
+                : `${codigo.trim()} é o mesmo código que ${emUso}, já em uso.`}{' '}
+              Próximo livre:{' '}
               <button
                 type="button"
                 onClick={() => setCodigo(sugestao)}
@@ -139,13 +156,13 @@ export function FormItem({
         obrigatorio
       />
       <div className="flex min-w-0 flex-col gap-2">
-        <Selecao
+        <SelecaoComBusca
           nome="fabricanteId"
           rotulo="Fabricante"
           opcoes={fabricantes}
           valor={fabricanteId}
           aoMudar={setFabricanteId}
-          vazio="Escolha…"
+          placeholder="Digite o nome"
           obrigatorio
         />
         {!novoFabricante && (
@@ -198,13 +215,13 @@ export function FormItem({
             Fornecedor de onde a peça é comprada (RN-05)
           </legend>
           <div className="flex min-w-0 flex-col gap-2">
-            <Selecao
+            <SelecaoComBusca
               nome="fornecedorId"
               rotulo="Fornecedor"
               opcoes={fornecedores}
               valor={fornecedorId}
               aoMudar={setFornecedorId}
-              vazio="Escolha…"
+              placeholder="Nome ou CNPJ"
               obrigatorio
             />
             {!novoFornecedor && (

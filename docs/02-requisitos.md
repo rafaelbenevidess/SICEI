@@ -85,6 +85,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 6. **Dado** os itens PST-001 a PST-006 já cadastrados, **quando** o Gestor abre "Novo item", **então** o código já vem preenchido com PST-007. Se ele digitar um código em uso (inclusive de item inativo), a tela avisa, sugere o próximo livre e não deixa salvar.
 7. **Dado** um item novo cujo fabricante ou fornecedor ainda não existe, **quando** o Gestor usa "Fabricante não está na lista?" ou "Fornecedor não está na lista?", **então** cadastra ali mesmo (o CNPJ é conferido enquanto digita), o novo registro já fica escolhido e o cadastro fica no log. O vínculo com o fornecedor nasce junto com o item.
 8. **Dado** a tela Cadastros, **quando** o usuário abre, **então** a primeira aba é Itens, com todos os itens, inclusive os inativos, e os atalhos para cadastrar, editar e importar.
+9. **Dado** PST-001 a PST-007 cadastrados, **quando** o Gestor digita "pst1" no código de um item novo, **então** a tela avisa que é o mesmo código que PST-001 e não deixa salvar; o servidor recusa do mesmo jeito. **Quando** digita "pst8" e sai do campo, **então** o código vira PST-008 (RN-01).
 
 ### RF-04. Cadastro de fabricantes
 1. **Dado** um fabricante "Sandvik" cadastrado, **quando** alguém tenta cadastrar "SANDVIK", **então** o cadastro é recusado por duplicidade.
@@ -137,6 +138,8 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 2. **Dado** uma saída registrada por outro usuário, **quando** a consulta é aberta ou atualizada, **então** o saldo já reflete a saída.
 3. **Dado** o filtro "somente críticos e zerados", **quando** aplicado, **então** só aparecem itens com esses status.
 4. **Dado** o item PST-001 na posição A01-G01-C01 com ISO "CNMG 120408", **quando** alguém busca "Pst001", "pst 1", "PST-1", "a01g01c01" ou "cnmg120408", **então** o PST-001 aparece. Maiúsculas, acentos, traços, espaços e zeros à esquerda não importam, e o código exato vem primeiro. Vale para a lista de itens, a busca do topo e a escolha do item ao registrar.
+5. **Dado** a busca do topo, **quando** o usuário digita "pst2", **então** aparecem até 8 itens sugeridos com código, descrição, posição e status; setas e Enter ou um toque abrem o item, e Enter sem escolher leva à lista de itens com o termo.
+6. **Dado** um campo de escolha de fornecedor, fabricante, colaborador, destino ou posição, **quando** o usuário digita, **então** as opções se filtram com a mesma tolerância: o fornecedor é achado pelo nome ou pelo CNPJ só com números, o colaborador pelo nome ou pela matrícula, o destino pelo nome ou pelo código ("cnc 3" acha CNC-03) e a posição sem traços ("a4g2c1" acha A04-G02-C01). Só um valor da lista é enviado: ao sair do campo, o texto que reconhece uma opção só vira a escolha, e o que não reconhece volta para a escolha anterior. Listas curtas e fixas (tipo de destino, aplicação, perfil) continuam como lista simples.
 
 ### RF-12. Estoque mínimo e máximo
 1. **Dado** um máximo menor ou igual ao mínimo, **quando** o Gestor tenta salvar, **então** a alteração é recusada.
@@ -157,6 +160,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 ### RF-15. Histórico de movimentações
 1. **Dado** o filtro de setembro e o item X, **quando** aplicado, **então** aparecem todas as movimentações do item no mês, em ordem cronológica, com usuário, saldo anterior e posterior.
 2. **Dado** qualquer movimentação, **quando** o usuário abre o detalhe, **então** vê todos os campos gravados, inclusive IP, dispositivo, OP, colaborador e, se for o caso, o estorno ligado a ela.
+3. **Dado** a OP 2026-0457, o item PST-001 e o colaborador Juliana Martins, matrícula 1045, **quando** o usuário busca "20260457", "pst1", "juliana" ou "1045" no campo "Item, OP ou colaborador", **então** as movimentações correspondentes aparecem (RF-11). O filtro de usuário acha "joao silva" como joao.silva.
 
 ### RF-16. Painel geral
 1. **Dado** o acesso ao sistema, **quando** o usuário abre o painel, **então** vê a quantidade de itens em cada status, os alertas abertos, o consumo do mês comparado ao mês anterior, os 10 itens mais consumidos e as últimas movimentações.
@@ -186,6 +190,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 5. **Dado** o filtro de ação, **quando** o Administrador ou o Gestor abre a lista, **então** vê todas as ações que o sistema grava, com nome legível e agrupadas (movimentações, itens e etiquetas, cadastros, usuários e acesso, sistema). A escolha filtra a ação exata.
 6. **Dado** a lista do log, **quando** o Administrador olha uma linha, **então** vê de forma resumida só o que mudou (antes riscado, depois destacado), a origem com IP e dispositivo e o hash encurtado do registro.
 7. **Dado** a verificação de integridade, **quando** o Administrador a executa, **então** a própria execução e o resultado entram no log, com hora e usuário mostrados na tela.
+8. **Dado** o filtro de usuário do log, **quando** o Administrador digita, **então** o campo sugere os logins existentes, e "joao silva" ou "JOÃO" acham joao.silva.
 
 ### RF-22. Etiquetas QR
 1. **Dado** uma ou mais posições ocupadas, **quando** o almoxarife pede a impressão, **então** o sistema gera uma página de etiquetas com QR, código da posição, código interno e descrição, pronta para imprimir em A4.
@@ -196,11 +201,13 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 6. **Dado** a câmera negada, ausente ou em uso por outro aplicativo, **quando** a tela "Ler QR" abre, **então** explica o motivo, oferece tentar de novo e deixa digitar o código da posição.
 7. **Dado** a leitura pela câmera, **quando** ela acontece, **então** a imagem é analisada só no aparelho; nenhuma imagem da câmera vai para o servidor.
 8. **Dado** um item que mudou para a posição A05-G01-C02, **quando** alguém abre o item, **então** vê o aviso de que a etiqueta dessa posição ainda não foi impressa, com o botão "Imprimir etiqueta". A tela de etiquetas marca as não impressas e já as deixa escolhidas. Mandar imprimir tira a pendência e grava a impressão no log.
+9. **Dado** a tela "Ler QR" ou o endereço `/p/…`, **quando** o almoxarife digita "a1g3c4", **então** o sistema abre a posição A01-G03-C04 (RN-25). A lista de etiquetas tem um filtro que aceita a posição ou o item escritos do mesmo jeito ("a4g2c1", "pst7").
 
 ### RF-25. Importação inicial
 1. **Dado** um CSV no modelo fornecido pelo sistema, **quando** o Administrador importa, **então** o sistema mostra uma prévia com as linhas válidas e os erros de cada linha inválida, antes de gravar qualquer coisa.
 2. **Dado** a confirmação da importação, **quando** ela roda, **então** os itens são criados e cada saldo inicial vira um `AJUSTE_POSITIVO` com a justificativa "saldo inicial da implantação". Se qualquer linha falhar na gravação, nada é gravado.
 3. **Dado** uma prévia com pelo menos uma linha com erro, **quando** o Administrador olha a tela, **então** o botão de importar fica bloqueado e a tela oferece enviar o arquivo corrigido.
+4. **Dado** uma linha com o código "PST1" e o PST-001 já cadastrado (ou em outra linha do arquivo), **quando** a prévia é gerada, **então** a linha aponta que é o mesmo código (RN-01). Uma posição escrita "a1g3c4" entra como A01-G03-C04.
 
 ### RF-26. Parâmetros do sistema
 1. **Dado** o Administrador, **quando** muda a janela de consumo médio de 90 para 60 dias, **então** os pontos de reposição e as sugestões passam a usar 60 dias, e a mudança fica no log.
@@ -340,3 +347,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.5 | 27/09/2026 | Critérios novos: RF-03 (próximo código, fabricante e fornecedor cadastrados na hora, aba Itens em Cadastros), RF-13 (pop-up de alertas sem ciente ao entrar), RF-21 (filtro com todas as ações), RF-22 (etiqueta pendente ao mudar de posição). |
 | 1.6 | 27/09/2026 | RF-13, critério 5: o pop-up aparece só no login; depois de VER não volta até o próximo login, e ver os alertas não obriga a dar ciente. |
 | 1.7 | 27/09/2026 | RF-11, critério 4: busca que aceita o código escrito de qualquer jeito. RF-08, critério 9: autocompletar na escolha do item ao registrar. |
+| 1.8 | 27/09/2026 | A mesma tolerância em todos os campos que permitem: RF-11 (sugestões na busca do topo, campos de escolha com busca), RF-03 (código equivalente e padronizado), RF-15 e RF-21 (filtros de texto), RF-22 (posição digitada e filtro de etiquetas), RF-25 (código e posição na planilha). |

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { LeitorQr } from '@/components/LeitorQr'
 import { Pagina } from '@/components/ui'
-import { lerCodigoDaPosicao } from '@/domain/posicao'
+import { interpretarCodigoDePosicao } from '@/domain/posicao'
 import { exigirUsuario } from '@/server/web/sessao-atual'
 
 export const metadata: Metadata = { title: 'Ler QR' }
@@ -21,8 +21,10 @@ export default async function LerQr({
 }) {
   await exigirUsuario()
   const { codigo } = await searchParams
-  const cod = codigo?.trim().toUpperCase() ?? ''
-  if (cod && lerCodigoDaPosicao(cod)) redirect(`/p/${encodeURIComponent(cod)}`)
+  // RN-25: "a1g3c4" e "A1 G3 C4" viram A01-G03-C04
+  const cod = codigo?.trim() ?? ''
+  const posicao = cod ? interpretarCodigoDePosicao(cod) : null
+  if (posicao) redirect(`/p/${posicao}`)
   const invalido = cod !== ''
 
   return (
@@ -34,6 +36,9 @@ export default async function LerQr({
             <label htmlFor="codigo-posicao" className="text-[13px] font-medium">
               Etiqueta apagada? Digite o código da posição
             </label>
+            <p id="codigo-ajuda" className="text-xs text-ink-3">
+              Pode digitar sem traços e sem zeros: a1g3c4 abre A01-G03-C04.
+            </p>
             <div className="flex gap-2">
               <input
                 id="codigo-posicao"
@@ -44,7 +49,7 @@ export default async function LerQr({
                 autoComplete="off"
                 spellCheck={false}
                 aria-invalid={invalido || undefined}
-                aria-describedby={invalido ? 'codigo-erro' : undefined}
+                aria-describedby={invalido ? 'codigo-erro' : 'codigo-ajuda'}
                 className={campo}
               />
               <button className="h-12 shrink-0 rounded-lg bg-accent px-5 text-sm font-semibold text-on-accent hover:bg-accent-hover">

@@ -3,7 +3,8 @@
  */
 import { z } from 'zod'
 import { cnpjValido, limparCnpj } from './cnpj'
-import { lerCodigoDaPosicao } from './posicao'
+import { chaveDeSequencia } from './busca'
+import { interpretarCodigoDePosicao, lerCodigoDaPosicao } from './posicao'
 import { APLICACOES } from './schemas/cadastros'
 import {
   errosPorCampo,
@@ -50,9 +51,12 @@ export const schemaLinhaImportacao = z
       .refine(cnpjValido, { error: 'CNPJ do fornecedor inválido.' })
       .transform(limparCnpj),
     lead_time_dias: inteiroOpcional('Lead time precisa ser um número inteiro de dias.'),
-    posicao: textoOpcional(20).refine((p) => p === undefined || lerCodigoDaPosicao(p) !== null, {
-      error: 'Posição deve estar no formato A01-G03-C04.',
-    }),
+    // RN-25: "a1g3c4" e "A1-G3-C4" entram como A01-G03-C04
+    posicao: textoOpcional(20)
+      .transform((p) => (p === undefined ? p : (interpretarCodigoDePosicao(p) ?? p)))
+      .refine((p) => p === undefined || lerCodigoDaPosicao(p) !== null, {
+        error: 'Posição deve estar no formato A01-G03-C04.',
+      }),
     saldo_inicial: inteiroNaoNegativo('Saldo inicial precisa ser um inteiro (0 ou mais).'),
   })
   .refine((l) => l.estoque_maximo === undefined || l.estoque_maximo > l.estoque_minimo, {
@@ -80,7 +84,8 @@ export function validarLinhasImportacao(linhas: Record<string, unknown>[]): Resu
         erros: Object.entries(errosPorCampo(r.error)).map(([c, m]) => `${c}: ${m}`),
       }
     }
-    const codigo = r.data.codigo.toUpperCase()
+    // RN-01: "PST1" e "PST-001" são o mesmo código, então contam como repetidos
+    const codigo = chaveDeSequencia(r.data.codigo) || r.data.codigo.toUpperCase()
     const anterior = vistos.get(codigo)
     if (anterior)
       return { linha, ok: false, erros: [`codigo: repetido (já aparece na linha ${anterior}).`] }
@@ -131,7 +136,8 @@ export function resumoDaLinha(bruta: Record<string, unknown>, fornecedor?: strin
     codigo: celula(bruta.codigo),
     isoClasse: [iso, classe].filter(Boolean).join(' · '),
     fornecedor: fornecedor ?? celula(bruta.fornecedor_cnpj),
-    posicao: celula(bruta.posicao).toUpperCase(),
+    posicao:
+      interpretarCodigoDePosicao(celula(bruta.posicao)) ?? celula(bruta.posicao).toUpperCase(),
     minimo: celula(bruta.estoque_minimo),
     saldo: celula(bruta.saldo_inicial),
   }

@@ -49,7 +49,9 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RF-21 log e conferência | `lib/mudanca.test.ts` (antes → depois, hash encurtado) | `seguranca.test.ts` (conferência registrada no log; Consulta não executa) |
 | RF-26 parâmetros | `parametros.test.ts` (limites e últimas alterações) | `cadastros.test.ts` |
 | RN-22 checklist da senha na tela | `senha.test.ts` (`checklistDaSenha`) | — |
-| RF-11 busca tolerante | `busca.test.ts` (casos em `busca.casos.ts`, também no Laboratório), `EscolhaDeItem.test.tsx` (autocompletar com o "Pst001" do print) | E2E da saída pelo computador |
+| RF-11 busca tolerante | `busca.test.ts` (casos em `busca.casos.ts`, também no Laboratório), `EscolhaDeItem.test.tsx` (autocompletar com o "Pst001" do print), `BuscaDoTopo.test.tsx` (sugestões, setas, Enter, "/"), `SelecaoComBusca.test.tsx` (CNPJ só com números, posição sem traços, opção vazia, limpar o formulário) | `busca.test.ts` (OP sem traços, código de outro jeito, login com espaço, sugestões do topo); E2E da saída pelo computador |
+| RN-01 código equivalente e padronizado | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório), `importacao.test.ts` ("PST1" e PST-001 no mesmo arquivo) | `cadastros.test.ts` (criar e editar recusam o equivalente, "pst 2" grava PST-002, prévia da planilha) |
+| RN-25 posição digitada | `posicao.test.ts` (casos em `posicao.casos.ts`, também no Laboratório), `importacao.test.ts` ("a1g3c4" entra como A01-G03-C04) | E2E da posição do item novo |
 | RF-02 prévia do login | `login.test.ts` (`previaDoLogin`) | — |
 | Interface | `componentes.test.tsx` (selo com texto, campo de senha, toast, rótulos do gauge), `tema.test.ts`, `menu.test.ts` | — |
 | Segurança web | `proxy.test.ts` (CSP), `redirecionamento.test.ts` (open redirect) | — |
@@ -68,7 +70,7 @@ Automatizados com Playwright (`npm run test:e2e`), com os dados de demonstraçã
 
 1. Entrar com a senha provisória → o sistema exige a troca → com a senha curta a checklist fica pendente e o botão bloqueado → senha válida leva ao painel → o pop-up "Existem N alertas sem ciente" aparece, continua em outra página e só sai com VER, que leva aos alertas. Os demais testes do Admin passam pelo VER depois de entrar.
 2. Painel sem rolagem horizontal em 360 px.
-3. Abrir `/p/A01-G01-C02` (URL do QR) → item com a faixa "lida pela câmera" → "Registrar saída" na barra fixa → 9999 unidades: "Saída recusada" e botão bloqueado → 2 unidades com o botão +, destino em botão, OP e quem retirou → tela "Saída registrada" com "Ler outra etiqueta".
+3. Abrir `/p/A01-G01-C02` (URL do QR) → item com a faixa "lida pela câmera" → "Registrar saída" na barra fixa → 9999 unidades: "Saída recusada" e botão bloqueado → 2 unidades com o botão +, destino em botão, OP e quem retirou (achado pela matrícula 1045) → tela "Saída registrada" com "Ler outra etiqueta".
 4. Histórico filtrado pela OP → estornar com justificativa → a original aparece como estornada.
 5. Tocar em "Ler QR" na barra inferior → a câmera abre dentro do SICEI → a etiqueta de A01-G01-C02 leva ao item. A câmera é um vídeo gerado com o QR da etiqueta (`tests/e2e/camera.ts`), passado ao Chromium como câmera falsa; como o Chromium de teste não tem leitor nativo, o teste passa pelo jsQR, o mesmo caminho do iPhone.
 6. Criar usuário "Pedro da Consulta": o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê o pop-up de alertas, nem preços, nem o botão de saída, e não abre a gestão de usuários.
@@ -87,8 +89,8 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 5. Importação: prévia com a linha 3 errada e importação bloqueada; arquivo corrigido importa 1 item.
 6. CSV de itens e de movimentações.
 7. Novo item a partir da aba Itens de Cadastros: código PST-007 já sugerido, PST-001 avisado como em uso e bloqueado, fabricante e fornecedor cadastrados na hora e já escolhidos, item gravado.
-8. O item novo vai para A04-G02-C01 → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
-9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02".
+8. O item novo vai para A04-G02-C01, digitada como "a4g2c1" no campo com busca → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
+9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02"; a busca do topo sugere o PST-002 para "pst2" e abre o item; o histórico acha a OP-E2E-1 por "ope2e1".
 10. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
 
 Resultado da última execução: 20 de 20 passaram.
@@ -102,3 +104,4 @@ Resultado da última execução: 20 de 20 passaram.
 | 1.2 | 27/09/2026 | Leitura do QR dentro do SICEI: testes unitários, de componente e E2E com câmera falsa. |
 | 1.3 | 27/09/2026 | Testes do pop-up de alertas, do próximo código, da etiqueta pendente e do catálogo de ações; E2E com 19 fluxos. |
 | 1.4 | 27/09/2026 | Busca tolerante e autocompletar ao registrar: testes de unidade, de componente e E2E. |
+| 1.5 | 27/09/2026 | A mesma busca em todos os campos: testes do campo de escolha com busca, das sugestões do topo, dos filtros de texto (integração), do código equivalente e da posição digitada; roteiros E2E atualizados. |

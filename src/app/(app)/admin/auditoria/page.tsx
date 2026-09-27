@@ -7,7 +7,7 @@ import { descreverDispositivo } from '@/lib/dispositivo'
 import { formatarDataHora, formatarNumero } from '@/lib/formatar'
 import { nomeDaAcao, opcoesDoFiltroDeAcao } from '@/lib/acoesDoLog'
 import { hashCurto, resumoDaMudanca } from '@/lib/mudanca'
-import { acoesGravadas, listarAuditoria } from '@/server/consultas/auditoria'
+import { acoesGravadas, listarAuditoria, loginsDoFiltro } from '@/server/consultas/auditoria'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 import { CartaoConferencia } from './CartaoConferencia'
 
@@ -38,9 +38,10 @@ export default async function Auditoria({
   await exigirPermissaoDaPagina('auditoria:ver')
   const f = await searchParams
   const pagina = Math.max(1, Number(f.pagina) || 1)
-  const [{ linhas, total, paginas }, gravadas] = await Promise.all([
+  const [{ linhas, total, paginas }, gravadas, logins] = await Promise.all([
     listarAuditoria(f, pagina),
     acoesGravadas(),
+    loginsDoFiltro(),
   ])
   const gruposDeAcao = opcoesDoFiltroDeAcao(gravadas)
   const filtrado = Boolean(f.de || f.ate || f.acao || f.usuario)
@@ -101,9 +102,16 @@ export default async function Auditoria({
             <input
               name="usuario"
               defaultValue={f.usuario}
-              placeholder="Usuário"
+              placeholder="Login ou nome"
+              list="logins-do-log"
+              autoComplete="off"
               className={campo}
             />
+            <datalist id="logins-do-log">
+              {logins.map((l) => (
+                <option key={l} value={l} />
+              ))}
+            </datalist>
           </label>
           <button type="submit" className="h-10 rounded-lg bg-ink px-4 text-sm font-medium text-bg">
             Filtrar

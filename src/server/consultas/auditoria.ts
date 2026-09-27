@@ -2,6 +2,7 @@ import 'server-only'
 import type { Prisma } from '@/generated/prisma/client'
 import { fimDoDia, inicioDoDia } from '@/lib/formatar'
 import { prisma } from '../db'
+import { idsDeUsuariosParecidos } from './busca'
 
 export const POR_PAGINA_LOG = 50
 
@@ -15,13 +16,8 @@ export async function listarAuditoria(
   const ate = f.ate ? fimDoDia(f.ate) : null
   if (de || ate) where.criadoEm = { ...(de ? { gte: de } : {}), ...(ate ? { lte: ate } : {}) }
   if (f.acao?.trim()) where.acao = f.acao.trim().toUpperCase()
-  if (f.usuario?.trim()) {
-    const usuarios = await prisma.usuario.findMany({
-      where: { login: { contains: f.usuario.trim().toLowerCase() } },
-      select: { id: true },
-    })
-    where.usuarioId = { in: usuarios.map((u) => u.id) }
-  }
+  // RF-11: "joao silva" e "João" acham joao.silva
+  if (f.usuario?.trim()) where.usuarioId = { in: await idsDeUsuariosParecidos(f.usuario.trim()) }
   const [total, linhas] = await Promise.all([
     prisma.auditLog.count({ where }),
     prisma.auditLog.findMany({
@@ -79,4 +75,13 @@ export async function historicoDeParametros(quantos = 10) {
 export async function acoesGravadas(): Promise<string[]> {
   const linhas = await prisma.auditLog.findMany({ distinct: ['acao'], select: { acao: true } })
   return linhas.map((l) => l.acao)
+}
+
+/** Logins para o autocompletar do filtro de usuário. */
+export async function loginsDoFiltro(): Promise<string[]> {
+  const usuarios = await prisma.usuario.findMany({
+    select: { login: true },
+    orderBy: { login: 'asc' },
+  })
+  return usuarios.map((u) => u.login)
 }

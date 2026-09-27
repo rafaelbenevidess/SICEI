@@ -4,6 +4,7 @@ import {
   dadosDoNovoItem,
   listarFabricantes,
   listarFornecedores,
+  opcaoDeFornecedor,
 } from '@/server/consultas/cadastros'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 import { FormItem } from '../FormItem'
@@ -27,9 +28,7 @@ export default async function NovoItem() {
           fabricantes={fabricantes
             .filter((f) => f.ativo)
             .map((f) => ({ valor: f.id, rotulo: f.nome }))}
-          fornecedores={fornecedores
-            .filter((f) => f.ativo)
-            .map((f) => ({ valor: f.id, rotulo: f.nomeFantasia ?? f.razaoSocial }))}
+          fornecedores={fornecedores.filter((f) => f.ativo).map(opcaoDeFornecedor)}
           codigosExistentes={extras.codigos}
           cnpjsExistentes={extras.cnpjsExistentes}
         />

@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react'
 import { acaoEtiquetasImpressas } from '@/app/acoes/cadastros'
 import { Toast } from '@/components/formulario'
 import { classeBotao, Selo } from '@/components/ui'
+import { pontuarTexto } from '@/domain/busca'
 
 interface Etiqueta {
   codigo: string
@@ -26,6 +27,7 @@ export function FolhaDeEtiquetas({
 }) {
   const router = useRouter()
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set(inicial))
+  const [filtro, setFiltro] = useState('')
   const [pendente, iniciar] = useTransition()
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string; chave: number } | null>(
     null,
@@ -33,6 +35,10 @@ export function FolhaDeEtiquetas({
   const pendentes = etiquetas.filter((e) => e.pendente)
   const todas = marcadas.size === etiquetas.length
   const escolhidas = etiquetas.filter((e) => marcadas.has(e.codigo))
+  // RF-11: "a4g2c1" acha A04-G02-C01 e "pst7" acha a posição do PST-007
+  const visiveis = filtro.trim()
+    ? etiquetas.filter((e) => pontuarTexto(filtro, [e.codigo, e.itemCodigo, e.nome]) > 0)
+    : etiquetas
   const alternar = (codigo: string) =>
     setMarcadas((m) => {
       const n = new Set(m)
@@ -63,8 +69,37 @@ export function FolhaDeEtiquetas({
             {todas ? 'Limpar seleção' : 'Selecionar todas'}
           </button>
         </div>
+        <div className="px-5 pb-4">
+          <label htmlFor="filtro-etiquetas" className="sr-only">
+            Filtrar posições
+          </label>
+          <input
+            id="filtro-etiquetas"
+            type="search"
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            placeholder="Posição ou item (ex.: a4g2c1, pst7)"
+            autoComplete="off"
+            spellCheck={false}
+            className="h-10 w-full min-w-0 rounded-lg border border-line-2 bg-surface px-3 text-base text-ink placeholder:text-ink-3 sm:text-sm"
+          />
+          {filtro.trim() && visiveis.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMarcadas((m) => new Set([...m, ...visiveis.map((e) => e.codigo)]))}
+              className="mt-2 text-[13px] font-medium text-accent-ink hover:underline"
+            >
+              Marcar {visiveis.length === 1 ? 'a encontrada' : `as ${visiveis.length} encontradas`}
+            </button>
+          )}
+        </div>
+        {visiveis.length === 0 && (
+          <p className="border-t border-line px-5 py-4 text-[13px] text-ink-3">
+            Nenhuma posição com “{filtro.trim()}”.
+          </p>
+        )}
         <ul className="max-h-[70vh] overflow-y-auto">
-          {etiquetas.map((e) => (
+          {visiveis.map((e) => (
             <li key={e.codigo} className="border-t border-line">
               <label className="flex cursor-pointer items-center gap-3 px-5 py-3 hover:bg-surface-2">
                 <input

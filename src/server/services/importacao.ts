@@ -1,5 +1,6 @@
 import 'server-only'
 import Papa from 'papaparse'
+import { chaveDeSequencia } from '@/domain/busca'
 import {
   colunasFaltando,
   COLUNAS_IMPORTACAO,
@@ -44,14 +45,15 @@ export async function previaImportacao(ator: Ator, conteudo: string): Promise<Li
 
   // referências no banco: fornecedor precisa existir; código não pode existir
   const cnpjs = [...new Set(resultados.flatMap((l) => (l.ok ? [l.dados.fornecedor_cnpj] : [])))]
-  const codigos = resultados.flatMap((l) => (l.ok ? [l.dados.codigo] : []))
   const fornecedores = new Map(
     (await prisma.fornecedor.findMany({ where: { cnpj: { in: cnpjs } } })).map((f) => [f.cnpj, f]),
   )
-  const existentes = new Set(
-    (
-      await prisma.item.findMany({ where: { codigo: { in: codigos } }, select: { codigo: true } })
-    ).map((i) => i.codigo),
+  // RN-01: "PST1" no arquivo bate com PST-001 no banco
+  const existentes = new Map(
+    (await prisma.item.findMany({ select: { codigo: true } })).map((i) => [
+      chaveDeSequencia(i.codigo) || i.codigo.toUpperCase(),
+      i.codigo,
+    ]),
   )
   const posicoesOcupadas = new Set(
     (
@@ -65,8 +67,10 @@ export async function previaImportacao(ator: Ator, conteudo: string): Promise<Li
     const f = fornecedores.get(l.dados.fornecedor_cnpj)
     if (!f) erros.push('fornecedor_cnpj: fornecedor não cadastrado no SICEI.')
     else if (!f.ativo) erros.push('fornecedor_cnpj: fornecedor inativo.')
-    if (existentes.has(l.dados.codigo)) erros.push('codigo: já existe um item com este código.')
-    if (l.dados.posicao && posicoesOcupadas.has(l.dados.posicao.toUpperCase()))
+    const igual = existentes.get(chaveDeSequencia(l.dados.codigo) || l.dados.codigo.toUpperCase())
+    if (igual === l.dados.codigo) erros.push('codigo: já existe um item com este código.')
+    else if (igual) erros.push(`codigo: é o mesmo código que ${igual}, já cadastrado.`)
+    if (l.dados.posicao && posicoesOcupadas.has(l.dados.posicao))
       erros.push('posicao: posição já ocupada.')
     const resumo = resumoDaLinha(bruta, f ? (f.nomeFantasia ?? f.razaoSocial) : undefined)
     return erros.length ? { linha: l.linha, ok: false, erros, resumo } : { ...l, resumo }
@@ -117,7 +121,7 @@ export async function importarPlanilha(ator: Ator, conteudo: string): Promise<{ 
         })
         if (l.posicao) {
           const end = lerCodigoDaPosicao(l.posicao)!
-          const codigo = l.posicao.toUpperCase()
+          const codigo = l.posicao
           await tx.posicao.upsert({
             where: { codigo },
             create: { ...end, codigo, itemId: item.id, etiquetaPendente: true },

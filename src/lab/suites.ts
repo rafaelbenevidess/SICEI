@@ -7,6 +7,8 @@ import { decidirAlerta, type NivelAlerta } from '@/domain/alertas'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
 import { cnpjValido } from '@/domain/cnpj'
+import { proximoCodigo } from '@/domain/codigo'
+import { casosProximoCodigo } from '@/domain/codigo.casos'
 import { casosCnpj } from '@/domain/cnpj.casos'
 import {
   consumoMedioDiario,
@@ -807,6 +809,33 @@ export const SUITES: SuiteLab[] = [
     casos: casos(casosAtribuicao),
     executar: (e) => avaliarAtribuicao(e as Parameters<typeof avaliarAtribuicao>[0]),
     formatar: (v) => formatarDecisao(v, () => 'ok'),
+  },
+  {
+    id: 'RF-03',
+    titulo: 'Próximo código interno',
+    regra:
+      'O cadastro sugere o próximo número da sequência mais usada, com os mesmos zeros à esquerda, pulando códigos que já existem ou existiram.',
+    casos: casos(casosProximoCodigo),
+    executar: (e) => proximoCodigo(e as string[]),
+    formatar: (v) => String(v),
+    formulario: {
+      campos: [
+        {
+          nome: 'existentes',
+          rotulo: 'Códigos já cadastrados (separados por vírgula)',
+          tipo: 'texto',
+          padrao: 'PST-001, PST-002, PST-005',
+        },
+      ],
+      esperado: { nome: 'esperado', rotulo: 'Código esperado', tipo: 'texto' },
+      executar: (v) => {
+        const existentes = (v.existentes ?? '')
+          .split(',')
+          .map((c) => c.trim())
+          .filter(Boolean)
+        return { resultado: proximoCodigo(existentes), explicacao: 'maior número + 1' }
+      },
+    },
   },
   {
     id: 'RN-26',

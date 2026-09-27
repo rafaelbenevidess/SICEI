@@ -53,3 +53,17 @@ export const listarItensDoCadastro = () =>
     },
     take: 1000,
   })
+
+/** Dados do cadastro de item: todos os códigos já usados (para sugerir o próximo) e os CNPJs. */
+export async function dadosDoNovoItem() {
+  const [codigos, fornecedores] = await Promise.all([
+    prisma.item.findMany({ select: { codigo: true } }),
+    prisma.fornecedor.findMany({ select: { cnpj: true, razaoSocial: true, nomeFantasia: true } }),
+  ])
+  return {
+    codigos: codigos.map((c) => c.codigo),
+    cnpjsExistentes: Object.fromEntries(
+      fornecedores.map((f) => [f.cnpj, f.nomeFantasia ?? f.razaoSocial]),
+    ),
+  }
+}

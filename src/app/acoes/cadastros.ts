@@ -69,3 +69,24 @@ export async function acaoSituacao(_: EstadoAcao, form: FormData): Promise<Estad
     return { mensagem: ativo ? 'Reativado.' : 'Inativado.' }
   })
 }
+
+/** Fabricante criado de dentro do cadastro de item: devolve o id para já ficar escolhido. */
+export async function acaoFabricanteRapido(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
+  return executarAcao(async () => {
+    const f = await salvarFabricante(await atorDaAcao(), dadosDoFormulario(form))
+    revalidatePath('/cadastros')
+    return { mensagem: `Fabricante ${f.nome} cadastrado.`, dados: { id: f.id, nome: f.nome } }
+  })
+}
+
+/** Fornecedor criado de dentro do cadastro de item; o vínculo nasce junto com o item (RN-05). */
+export async function acaoFornecedorNovo(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
+  return executarAcao(async () => {
+    const f = await salvarFornecedor(await atorDaAcao(), dadosDoFormulario(form))
+    revalidatePath('/cadastros')
+    return {
+      mensagem: `Fornecedor ${f.razaoSocial} cadastrado.`,
+      dados: { id: f.id, nome: f.nomeFantasia ?? f.razaoSocial },
+    }
+  })
+}

@@ -95,7 +95,9 @@ function Mensagem() {
       </p>
     )
   }
-  if (estado.ok && estado.mensagem) return <Toast chave={estado.instante}>{estado.mensagem}</Toast>
+  // com senha provisória na resposta, o bloco de credenciais já avisa: sem toast duplicado
+  if (estado.ok && estado.mensagem && !estado.dados?.senha)
+    return <Toast chave={estado.instante}>{estado.mensagem}</Toast>
   return null
 }
 

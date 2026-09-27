@@ -88,7 +88,7 @@ describe('Formulários ligados a Server Actions', () => {
     expect(campo).toHaveValue('5')
   })
 
-  it('mostra a mensagem de sucesso, os dados devolvidos e limpa o formulário', async () => {
+  it('com senha provisória, mostra os dados devolvidos sem toast e limpa o formulário', async () => {
     const user = userEvent.setup()
     const acao = async () => ({
       ok: true,
@@ -105,9 +105,21 @@ describe('Formulários ligados a Server Actions', () => {
     )
     await user.type(screen.getByLabelText('Nome'), 'Ana')
     await user.click(screen.getByRole('button', { name: 'Criar' }))
-    expect(await screen.findByText('Usuário criado.')).toBeInTheDocument()
-    expect(screen.getByText('login gerado: ana.santos')).toBeInTheDocument()
+    expect(await screen.findByText('login gerado: ana.santos')).toBeInTheDocument()
+    expect(screen.queryByText('Usuário criado.')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Nome')).toHaveValue('')
+  })
+
+  it('sucesso sem senha: mostra o toast com a mensagem', async () => {
+    const user = userEvent.setup()
+    const acao = async () => ({ ok: true, mensagem: 'Saída registrada.', instante: 3 })
+    render(
+      <FormAcao acao={acao} rotulo="Saída">
+        <BotaoEnviar>Registrar</BotaoEnviar>
+      </FormAcao>,
+    )
+    await user.click(screen.getByRole('button', { name: 'Registrar' }))
+    expect(await screen.findByText('Saída registrada.')).toBeInTheDocument()
   })
 
   it('dois formulários com o mesmo campo não repetem o id (acessibilidade)', () => {

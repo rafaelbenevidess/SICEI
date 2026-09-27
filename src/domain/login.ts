@@ -55,3 +55,24 @@ export function gerarLogin(nome: string, sobrenome: string, loginsExistentes: st
   while (existentes.has(`${base}${n}`)) n++
   return `${base}${n}`
 }
+
+/**
+ * Prévia do login na tela de novo usuário (RF-02): o mesmo cálculo do servidor, com a
+ * explicação da regra. Sem nome ou sobrenome ainda, não há prévia.
+ */
+export function previaDoLogin(
+  nome: string,
+  sobrenome: string,
+  loginsExistentes: string[],
+): { login: string; nota: string } | null {
+  if (palavras(nome).length === 0 || palavras(sobrenome).length === 0) return null
+  const base = loginBase(nome, sobrenome)
+  const login = gerarLogin(nome, sobrenome, loginsExistentes)
+  return {
+    login,
+    nota:
+      login === base
+        ? 'Sem acentos, sem partículas, último sobrenome.'
+        : `${base} já existe ou existiu: recebe o próximo número livre.`,
+  }
+}

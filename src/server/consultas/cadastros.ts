@@ -22,12 +22,14 @@ export const listarPosicoes = () =>
 export const listarUsuarios = () =>
   prisma.usuario.findMany({ orderBy: [{ ativo: 'desc' }, { nome: 'asc' }] })
 
-export const etiquetasDasPosicoes = (codigos: string[]) =>
-  prisma.posicao.findMany({
-    where: { codigo: { in: codigos }, itemId: { not: null } },
-    include: { item: { select: { codigo: true, descricao: true } } },
-    orderBy: { codigo: 'asc' },
-  })
-
 export const itemDaPosicao = (codigo: string) =>
   prisma.posicao.findUnique({ where: { codigo }, select: { itemId: true } })
+
+/** Todas as posições ativas com item, para a folha de etiquetas (RF-22). */
+export const posicoesOcupadas = () =>
+  prisma.posicao.findMany({
+    where: { itemId: { not: null }, ativo: true },
+    include: { item: { select: { codigo: true, descricao: true, iso: true, classe: true } } },
+    orderBy: { codigo: 'asc' },
+    take: 500,
+  })

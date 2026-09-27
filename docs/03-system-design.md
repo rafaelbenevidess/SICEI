@@ -1,17 +1,17 @@
-# SIMI: System Design
+# SICEI: System Design
 
 | | |
 |---|---|
-| **Projeto** | SIMI, controle de estoque de pastilhas industriais |
+| **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.1 (para revisão) |
+| **Versão** | 1.2 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
-Este documento explica **como** o SIMI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 10.
+Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 10.
 
 ## 1. Visão geral
 
-O SIMI é uma aplicação web responsiva, usada no computador do escritório e no celular do almoxarife. É um **monólito modular**: um único projeto Next.js serve as telas e executa as regras de negócio no servidor, com um banco PostgreSQL por trás.
+O SICEI é uma aplicação web responsiva, usada no computador do escritório e no celular do almoxarife. É um **monólito modular**: um único projeto Next.js serve as telas e executa as regras de negócio no servidor, com um banco PostgreSQL por trás.
 
 Com 10 a 30 usuários e alguns milhares de itens, não há motivo para separar front e back, usar microsserviços ou filas externas. Um projeto só é mais barato de hospedar, mais fácil de testar e mais simples de manter, que é o que pede o RNF-07.
 
@@ -253,7 +253,7 @@ A **conferência de saldo** (RN-09b) compara `item.saldo` com a soma das movimen
 - A mensagem de erro é sempre a mesma: "login ou senha inválidos".
 
 **Sessão:**
-- Token aleatório de 32 bytes no cookie `simi_sessao`, com `HttpOnly`, `Secure`, `SameSite=Lax` e `Path=/`. O banco guarda só o SHA-256 do token: se a tabela vazar, os tokens não servem para nada.
+- Token aleatório de 32 bytes no cookie `sicei_sessao`, com `HttpOnly`, `Secure`, `SameSite=Lax` e `Path=/`. O banco guarda só o SHA-256 do token: se a tabela vazar, os tokens não servem para nada.
 - Expira por inatividade (parâmetro, padrão 30 minutos) e tem duração máxima de 12 horas.
 - **Troca de senha obrigatória:** enquanto `deve_trocar_senha` for verdadeiro, qualquer rota redireciona para `/trocar-senha`.
 - **Inativação (RN-21b):** o service apaga todas as sessões do usuário na mesma transação, e a próxima requisição dele já cai no login.
@@ -280,9 +280,9 @@ Se qualquer linha falhar na gravação, nada é gravado.
 
 ## 6. Segurança
 
-Mapa das categorias do OWASP Top 10 (2021) para as proteções do SIMI. A revisão completa fica para o documento 04.
+Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revisão completa fica para o documento 04.
 
-| Risco | Como o SIMI se protege |
+| Risco | Como o SICEI se protege |
 |---|---|
 | A01 Controle de acesso quebrado | Matriz de permissões em `domain/permissoes.ts`, conferida em todo service no servidor. A tela esconder um botão não conta como proteção. Testes de integração tentam cada ação com cada perfil. |
 | A02 Falhas de criptografia | HTTPS obrigatório com HSTS. Senhas com Argon2id. Tokens de sessão guardados só como hash. |
@@ -309,6 +309,8 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SIMI. A revis�
 | Produção (demonstração) | Vercel Hobby + Neon Free | Acesso pelo celular durante a apresentação |
 
 **Conexão com o Neon:** a aplicação usa a URL com pooling (`DATABASE_URL`) e as migrations usam a URL direta (`DIRECT_URL`), configurada no `prisma.config.ts`. O lock de linha e o `pg_advisory_xact_lock` valem só dentro da transação, então funcionam com o pooling do Neon.
+
+**Nomes herdados do SIMI:** o projeto se chamava SIMI. Os nomes do banco já publicados continuam iguais: os usuários `simi_app` e `simi_owner`, o banco `simi` e a função `simi_bloquear_alteracao`. A função fica numa migration já aplicada, e o Prisma recusa migration alterada depois de aplicada. Renomear os usuários exigiria trocar as senhas e as variáveis da Vercel ao mesmo tempo. Nenhum desses nomes aparece para quem usa o sistema.
 
 **Backup (RNF-04):**
 - Um workflow agendado no GitHub Actions roda `pg_dump` todo dia e guarda o arquivo como artifact por 30 dias.
@@ -372,7 +374,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 
 ### 9.3 Laboratório de testes para o avaliador (RNF-13)
 
-O professor precisa ver os testes, rodar os testes e **testar por conta própria**, sem instalar nada. Para isso o SIMI tem uma página pública em `https://<domínio-do-simi>/testes`, com três abas.
+O professor precisa ver os testes, rodar os testes e **testar por conta própria**, sem instalar nada. Para isso o SICEI tem uma página pública em `https://<domínio-do-simi>/testes`, com três abas.
 
 **Aba 1: Executar os testes.**
 - Mostra os testes das regras de negócio agrupados por regra (RN-15, RN-21...), cada um com a descrição em português.
@@ -450,3 +452,4 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 |---|---|---|
 | 1.0 | 25/09/2026 | Primeira versão: stack, arquitetura, modelo de dados, fluxos críticos, segurança, deploy e testes. |
 | 1.1 | 26/09/2026 | Testes unitários em todo o sistema (9.1) e Laboratório de testes para o avaliador executar e criar testes na web (9.3, ADR-10 e ADR-11). |
+| 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Os nomes do banco já publicados ficam como estão (seção 7). |

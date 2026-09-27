@@ -6,7 +6,7 @@ export interface MeuTeste {
   esperado: string
 }
 
-const CHAVE = 'simi.laboratorio.meusTestes'
+const CHAVE = 'sicei.laboratorio.meusTestes'
 
 export function lerMeusTestes(): MeuTeste[] {
   try {

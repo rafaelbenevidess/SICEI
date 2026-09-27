@@ -6,7 +6,10 @@ export default async function Inicio() {
   if (await usuarioAtual()) redirect('/painel')
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-3xl font-bold">SIMI</h1>
+      <h1 className="text-3xl font-bold">SICEI</h1>
+      <p className="text-lg text-slate-700">
+        Sistema Inteligente de Controle de Estoques Industriais
+      </p>
       <p className="text-slate-600">
         Controle de estoque de pastilhas industriais da DDA Metalúrgica. Trabalho acadêmico.
       </p>

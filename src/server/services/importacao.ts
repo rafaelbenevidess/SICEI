@@ -61,7 +61,7 @@ export async function previaImportacao(ator: Ator, conteudo: string): Promise<Re
     if (!l.ok) return l
     const erros: string[] = []
     const f = fornecedores.get(l.dados.fornecedor_cnpj)
-    if (!f) erros.push('fornecedor_cnpj: fornecedor não cadastrado no SIMI.')
+    if (!f) erros.push('fornecedor_cnpj: fornecedor não cadastrado no SICEI.')
     else if (!f.ativo) erros.push('fornecedor_cnpj: fornecedor inativo.')
     if (existentes.has(l.dados.codigo)) erros.push('codigo: já existe um item com este código.')
     if (l.dados.posicao && posicoesOcupadas.has(l.dados.posicao.toUpperCase()))

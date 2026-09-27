@@ -4,7 +4,7 @@ import type { Perfil } from '@/domain/tipos'
 import { prisma } from '../db'
 import { lerParametros } from '../parametros'
 
-export const COOKIE_SESSAO = 'simi_sessao'
+export const COOKIE_SESSAO = 'sicei_sessao'
 /** Duração máxima de uma sessão, com ou sem uso (doc 03, seção 5.5). */
 export const DURACAO_MAXIMA_HORAS = 12
 

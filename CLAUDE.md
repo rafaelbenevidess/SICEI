@@ -1,8 +1,8 @@
 @AGENTS.md
 
-# SIMI: regras do projeto
+# SICEI: regras do projeto
 
-Sistema de controle de estoque de pastilhas industriais da DDA Metalúrgica. **Trabalho acadêmico**: um professor vai avaliar o código, os testes e a documentação.
+SICEI, Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais da DDA Metalúrgica. O projeto se chamava SIMI; os nomes de infraestrutura já publicados (`simi_app`, `simi_owner`, banco `simi`, função `simi_bloquear_alteracao`, repositório no GitHub) continuam com o nome antigo. **Trabalho acadêmico**: um professor vai avaliar o código, os testes e a documentação.
 
 ## Fonte da verdade
 

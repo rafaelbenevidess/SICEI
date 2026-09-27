@@ -1,4 +1,4 @@
-# SIMI: Segurança
+# SICEI: Segurança
 
 | | |
 |---|---|
@@ -8,7 +8,7 @@
 
 ## 1. Controles implementados
 
-| Tema | Como o SIMI se protege | Onde está no código |
+| Tema | Como o SICEI se protege | Onde está no código |
 |---|---|---|
 | Autenticação | Login interno gerado pelo sistema, sem e-mail. Senha com Argon2id (parâmetros OWASP). Troca obrigatória da senha provisória. Mensagem única para login ou senha errados, com tempo de resposta equalizado. | `src/server/services/autenticacao.ts`, `src/server/auth/hash.ts` |
 | Bloqueio e força bruta | Conta bloqueada na 5ª falha seguida; depois disso a resposta é sempre a mesma, com ou sem a senha certa. Limite de 20 tentativas por IP a cada 15 minutos. | `autenticacao.ts`, `src/domain/senha.ts` |

@@ -120,7 +120,7 @@ test('RF-20: relatório de reposição exporta CSV', async ({ page }) => {
     page.waitForEvent('download'),
     page.getByRole('link', { name: 'Exportar CSV' }).click(),
   ])
-  expect(download.suggestedFilename()).toMatch(/^simi-reposicao-\d{4}-\d{2}-\d{2}\.csv$/)
+  expect(download.suggestedFilename()).toMatch(/^sicei-reposicao-\d{4}-\d{2}-\d{2}\.csv$/)
 })
 
 test('RNF-13: laboratório público roda todos os casos no navegador', async ({ page }) => {

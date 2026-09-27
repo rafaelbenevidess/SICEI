@@ -1,4 +1,4 @@
-// Modelo de dados do SIMI (doc 03, seção 4).
+// Modelo de dados do SICEI (doc 03, seção 4).
 // Restrições que o Prisma não expressa (CHECKs, índices parciais, triggers de imutabilidade
 // e permissões do banco) estão na migration "regras_do_banco".
 

@@ -16,12 +16,13 @@ export default async function PaginaLogin({
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-4 py-10">
       <div>
-        <h1 className="text-3xl font-bold">SIMI</h1>
-        <p className="text-slate-600">Controle de estoque de pastilhas · DDA Metalúrgica</p>
+        <h1 className="text-3xl font-bold">SICEI</h1>
+        <p className="text-slate-600">Sistema Inteligente de Controle de Estoques Industriais</p>
+        <p className="text-sm text-slate-500">Pastilhas industriais · DDA Metalúrgica</p>
       </div>
       <FormularioLogin volta={volta ?? ''} />
       <p className="text-xs text-slate-500">
-        Não tem acesso ou esqueceu a senha? Procure o Administrador do sistema. O SIMI não usa
+        Não tem acesso ou esqueceu a senha? Procure o Administrador do sistema. O SICEI não usa
         e-mail para login.
       </p>
     </main>

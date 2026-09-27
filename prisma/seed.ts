@@ -1,5 +1,5 @@
 /**
- * Seed do SIMI.
+ * Seed do SICEI.
  * - Sempre: parâmetros padrão e o usuário "admin" (se ainda não houver nenhum usuário),
  *   com senha provisória mostrada no terminal e troca obrigatória no primeiro acesso (RN-21).
  * - Com SEED_DEMO=1: dados de demonstração criados pelos próprios serviços do sistema,

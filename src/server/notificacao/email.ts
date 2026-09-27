@@ -44,7 +44,7 @@ export async function enviarNotificacoesPendentes(): Promise<{ enviadas: number;
       await t.sendMail({
         from: process.env.SMTP_FROM,
         to: n.destinatario,
-        subject: `[SIMI] ${item.codigo} está ${n.nivel === 'ZERADO' ? 'ZERADO' : 'CRÍTICO'}`,
+        subject: `[SICEI] ${item.codigo} está ${n.nivel === 'ZERADO' ? 'ZERADO' : 'CRÍTICO'}`,
         text: [
           `Item: ${item.codigo} - ${item.descricao}`,
           `Situação: ${n.nivel}`,
@@ -52,7 +52,7 @@ export async function enviarNotificacoesPendentes(): Promise<{ enviadas: number;
           `Estoque mínimo: ${item.estoqueMinimo}`,
           `Posição: ${item.posicao?.codigo ?? 'sem posição'}`,
           '',
-          `Abrir no SIMI: ${base}/itens/${item.id}`,
+          `Abrir no SICEI: ${base}/itens/${item.id}`,
         ].join('\n'),
       })
       await prisma.notificacao.update({

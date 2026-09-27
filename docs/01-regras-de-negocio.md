@@ -1,24 +1,24 @@
-# SIMI: Regras de Negócio
+# SICEI: Regras de Negócio
 
 | | |
 |---|---|
-| **Projeto** | SIMI, controle de estoque de pastilhas industriais |
+| **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Cliente** | DDA Metalúrgica (Santa Catarina). Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.1 (validada) |
+| **Versão** | 1.2 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
 
 A DDA usa vários modelos de pastilhas industriais na usinagem. O consumo é alto e, se uma pastilha faltar, a máquina para. Hoje o estoque é controlado em planilhas preenchidas à mão. As entradas e saídas às vezes não são lançadas, ou são lançadas com atraso, e ninguém sabe ao certo quanto tem na prateleira. A compra acaba sendo feita quando alguém percebe que acabou.
 
-O SIMI substitui a planilha. Cada entrada e saída é registrada no momento em que acontece, o saldo fica sempre atualizado e o sistema avisa antes de o item acabar. Com o histórico gravado, dá para planejar as compras com base no consumo real.
+O SICEI substitui a planilha. Cada entrada e saída é registrada no momento em que acontece, o saldo fica sempre atualizado e o sistema avisa antes de o item acabar. Com o histórico gravado, dá para planejar as compras com base no consumo real.
 
 Este documento define **o que o sistema precisa respeitar**, sem entrar em como ele vai ser construído. A parte técnica está no [documento 03](03-system-design.md).
 
 ## 2. Glossário
 
-| Termo | Significado no SIMI |
+| Termo | Significado no SICEI |
 |---|---|
 | **Pastilha (item)** | Inserto intercambiável de metal duro, cermet ou cerâmica, usado em torneamento, fresamento, furação ou rosqueamento. Cada modelo é um item. |
 | **Código interno** | Identificador único do item dentro da DDA. É por ele que o almoxarife procura. |
@@ -30,7 +30,7 @@ Este documento define **o que o sistema precisa respeitar**, sem entrar em como 
 | **Lead time** | Prazo, em dias corridos, entre o pedido e a chegada da pastilha, informado para cada par item + fornecedor. |
 | **Embalagem** | Quantidade de unidades por caixa (normalmente 10). O estoque é controlado em unidades. |
 | **Posição** | Endereço físico de um compartimento no almoxarifado, no formato Armário → Gaveta → Compartimento (ex.: `A01-G03-C04`). |
-| **Colaborador** | Funcionário que retira ou devolve pastilhas no almoxarifado. Está cadastrado no SIMI, mas não precisa ter login. |
+| **Colaborador** | Funcionário que retira ou devolve pastilhas no almoxarifado. Está cadastrado no SICEI, mas não precisa ter login. |
 | **Movimentação** | Qualquer evento que muda o saldo: entrada, saída, ajuste ou estorno. |
 | **Destino** | Setor, máquina ou centro de custo que recebeu a pastilha numa saída. |
 | **Ordem de produção (OP)** | Número da ordem de fabricação para a qual a pastilha foi retirada. |
@@ -110,7 +110,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 - Mudar um item de posição é permitido, e a mudança fica no log.
 - A organização física recomendada é agrupar por aplicação (torneamento, fresamento, furação, rosca) e, dentro dela, por formato. O sistema não obriga essa organização.
 
-**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR com a câmera do celular abre a página do item no SIMI, desde que o usuário esteja logado. Se o item mudar de posição, a etiqueta precisa ser reimpressa.
+**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR com a câmera do celular abre a página do item no SICEI, desde que o usuário esteja logado. Se o item mudar de posição, a etiqueta precisa ser reimpressa.
 
 ### 5.2 Movimentações e saldo
 
@@ -140,7 +140,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 
 ### 5.3 Níveis de estoque e alertas
 
-O SIMI trabalha **só com quantidades**. Os preços ficam registrados para comparar fornecedores (RN-05a e RN-05b), mas o sistema não calcula o valor do estoque em reais.
+O SICEI trabalha **só com quantidades**. Os preços ficam registrados para comparar fornecedores (RN-05a e RN-05b), mas o sistema não calcula o valor do estoque em reais.
 
 **RN-14. Estoque mínimo obrigatório.** Todo item ativo tem um estoque mínimo, que pode ser zero mas precisa estar preenchido. O estoque máximo é opcional e, se informado, precisa ser maior que o mínimo. Mudanças nesses valores vão para o log (RN-23).
 
@@ -183,7 +183,7 @@ quantidade alvo = estoque máximo
 sugestão        = quantidade alvo − saldo, arredondada para cima em múltiplos da embalagem
 ```
 
-Só entram na sugestão os itens ativos em `ATENCAO`, `CRITICO` ou `ZERADO`. Junto da quantidade, a sugestão mostra o fornecedor preferencial, o de menor último preço e o lead time de cada um. A decisão de comprar continua sendo do Gestor, porque o SIMI não emite pedidos de compra.
+Só entram na sugestão os itens ativos em `ATENCAO`, `CRITICO` ou `ZERADO`. Junto da quantidade, a sugestão mostra o fornecedor preferencial, o de menor último preço e o lead time de cada um. A decisão de comprar continua sendo do Gestor, porque o SICEI não emite pedidos de compra.
 
 > Exemplo: saldo de 35, ponto de reposição de 41, sem máximo, consumo de 3 por dia e caixas de 10. Quantidade alvo = 41 + 90 = 131. Sugestão = 131 − 35 = 96, arredondada para 100 (10 caixas).
 
@@ -228,7 +228,7 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 3 | O que a saída registra? | Destino, ordem de produção e colaborador que retirou, todos obrigatórios (RN-11). |
 | 4 | Interessa o valor do estoque em reais? | Não. O sistema trabalha só com quantidades; os preços servem para comparar fornecedores. |
 | 5 | Quantos usuários? | De 10 a 30. |
-| 6 | Código de barras ou etiqueta? | O SIMI gera etiquetas QR por posição (RN-26). |
+| 6 | Código de barras ou etiqueta? | O SICEI gera etiquetas QR por posição (RN-26). |
 | 7 | Onde aparecem os alertas? | No painel e no e-mail corporativo (RN-19). |
 | 8 | Importar a planilha atual? | Sim, por CSV, com o saldo lançado como `AJUSTE_POSITIVO` com a justificativa "saldo inicial da implantação". |
 | 9 | Nota fiscal obrigatória nas compras? | Sim (RN-10). |
@@ -244,3 +244,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 0.1 | 25/09/2026 | Primeira versão, com vários fornecedores por item e histórico de preços, log inalterável, contas geridas internamente e retenção de 7 anos. |
 | 1.0 | 25/09/2026 | Decisões validadas: endereçamento de 3 níveis e etiqueta QR (RN-25, RN-26), saída com OP e colaborador, NF obrigatória, só quantidades, login e senha gerados pelo sistema, integração fora do escopo. |
 | 1.1 | 26/09/2026 | RN-18: alerta que melhora sem sair do alerta é atualizado para o nível atual. Glossário: crítico é saldo igual ou abaixo do mínimo. |
+| 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhuma regra mudou. |

@@ -52,7 +52,7 @@ export function AbaCriar() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-slate-600">
-        Escolha uma regra, informe as entradas e o resultado que você espera. O SIMI calcula com a
+        Escolha uma regra, informe as entradas e o resultado que você espera. O SICEI calcula com a
         função real e diz se o seu teste passou.
       </p>
       <label className="flex flex-col gap-1 text-sm font-medium">

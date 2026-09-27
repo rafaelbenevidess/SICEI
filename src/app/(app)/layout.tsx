@@ -25,7 +25,7 @@ export default async function LayoutDoSistema({ children }: { children: React.Re
       <header className="nao-imprimir border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <Link href="/painel" className="text-lg font-bold">
-            SIMI
+            SICEI
           </Link>
           <Link
             href="/alertas"

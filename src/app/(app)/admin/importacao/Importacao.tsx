@@ -43,7 +43,7 @@ export function Importacao({ modelo }: { modelo: string }) {
       <p className="text-sm">
         <a
           href={`data:text/csv;charset=utf-8,${encodeURIComponent(modelo)}`}
-          download="modelo-importacao-simi.csv"
+          download="modelo-importacao-sicei.csv"
           className="font-medium underline"
         >
           Baixar o modelo de CSV

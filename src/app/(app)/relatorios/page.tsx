@@ -126,7 +126,7 @@ export default async function PaginaRelatorios({
         </Tabela>
       )}
       <p className="text-xs text-slate-500">
-        Quantidades em unidades. O SIMI não calcula valor de estoque em reais.
+        Quantidades em unidades. O SICEI não calcula valor de estoque em reais.
       </p>
     </Pagina>
   )

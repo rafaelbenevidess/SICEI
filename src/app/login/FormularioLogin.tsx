@@ -5,7 +5,7 @@ import { BotaoEnviar, Campo, FormAcao, Oculto } from '@/components/formulario'
 
 export function FormularioLogin({ volta }: { volta: string }) {
   return (
-    <FormAcao acao={acaoEntrar} rotulo="Entrar no SIMI">
+    <FormAcao acao={acaoEntrar} rotulo="Entrar no SICEI">
       <Oculto nome="volta" valor={volta} />
       <Campo
         nome="login"

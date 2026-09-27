@@ -1,4 +1,4 @@
-# SIMI: Operação
+# SICEI: Operação
 
 | | |
 |---|---|
@@ -13,7 +13,7 @@
 
 ## 2. Banco de dados: dois usuários
 
-O SIMI usa dois usuários no PostgreSQL (doc 03, seção 5.2):
+O SICEI usa dois usuários no PostgreSQL (doc 03, seção 5.2):
 
 | Usuário | Para quê | Pode alterar o histórico? |
 |---|---|---|
@@ -70,7 +70,7 @@ Para o avaliador, os testes das regras também rodam no navegador, sem instalar 
    - `SEED_SENHA_ADMIN`: senha provisória do `admin` no primeiro deploy (a troca é obrigatória no primeiro acesso)
    - `SEED_DEMO`: `1` para carregar os dados de demonstração no primeiro deploy
 
-   Se a integração Neon da Vercel estiver ligada, ela cria sozinha um `DATABASE_URL` com o usuário dono do banco. Troque o valor de produção pela URL do `simi_app`; o `DATABASE_URL_UNPOOLED` que ela cria não é usado pelo SIMI.
+   Se a integração Neon da Vercel estiver ligada, ela cria sozinha um `DATABASE_URL` com o usuário dono do banco. Troque o valor de produção pela URL do `simi_app`; o `DATABASE_URL_UNPOOLED` que ela cria não é usado pelo SICEI.
 3. O build da Vercel (`npm run vercel-build`, definido no `vercel.json`) roda `prisma migrate deploy`, depois o seed e depois o build com os testes. O seed é idempotente: cria o `admin` só se não houver Administrador, com a senha de `SEED_SENHA_ADMIN` (ou uma aleatória, mostrada no log do build), e os dados de demonstração só se `SEED_DEMO=1` e o banco não tiver itens.
 4. As senhas provisórias dos usuários de demonstração aparecem no log do build. Todas exigem troca no primeiro acesso.
 5. O `npm run build` roda os testes unitários antes do `next build`. Se algum teste falhar, a versão não é publicada.

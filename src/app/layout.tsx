@@ -3,8 +3,9 @@ import { connection } from 'next/server'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: { default: 'SIMI', template: '%s · SIMI' },
-  description: 'Controle de estoque de pastilhas industriais da DDA Metalúrgica',
+  title: { default: 'SICEI', template: '%s · SICEI' },
+  description:
+    'Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais da DDA Metalúrgica',
 }
 
 export const viewport: Viewport = {

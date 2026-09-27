@@ -1,14 +1,14 @@
-# SIMI: Requisitos
+# SICEI: Requisitos
 
 | | |
 |---|---|
-| **Projeto** | SIMI, controle de estoque de pastilhas industriais |
+| **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.1 (validada) |
+| **Versão** | 1.2 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
-Este documento lista o que o SIMI precisa fazer (requisitos funcionais, RF) e como ele precisa se comportar (requisitos não funcionais, RNF). As regras de negócio citadas (RN-xx) estão no documento 01.
+Este documento lista o que o SICEI precisa fazer (requisitos funcionais, RF) e como ele precisa se comportar (requisitos não funcionais, RNF). As regras de negócio citadas (RN-xx) estão no documento 01.
 
 ## 1. Priorização
 
@@ -307,3 +307,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 0.1 | 25/09/2026 | Primeira versão. |
 | 1.0 | 25/09/2026 | RF-23, RF-24 e RNF-09 fora do escopo. Novos RF-27 (colaboradores) e RF-28 (posições). RF-14, RF-22 e RF-25 passam a Must. RF-02 reescrito com login e senha gerados pelo sistema. Saída com OP e colaborador, NF obrigatória, relatórios só em quantidade. |
 | 1.1 | 26/09/2026 | Novo RNF-13: testes unitários em todo o sistema, executáveis pelo avaliador na web, com criação de casos próprios. RNF-08 com meta de 90% no domínio. |
+| 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhum requisito mudou. |

@@ -1,8 +1,8 @@
 {
-  "name": "simi",
+  "name": "sicei",
   "version": "0.1.0",
   "private": true,
-  "description": "SIMI: controle de estoque de pastilhas industriais (DDA Metalúrgica)",
+  "description": "SICEI: controle de estoque de pastilhas industriais (DDA Metalúrgica)",
   "scripts": {
     "dev": "next dev",
     "build": "npm run test:relatorio && next build",

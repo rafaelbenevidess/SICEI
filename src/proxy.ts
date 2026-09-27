@@ -30,7 +30,7 @@ export function montarCsp(nonce: string, desenvolvimento: boolean): string {
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
-  if (!ehPublica(pathname) && !request.cookies.get('simi_sessao')) {
+  if (!ehPublica(pathname) && !request.cookies.get('sicei_sessao')) {
     const url = new URL('/login', request.url)
     url.searchParams.set('volta', `${pathname}${search}`)
     return NextResponse.redirect(url)

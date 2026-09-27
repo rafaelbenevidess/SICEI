@@ -1,5 +1,5 @@
 /**
- * Só aceita caminhos internos no parâmetro "volta" do login, para ninguém usar o SIMI
+ * Só aceita caminhos internos no parâmetro "volta" do login, para ninguém usar o SICEI
  * como trampolim para outro site (open redirect, doc 03 seção 5.6).
  */
 export function destinoSeguro(volta: string | null | undefined, padrao = '/painel'): string {

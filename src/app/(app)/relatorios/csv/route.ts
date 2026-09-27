@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   return new Response(gerarCsv(r.cabecalho, r.linhas), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="simi-${r.tipo}-${hojeIso()}.csv"`,
+      'Content-Disposition': `attachment; filename="sicei-${r.tipo}-${hojeIso()}.csv"`,
       'Cache-Control': 'no-store',
     },
   })

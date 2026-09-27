@@ -1,10 +1,10 @@
-# SIMI
+# SICEI
 
 [![CI](https://github.com/rafaelbenevidess/SIMI/actions/workflows/ci.yml/badge.svg)](https://github.com/rafaelbenevidess/SIMI/actions/workflows/ci.yml)
 
-Sistema de controle de estoque de pastilhas industriais. Trabalho acadêmico baseado na demanda da **DDA Metalúrgica** (Santa Catarina).
+**Sistema Inteligente de Controle de Estoques Industriais.** Controle de estoque de pastilhas industriais. Trabalho acadêmico baseado na demanda da **DDA Metalúrgica** (Santa Catarina).
 
-Hoje a DDA controla as pastilhas usadas na usinagem em planilhas preenchidas à mão, o que gera erro de saldo e compra atrasada. O SIMI registra cada entrada e saída na hora, mantém o saldo atualizado, avisa quando um item chega ao nível de reposição e guarda o histórico completo, inalterável e verificável, para apoiar as compras.
+Hoje a DDA controla as pastilhas usadas na usinagem em planilhas preenchidas à mão, o que gera erro de saldo e compra atrasada. O SICEI registra cada entrada e saída na hora, mantém o saldo atualizado, avisa quando um item chega ao nível de reposição e guarda o histórico completo, inalterável e verificável, para apoiar as compras.
 
 ## O que o sistema faz
 

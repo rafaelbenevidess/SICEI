@@ -92,9 +92,9 @@ describe('RNF-13 · Laboratório de testes (interface)', () => {
 
 describe('Armazenamento dos testes do avaliador', () => {
   it('conteúdo inválido no localStorage vira lista vazia', () => {
-    localStorage.setItem('simi.laboratorio.meusTestes', '{quebrado')
+    localStorage.setItem('sicei.laboratorio.meusTestes', '{quebrado')
     expect(lerMeusTestes()).toEqual([])
-    localStorage.setItem('simi.laboratorio.meusTestes', '{"a":1}')
+    localStorage.setItem('sicei.laboratorio.meusTestes', '{"a":1}')
     expect(lerMeusTestes()).toEqual([])
   })
 })

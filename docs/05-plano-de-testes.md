@@ -1,4 +1,4 @@
-# SIMI: Plano de Testes e QA
+# SICEI: Plano de Testes e QA
 
 | | |
 |---|---|

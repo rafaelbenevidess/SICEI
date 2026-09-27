@@ -1,5 +1,6 @@
 import { pode } from '@/domain/permissoes'
 import { contextoDaMovimentacao } from '@/lib/contexto'
+import { filtrosDaUrl } from '@/lib/filtros'
 import { formatarDataHora, gerarCsv, hojeIso, NOME_TIPO } from '@/lib/formatar'
 import { listarTodasAsMovimentacoes } from '@/server/consultas/movimentacoes'
 import { registrarExportacaoDeMovimentacoes } from '@/server/services/relatorios'
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   if (!u || u.deveTrocarSenha) return new Response('Não autenticado', { status: 401 })
   if (!pode(u.perfil, 'historico:ver')) return new Response('Sem permissão', { status: 403 })
 
-  const f = Object.fromEntries(new URL(request.url).searchParams.entries())
+  const f = filtrosDaUrl(new URL(request.url).searchParams)
   const linhas = await listarTodasAsMovimentacoes(f)
   await registrarExportacaoDeMovimentacoes(
     { usuarioId: u.id, login: u.login, perfil: u.perfil, ...(await origemDaRequisicao()) },

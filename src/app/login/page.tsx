@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { licenciada } from '@/lib/produto'
+import { TelaDeAcesso } from '@/components/TelaDeAcesso'
 import { usuarioAtual } from '@/server/web/sessao-atual'
 import { FormularioLogin } from './FormularioLogin'
 
 export const metadata: Metadata = { title: 'Entrar' }
 
+/** RN-21: login gerado pelo sistema; nunca e-mail. */
 export default async function PaginaLogin({
   searchParams,
 }: {
@@ -14,19 +15,15 @@ export default async function PaginaLogin({
   const u = await usuarioAtual()
   if (u) redirect(u.deveTrocarSenha ? '/trocar-senha' : '/painel')
   const { volta } = await searchParams
-  const empresa = licenciada()
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-4 py-10">
-      <div>
-        <h1 className="text-3xl font-bold">SICEI</h1>
-        <p className="text-slate-600">Sistema Inteligente de Controle de Estoques Industriais</p>
-        {empresa && <p className="text-sm text-slate-500">Licenciado para {empresa}</p>}
-      </div>
+    <TelaDeAcesso>
+      <h1 className="text-[30px] font-semibold tracking-tight">Entrar</h1>
+      <p className="mt-1 mb-7 text-ink-2">Use o login que o Administrador entregou para você.</p>
       <FormularioLogin volta={volta ?? ''} />
-      <p className="text-xs text-slate-500">
+      <p className="mt-6 text-xs text-ink-3">
         Não tem acesso ou esqueceu a senha? Procure o Administrador do sistema. O SICEI não usa
         e-mail para login.
       </p>
-    </main>
+    </TelaDeAcesso>
   )
 }

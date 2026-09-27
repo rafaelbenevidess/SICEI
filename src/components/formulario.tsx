@@ -12,6 +12,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import type { EstadoAcao } from '@/server/web/acao'
 import { classeBotao, type VarianteBotao } from './ui'
 
@@ -134,6 +135,7 @@ export function Campo({
   prefixo,
   sufixo,
   rotuloOculto,
+  acessorio,
   className = '',
   ...resto
 }: {
@@ -147,6 +149,8 @@ export function Campo({
   sufixo?: string
   /** rótulo só para leitores de tela, quando o título já aparece ao lado */
   rotuloOculto?: boolean
+  /** controle dentro do campo, à direita (ex.: mostrar a senha) */
+  acessorio?: ReactNode
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'name'>) {
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
@@ -176,7 +180,7 @@ export function Campo({
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro ? `${id}-erro` : ajuda ? `${id}-ajuda` : undefined}
           required={obrigatorio}
-          className={`${estiloEntrada} ${prefixo ? 'pl-10' : ''} ${sufixo ? 'pr-20' : ''} ${erro ? 'border-crit' : 'border-line-2'} ${className}`}
+          className={`${estiloEntrada} ${prefixo ? 'pl-10' : ''} ${sufixo ? 'pr-20' : ''} ${acessorio ? 'pr-12' : ''} ${erro ? 'border-crit' : 'border-line-2'} ${className}`}
           {...resto}
         />
         {sufixo && (
@@ -186,6 +190,9 @@ export function Campo({
           >
             {sufixo}
           </span>
+        )}
+        {acessorio && (
+          <span className="absolute top-1/2 right-1.5 -translate-y-1/2">{acessorio}</span>
         )}
       </span>
       {ajuda && !erro && (
@@ -261,6 +268,35 @@ export function Selecao({
         </span>
       )}
     </div>
+  )
+}
+
+/** Campo de senha com o botão de mostrar e esconder o que foi digitado. */
+export function CampoSenha(props: Omit<Parameters<typeof Campo>[0], 'type' | 'acessorio'>) {
+  const [visivel, setVisivel] = useState(false)
+  return (
+    <Campo
+      {...props}
+      type={visivel ? 'text' : 'password'}
+      autoCapitalize="none"
+      spellCheck={false}
+      className={`${visivel ? 'font-mono' : ''} ${props.className ?? ''}`}
+      acessorio={
+        <button
+          type="button"
+          onClick={() => setVisivel((v) => !v)}
+          aria-label={visivel ? 'Esconder a senha' : 'Mostrar a senha'}
+          aria-pressed={visivel}
+          className="grid size-9 place-items-center rounded-md text-ink-3 hover:bg-surface-2 hover:text-ink"
+        >
+          {visivel ? (
+            <EyeOff aria-hidden className="size-[18px]" />
+          ) : (
+            <Eye aria-hidden className="size-[18px]" />
+          )}
+        </button>
+      }
+    />
   )
 }
 

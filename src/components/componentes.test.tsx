@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import { BotaoEnviar, Campo, DadosDaAcao, FormAcao, Selecao } from './formulario'
+import { BotaoEnviar, Campo, CampoSenha, DadosDaAcao, FormAcao, Selecao } from './formulario'
 import { Paginacao } from './Paginacao'
 import { Rodape } from './Rodape'
 import { Aviso, BadgeStatus, rotulosDoNivel, Vazio } from './ui'
@@ -175,5 +175,26 @@ describe('Barra de nível · Rótulos sem sobreposição', () => {
       { pos: 98, nome: 'alvo' },
     ])
     expect(r.map((m) => m.ancora)).toEqual(['inicio', 'meio', 'fim'])
+  })
+})
+
+describe('RN-21 · Campo de senha', () => {
+  it('começa escondido; o botão mostra e esconde de novo', async () => {
+    const user = userEvent.setup()
+    render(
+      <FormAcao acao={async () => ({})}>
+        <CampoSenha nome="senha" rotulo="Senha" />
+      </FormAcao>,
+    )
+    const campo = screen.getByLabelText('Senha')
+    expect(campo).toHaveAttribute('type', 'password')
+    await user.click(screen.getByRole('button', { name: 'Mostrar a senha' }))
+    expect(campo).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'Esconder a senha' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(screen.getByRole('button', { name: 'Esconder a senha' }))
+    expect(campo).toHaveAttribute('type', 'password')
   })
 })

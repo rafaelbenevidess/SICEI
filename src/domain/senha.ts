@@ -66,3 +66,35 @@ export function deveBloquear(falhasConsecutivas: number): boolean {
 export function excedeuLimiteDoIp(tentativasNaJanela: number): boolean {
   return tentativasNaJanela >= LIMITE_TENTATIVAS_POR_IP
 }
+
+export interface RegraDaSenha {
+  regra: string
+  /** true = atendida; false = ainda não; null = só o servidor confere (histórico de senhas) */
+  ok: boolean | null
+}
+
+/** RN-22: checklist mostrada enquanto a pessoa digita a nova senha. */
+export function checklistDaSenha(entrada: {
+  nova: string
+  confirmacao: string
+  login: string
+}): RegraDaSenha[] {
+  const { nova, confirmacao, login } = entrada
+  return [
+    {
+      regra: `Pelo menos ${TAMANHO_MINIMO_SENHA} caracteres`,
+      ok: nova.length >= TAMANHO_MINIMO_SENHA && nova.length <= TAMANHO_MAXIMO_SENHA,
+    },
+    {
+      regra: 'Diferente do login',
+      ok: nova.length > 0 && nova.trim().toLowerCase() !== login.trim().toLowerCase(),
+    },
+    { regra: 'Não repete nenhuma das 3 últimas senhas (conferido ao salvar)', ok: null },
+    { regra: 'As duas senhas coincidem', ok: nova.length > 0 && nova === confirmacao },
+  ]
+}
+
+/** A senha pode ser enviada quando todas as regras conferíveis na tela foram atendidas. */
+export function senhaProntaParaEnviar(regras: RegraDaSenha[]): boolean {
+  return regras.every((r) => r.ok !== false)
+}

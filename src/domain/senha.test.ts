@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  checklistDaSenha,
+  senhaProntaParaEnviar,
   ALFABETO_SENHA_PROVISORIA,
   deveBloquear,
   excedeuLimiteDoIp,
@@ -67,5 +69,39 @@ describe('RN-21 · Senha provisória', () => {
       expect(n).toBeGreaterThanOrEqual(0)
       expect(n).toBeLessThan(7)
     }
+  })
+})
+
+describe('RN-22 · Checklist da nova senha na tela', () => {
+  const login = 'marina.costa'
+  const estados = (nova: string, confirmacao: string) =>
+    checklistDaSenha({ nova, confirmacao, login }).map((r) => r.ok)
+
+  it('vazia: nada atendido, histórico fica para o servidor', () => {
+    expect(estados('', '')).toEqual([false, false, null, false])
+  })
+  it('"fresa-torno-2026" repetida: tudo atendido e pronta para enviar', () => {
+    const regras = checklistDaSenha({
+      nova: 'fresa-torno-2026',
+      confirmacao: 'fresa-torno-2026',
+      login,
+    })
+    expect(regras.map((r) => r.ok)).toEqual([true, true, null, true])
+    expect(senhaProntaParaEnviar(regras)).toBe(true)
+  })
+  it('9 caracteres: falha o tamanho mínimo', () => {
+    expect(estados('curta-123', 'curta-123')[0]).toBe(false)
+  })
+  it('igual ao login (sem diferenciar maiúsculas): falha a regra do login', () => {
+    expect(estados('Marina.Costa', 'Marina.Costa')[1]).toBe(false)
+  })
+  it('confirmação diferente: não está pronta para enviar', () => {
+    const regras = checklistDaSenha({ nova: 'fresa-torno-2026', confirmacao: 'fresa', login })
+    expect(regras[3].ok).toBe(false)
+    expect(senhaProntaParaEnviar(regras)).toBe(false)
+  })
+  it('mais de 128 caracteres: falha o tamanho', () => {
+    const longa = 'a'.repeat(129)
+    expect(estados(longa, longa)[0]).toBe(false)
   })
 })

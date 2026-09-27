@@ -56,3 +56,6 @@ next-env.d.ts
 # Playwright
 /playwright-report/
 /test-results/
+
+# vídeo da câmera falsa dos testes ponta a ponta
+/tests/e2e/.gerado/

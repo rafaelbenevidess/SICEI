@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+import { VIDEO_DA_CAMERA } from './tests/e2e/camera'
 
 // Testes ponta a ponta (doc 05, seção 4). Rodam contra o build de produção,
 // num banco próprio (sicei_e2e) preparado por tests/e2e/preparar.ts.
@@ -23,7 +24,20 @@ export default defineConfig({
     {
       name: 'celular',
       testIgnore: /computador\.spec\.ts/,
-      use: { ...devices['Pixel 7'], viewport: { width: 360, height: 780 } },
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 360, height: 780 },
+        // câmera falsa com o QR de uma etiqueta, para testar a tela Ler QR (RN-26)
+        permissions: ['camera'],
+        launchOptions: {
+          ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            `--use-file-for-fake-video-capture=${VIDEO_DA_CAMERA}`,
+          ],
+        },
+      },
     },
     {
       // depende do celular: o primeiro teste de lá troca a senha provisória do Admin

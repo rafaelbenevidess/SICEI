@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.1 |
+| **Versão** | 1.2 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -39,6 +39,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-21 / RN-21a / RN-21b usuários | `login.test.ts`, `senha.test.ts` | `usuarios.test.ts` (login gerado, homônimo, troca obrigatória, inativação derruba sessão) |
 | RN-22 senha e bloqueio | `senha.test.ts` | `usuarios.test.ts` (5ª falha bloqueia, rate limit por IP) |
 | RN-25 posições | `posicao.test.ts` | `cadastros.test.ts` |
+| RN-26 leitura do QR | `posicao.test.ts` (`codigoDoQr`, casos em `posicao.casos.ts`, também no Laboratório), `camera.test.ts`, `LeitorQr.test.tsx` (câmera e leitor simulados) | E2E com câmera falsa (abaixo) |
 | Matriz de permissões | `permissoes.test.ts` (72 casos) | cada service testado com o perfil sem permissão |
 | RF-25 importação | `importacao.test.ts` (inclui o resumo de cada linha da prévia) | `cadastros.test.ts` (prévia sem gravar, gravação tudo ou nada) |
 | RF-21 log e conferência | `lib/mudanca.test.ts` (antes → depois, hash encurtado) | `seguranca.test.ts` (conferência registrada no log; Consulta não executa) |
@@ -64,12 +65,13 @@ Automatizados com Playwright (`npm run test:e2e`), com os dados de demonstraçã
 2. Painel sem rolagem horizontal em 360 px.
 3. Abrir `/p/A01-G01-C02` (URL do QR) → item com a faixa "lida pela câmera" → "Registrar saída" na barra fixa → 9999 unidades: "Saída recusada" e botão bloqueado → 2 unidades com o botão +, destino em botão, OP e quem retirou → tela "Saída registrada" com "Ler outra etiqueta".
 4. Histórico filtrado pela OP → estornar com justificativa → a original aparece como estornada.
-5. Criar usuário "Pedro da Consulta": o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê preços nem o botão de saída, e não abre a gestão de usuários.
-6. Auditoria → Verificar agora → três resultados (cadeia, movimentações, saldos) e o registro da conferência.
-7. Relatório de reposição → exportar CSV.
-8. `/testes` → Executar todos → todos os casos passam.
+5. Tocar em "Ler QR" na barra inferior → a câmera abre dentro do SICEI → a etiqueta de A01-G01-C02 leva ao item. A câmera é um vídeo gerado com o QR da etiqueta (`tests/e2e/camera.ts`), passado ao Chromium como câmera falsa; como o Chromium de teste não tem leitor nativo, o teste passa pelo jsQR, o mesmo caminho do iPhone.
+6. Criar usuário "Pedro da Consulta": o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê preços nem o botão de saída, e não abre a gestão de usuários.
+7. Auditoria → Verificar agora → três resultados (cadeia, movimentações, saldos) e o registro da conferência.
+8. Relatório de reposição → exportar CSV.
+9. `/testes` → Executar todos → todos os casos passam.
 
-A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalhos de segurança.
+A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalhos de segurança, incluindo a câmera liberada só para o próprio SICEI.
 
 ### 4.2 Computador, 1366 px (`computador.spec.ts`)
 
@@ -81,7 +83,7 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 6. CSV de itens e de movimentações.
 7. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
 
-Resultado da última execução: 16 de 16 passaram.
+Resultado da última execução: 17 de 17 passaram.
 
 ## 5. Histórico do documento
 
@@ -89,3 +91,4 @@ Resultado da última execução: 16 de 16 passaram.
 |---|---|---|
 | 1.0 | 26/09/2026 | Primeira versão. |
 | 1.1 | 27/09/2026 | Redesign: E2E em dois projetos (celular 360 px e computador 1366 px), roteiros novos e testes da interface na rastreabilidade. |
+| 1.2 | 27/09/2026 | Leitura do QR dentro do SICEI: testes unitários, de componente e E2E com câmera falsa. |

@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import pg from 'pg'
+import { gravarVideoDoQr } from './camera'
 
 export const SENHA_INICIAL_ADMIN = 'SenhaInicialE2E26'
 const URL_DONO =
@@ -11,6 +12,8 @@ const URL_APP =
 
 /** Banco limpo, migrations e dados de demonstração antes da suíte ponta a ponta. */
 export default async function preparar() {
+  // câmera falsa do celular: mostra a etiqueta da posição A01-G01-C02 (RN-26)
+  gravarVideoDoQr('http://localhost:3100/p/A01-G01-C02')
   const c = new pg.Client({ connectionString: URL_DONO })
   await c.connect()
   await c.query('DROP SCHEMA IF EXISTS public CASCADE')

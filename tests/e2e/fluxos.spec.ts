@@ -83,6 +83,19 @@ test('RF-08 / RF-09 / RN-26: pela etiqueta QR, saída acima do saldo é barrada,
   await expect(page.getByText(/Estornada em/)).toBeVisible()
 })
 
+test('RN-26: Ler QR abre a câmera dentro do SICEI e a etiqueta leva ao item', async ({ page }) => {
+  await entrar(page, 'admin', SENHA_ADMIN)
+  await page.waitForURL('**/painel')
+  await page
+    .getByRole('navigation', { name: 'Atalhos' })
+    .getByRole('link', { name: 'Ler QR' })
+    .click()
+  // a câmera falsa mostra o QR da posição A01-G01-C02 (tests/e2e/camera.ts)
+  await page.waitForURL(/\/itens\/.+\?qr=A01-G01-C02/)
+  await expect(page.getByRole('heading', { name: /PST-002/ })).toBeVisible()
+  await expect(page.getByText(/lida pela câmera/)).toBeVisible()
+})
+
 test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê preços nem registra saída', async ({
   page,
   browser,
@@ -164,4 +177,5 @@ test('Cabeçalhos de segurança presentes', async ({ request }) => {
   expect(r.headers()['x-frame-options']).toBe('DENY')
   expect(r.headers()['x-content-type-options']).toBe('nosniff')
   expect(r.headers()['x-powered-by']).toBeUndefined()
+  expect(r.headers()['permissions-policy']).toContain('camera=(self)')
 })

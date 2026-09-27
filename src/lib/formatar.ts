@@ -44,6 +44,69 @@ export function formatarVariacao(v: number | null): string {
   return `${sinal}${numero.format(Math.abs(v))}%`
 }
 
+const diaHora = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: FUSO,
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+const soHora = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: FUSO,
+  hour: '2-digit',
+  minute: '2-digit',
+})
+const porExtenso = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: FUSO,
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+/** "27/09 15:42": tabelas em que o ano é óbvio. */
+export function formatarDiaHora(d: Date | string | null | undefined): string {
+  return d ? diaHora.format(new Date(d)).replace(',', '') : '—'
+}
+
+/** "15:42" */
+export function formatarHora(d: Date | string): string {
+  return soHora.format(new Date(d))
+}
+
+/** "Sábado, 27 de setembro de 2026" */
+export function dataPorExtenso(d: Date | string): string {
+  const t = porExtenso.format(new Date(d))
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+/** Nome curto da pastilha na tela: "CNMG 120408 · P25"; sem ISO e classe, a descrição. */
+export function nomeDaPastilha(i: {
+  iso?: string | null
+  classe?: string | null
+  descricao: string
+}): string {
+  if (i.iso && i.classe) return `${i.iso} · ${i.classe}`
+  return i.iso || i.descricao
+}
+
+/**
+ * Série diária do mês até hoje, para o gráfico de colunas do painel.
+ * totais: soma por dia no formato "2026-09-05" (fuso de São Paulo).
+ */
+export function serieDoMes(
+  hoje: string,
+  totais: Record<string, number>,
+): { dia: string; rotulo: string; total: number; hoje: boolean }[] {
+  const [ano, mes, diaHoje] = hoje.split('-')
+  const n = Number(diaHoje)
+  return Array.from({ length: n }, (_, i) => {
+    const d = String(i + 1).padStart(2, '0')
+    const dia = `${ano}-${mes}-${d}`
+    return { dia, rotulo: `${d}/${mes}`, total: totais[dia] ?? 0, hoje: i + 1 === n }
+  })
+}
+
 /** "2026-09-26" (data do formulário) → início do dia em São Paulo, em UTC. */
 export function inicioDoDia(iso: string): Date | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  alvoDeEstoque,
+  coberturaEmDias,
   consumoMedioDiario,
+  escalaDoNivel,
   leadTimeParaCalculo,
   pontoDeReposicao,
   quantidadeEmUnidades,
@@ -106,5 +109,60 @@ describe('RN-14 · Estoque mínimo e máximo', () => {
   })
   it('máximo fracionado é recusado', () => {
     expect(validarLimites({ minimo: 1, maximo: 2.5 }).ok).toBe(false)
+  })
+})
+
+describe('RN-20 · Alvo de estoque', () => {
+  it.each([
+    [{ maximo: 80, pontoReposicao: 41, consumoDiario: 3 }, 80, 'com máximo, o alvo é o máximo'],
+    [{ maximo: null, pontoReposicao: 41, consumoDiario: 3 }, 131, 'sem máximo: 41 + 30 dias × 3'],
+    [{ maximo: null, pontoReposicao: 26, consumoDiario: 1.4 }, 68, 'sem máximo: 26 + teto(42)'],
+    [
+      { maximo: null, pontoReposicao: 10, consumoDiario: 0 },
+      10,
+      'sem consumo: fica no ponto de reposição',
+    ],
+  ] as [Parameters<typeof alvoDeEstoque>[0], number, string][])(
+    '%j → %i (%s)',
+    (entrada, esperado) => {
+      expect(alvoDeEstoque(entrada)).toBe(esperado)
+    },
+  )
+})
+
+describe('Barra de nível do estoque', () => {
+  it('escala = max(alvo, saldo) × 1,08; saldo 35, mínimo 20, reposição 41, alvo 131', () => {
+    expect(escalaDoNivel({ saldo: 35, minimo: 20, pontoReposicao: 41, alvo: 131 })).toEqual({
+      saldo: 24.7,
+      minimo: 14.1,
+      reposicao: 29,
+      alvo: 92.6,
+    })
+  })
+
+  it('saldo acima do alvo vira a referência da escala e fica em 92,6%', () => {
+    expect(escalaDoNivel({ saldo: 200, minimo: 20, pontoReposicao: 41, alvo: 100 }).saldo).toBe(
+      92.6,
+    )
+  })
+
+  it('tudo zerado não divide por zero', () => {
+    expect(escalaDoNivel({ saldo: 0, minimo: 0, pontoReposicao: 0, alvo: 0 })).toEqual({
+      saldo: 0,
+      minimo: 0,
+      reposicao: 0,
+      alvo: 0,
+    })
+  })
+})
+
+describe('Cobertura estimada em dias', () => {
+  it.each([
+    [35, 3, 11],
+    [0, 3, 0],
+    [10, 0, null],
+    [10, -1, null],
+  ])('saldo %i com consumo %d/dia → %j dias', (saldo, consumo, esperado) => {
+    expect(coberturaEmDias(saldo, consumo)).toBe(esperado)
   })
 })

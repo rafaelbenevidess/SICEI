@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  dataPorExtenso,
+  formatarDiaHora,
+  formatarHora,
+  nomeDaPastilha,
+  serieDoMes,
   celulaCsv,
   diasAtrasIso,
   fimDoDia,
@@ -60,5 +65,33 @@ describe('RF-20 · CSV', () => {
   })
   it('gera CSV com BOM, separador ; e CRLF', () => {
     expect(gerarCsv(['a', 'b'], [[1, 'x;y']])).toBe('﻿a;b\r\n1;"x;y"')
+  })
+})
+
+describe('Formatação das telas novas', () => {
+  const d = new Date('2026-09-27T18:42:00Z') // 15:42 em São Paulo
+
+  it('dia e hora curtos, hora e data por extenso no fuso de São Paulo', () => {
+    expect(formatarDiaHora(d)).toBe('27/09 15:42')
+    expect(formatarDiaHora(null)).toBe('—')
+    expect(formatarHora(d)).toBe('15:42')
+    expect(dataPorExtenso(d)).toBe('Domingo, 27 de setembro de 2026')
+  })
+
+  it.each([
+    [{ iso: 'CNMG 120408', classe: 'P25', descricao: 'Pastilha' }, 'CNMG 120408 · P25'],
+    [{ iso: 'CNMG 120408', classe: null, descricao: 'Pastilha' }, 'CNMG 120408'],
+    [{ iso: null, classe: null, descricao: 'Pastilha de rosca' }, 'Pastilha de rosca'],
+  ])('nome da pastilha %j → %s', (item, esperado) => {
+    expect(nomeDaPastilha(item)).toBe(esperado)
+  })
+
+  it('série do mês vai do dia 1 até hoje, com zero nos dias sem consumo', () => {
+    const s = serieDoMes('2026-09-03', { '2026-09-01': 5, '2026-09-03': 2 })
+    expect(s).toEqual([
+      { dia: '2026-09-01', rotulo: '01/09', total: 5, hoje: false },
+      { dia: '2026-09-02', rotulo: '02/09', total: 0, hoje: false },
+      { dia: '2026-09-03', rotulo: '03/09', total: 2, hoje: true },
+    ])
   })
 })

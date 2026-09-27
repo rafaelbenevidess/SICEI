@@ -91,12 +91,43 @@ export function sugestaoDeCompra(entrada: {
     throw new Error('A embalagem precisa ter pelo menos 1 unidade.')
   if (statusDoItem({ saldo, minimo, pontoReposicao }) === 'OK') return { quantidade: 0, caixas: 0 }
 
-  const alvo =
-    maximo ?? pontoReposicao + arredondarParaCima(consumoDiario * DIAS_COBERTURA_SEM_MAXIMO)
+  const alvo = alvoDeEstoque({ maximo, pontoReposicao, consumoDiario })
   const falta = alvo - saldo
   if (falta <= 0) return { quantidade: 0, caixas: 0 }
   const caixas = arredondarParaCima(falta / embalagem)
   return { quantidade: caixas * embalagem, caixas }
+}
+
+/** RN-20: nível que a compra deve alcançar: o máximo, ou o ponto de reposição + 30 dias de consumo. */
+export function alvoDeEstoque(entrada: {
+  maximo: number | null
+  pontoReposicao: number
+  consumoDiario: number
+}): number {
+  const { maximo, pontoReposicao, consumoDiario } = entrada
+  return maximo ?? pontoReposicao + arredondarParaCima(consumoDiario * DIAS_COBERTURA_SEM_MAXIMO)
+}
+
+/**
+ * Posições da barra de nível do estoque, em % da largura (0 a 100). A escala é
+ * max(alvo, saldo) × 1,08, para o saldo nunca encostar no fim da barra.
+ */
+export function escalaDoNivel(entrada: {
+  saldo: number
+  minimo: number
+  pontoReposicao: number
+  alvo: number
+}): { saldo: number; minimo: number; reposicao: number; alvo: number } {
+  const { saldo, minimo, pontoReposicao, alvo } = entrada
+  const escala = Math.max(alvo, saldo, 1) * 1.08
+  const pct = (v: number) => Math.round(Math.min(100, Math.max(0, (v / escala) * 100)) * 10) / 10
+  return { saldo: pct(saldo), minimo: pct(minimo), reposicao: pct(pontoReposicao), alvo: pct(alvo) }
+}
+
+/** Dias que o saldo dura no consumo médio atual; null sem consumo registrado. */
+export function coberturaEmDias(saldo: number, consumoDiario: number): number | null {
+  if (!(consumoDiario > 0)) return null
+  return Math.floor(saldo / consumoDiario)
 }
 
 /** RN-07: converte uma quantidade informada em caixas ou unidades para unidades. */

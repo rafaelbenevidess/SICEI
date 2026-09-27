@@ -1,7 +1,12 @@
 import 'server-only'
 import { pode } from '@/domain/permissoes'
 import { historicoComVariacao, listaDeFornecedores, type CompraRegistrada } from '@/domain/precos'
-import { consumoMedioDiario, sugestaoDeCompra } from '@/domain/estoque'
+import {
+  alvoDeEstoque,
+  coberturaEmDias,
+  consumoMedioDiario,
+  sugestaoDeCompra,
+} from '@/domain/estoque'
 import type { Perfil, StatusItem } from '@/domain/tipos'
 import type { Prisma } from '@/generated/prisma/client'
 import { prisma } from '../db'
@@ -34,12 +39,49 @@ export async function listarItens(f: FiltroItens) {
   else if (f.status && ['OK', 'ATENCAO', 'CRITICO', 'ZERADO'].includes(f.status))
     where.status = f.status as StatusItem
   if (f.aplicacao) where.aplicacao = f.aplicacao as Prisma.ItemWhereInput['aplicacao']
-  return prisma.item.findMany({
-    where,
-    include: { posicao: { select: { codigo: true } }, fabricante: { select: { nome: true } } },
-    orderBy: [{ codigo: 'asc' }],
-    take: 500,
+  const [itens, { janelaConsumoDias }] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      include: { posicao: { select: { codigo: true } }, fabricante: { select: { nome: true } } },
+      orderBy: [{ codigo: 'asc' }],
+      take: 500,
+    }),
+    lerParametros(),
+  ])
+  // consumo da janela de todos os itens numa consulta só, para o alvo da barra de nível
+  const consumos = itens.length
+    ? await prisma.$queryRaw<{ item_id: string; total: bigint }[]>`
+        SELECT m.item_id, SUM(m.quantidade)::bigint AS total
+          FROM movimentacao m
+         WHERE m.item_id = ANY(${itens.map((i) => i.id)}::uuid[])
+           AND m.tipo = 'CONSUMO_PRODUCAO'
+           AND m.criado_em >= now() - make_interval(days => ${janelaConsumoDias}::int)
+           AND NOT EXISTS (SELECT 1 FROM movimentacao e WHERE e.estorna_id = m.id)
+         GROUP BY m.item_id`
+    : []
+  const porItem = new Map(consumos.map((c) => [c.item_id, Number(c.total)]))
+  return itens.map((i) => {
+    const consumoDiario = consumoMedioDiario({
+      totalConsumido: porItem.get(i.id) ?? 0,
+      janelaDias: janelaConsumoDias,
+    })
+    const alvo = alvoDeEstoque({
+      maximo: i.estoqueMaximo,
+      pontoReposicao: i.pontoReposicao,
+      consumoDiario,
+    })
+    return { ...i, consumoDiario, alvo }
   })
+}
+
+/** Contagem dos itens ativos por status, para o filtro da lista. */
+export async function contarItensPorStatus(): Promise<Record<string, number>> {
+  const grupos = await prisma.item.groupBy({
+    by: ['status'],
+    where: { ativo: true },
+    _count: { _all: true },
+  })
+  return Object.fromEntries(grupos.map((g) => [g.status, g._count._all]))
 }
 
 /** Página do item: dados, fornecedores com preços (RN-05b), histórico e movimentações recentes. */
@@ -137,6 +179,9 @@ export async function detalheItem(id: string, perfil: Perfil) {
         take: 15,
       })
 
+  const totalDeMovimentacoes = await prisma.movimentacao.count({ where: { itemId: id } })
+  const preferencial = item.fornecedores.find((v) => v.preferencial)
+
   return {
     item,
     fornecedores,
@@ -145,6 +190,15 @@ export async function detalheItem(id: string, perfil: Perfil) {
     janela: parametros.janelaConsumoDias,
     sugestao,
     movimentacoes,
+    alvo: alvoDeEstoque({
+      maximo: item.estoqueMaximo,
+      pontoReposicao: item.pontoReposicao,
+      consumoDiario,
+    }),
+    cobertura: coberturaEmDias(item.saldo, consumoDiario),
+    leadTimePreferencial: preferencial?.leadTimeDias ?? null,
+    // RN-01: depois da primeira movimentação o código interno fica travado
+    codigoTravado: totalDeMovimentacoes > 0,
   }
 }
 

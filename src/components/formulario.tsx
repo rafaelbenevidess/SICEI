@@ -7,11 +7,13 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   useTransition,
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react'
 import type { EstadoAcao } from '@/server/web/acao'
+import { classeBotao, type VarianteBotao } from './ui'
 
 type Acao = (estado: EstadoAcao, dados: FormData) => Promise<EstadoAcao>
 
@@ -76,29 +78,35 @@ function Mensagem() {
   const { estado } = useEstadoAcao()
   if (estado.erro) {
     return (
-      <p
-        role="alert"
-        className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-900"
-      >
+      <p role="alert" className="rounded-xl bg-crit-soft px-4 py-3 text-sm text-crit-ink">
         {estado.erro}
       </p>
     )
   }
-  if (estado.ok && estado.mensagem) {
-    return (
-      <p
-        role="status"
-        className="rounded-md border border-green-300 bg-green-50 p-2 text-sm text-green-900"
-      >
-        {estado.mensagem}
-      </p>
-    )
-  }
+  if (estado.ok && estado.mensagem) return <Toast chave={estado.instante}>{estado.mensagem}</Toast>
   return null
 }
 
+/** Aviso de sucesso fixo embaixo da tela, que some sozinho depois de 2,2 s. */
+export function Toast({ chave, children }: { chave?: number; children: ReactNode }) {
+  const [fechado, setFechado] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    const t = setTimeout(() => setFechado(chave), 2200)
+    return () => clearTimeout(t)
+  }, [chave])
+  if (fechado === chave) return null
+  return (
+    <p
+      role="status"
+      className="fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-[10px] bg-ink px-4 py-3 text-sm font-medium text-bg shadow-pop"
+    >
+      {children}
+    </p>
+  )
+}
+
 const estiloEntrada =
-  'rounded-md border px-2 py-2 text-base sm:text-sm font-normal text-slate-900 bg-white'
+  'h-10 w-full min-w-0 rounded-lg border bg-surface px-3 text-base font-normal text-ink placeholder:text-ink-3 focus:border-accent sm:text-sm'
 
 function useErro(nome: string) {
   return useEstadoAcao().estado.erros?.[nome]
@@ -119,11 +127,11 @@ export function Campo({
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
   return (
-    <div className="flex flex-col gap-1 text-sm font-medium">
+    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
       <label htmlFor={id}>
         {rotulo}
         {obrigatorio && (
-          <span aria-hidden className="text-red-700">
+          <span aria-hidden className="text-crit-ink">
             {' '}
             *
           </span>
@@ -135,16 +143,16 @@ export function Campo({
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? `${id}-erro` : ajuda ? `${id}-ajuda` : undefined}
         required={obrigatorio}
-        className={`${estiloEntrada} ${erro ? 'border-red-500' : 'border-slate-300'}`}
+        className={`${estiloEntrada} ${erro ? 'border-crit' : 'border-line-2'}`}
         {...resto}
       />
       {ajuda && !erro && (
-        <span id={`${id}-ajuda`} className="text-xs font-normal text-slate-500">
+        <span id={`${id}-ajuda`} className="text-xs font-normal text-ink-3">
           {ajuda}
         </span>
       )}
       {erro && (
-        <span id={`${id}-erro`} className="text-xs font-normal text-red-700">
+        <span id={`${id}-erro`} className="text-[13px] font-normal text-crit-ink">
           {erro}
         </span>
       )}
@@ -172,11 +180,11 @@ export function Selecao({
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
   return (
-    <div className="flex flex-col gap-1 text-sm font-medium">
+    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
       <label htmlFor={id}>
         {rotulo}
         {obrigatorio && (
-          <span aria-hidden className="text-red-700">
+          <span aria-hidden className="text-crit-ink">
             {' '}
             *
           </span>
@@ -188,7 +196,7 @@ export function Selecao({
         defaultValue={padrao ?? ''}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? `${id}-erro` : undefined}
-        className={`${estiloEntrada} ${erro ? 'border-red-500' : 'border-slate-300'}`}
+        className={`${estiloEntrada} ${erro ? 'border-crit' : 'border-line-2'}`}
       >
         {vazio !== undefined && <option value="">{vazio}</option>}
         {opcoes.map((o) => (
@@ -197,9 +205,9 @@ export function Selecao({
           </option>
         ))}
       </select>
-      {ajuda && !erro && <span className="text-xs font-normal text-slate-500">{ajuda}</span>}
+      {ajuda && !erro && <span className="text-xs font-normal text-ink-3">{ajuda}</span>}
       {erro && (
-        <span id={`${id}-erro`} className="text-xs font-normal text-red-700">
+        <span id={`${id}-erro`} className="text-[13px] font-normal text-crit-ink">
           {erro}
         </span>
       )}
@@ -221,11 +229,11 @@ export function AreaTexto({
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
   return (
-    <div className="flex flex-col gap-1 text-sm font-medium">
+    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
       <label htmlFor={id}>
         {rotulo}
         {obrigatorio && (
-          <span aria-hidden className="text-red-700">
+          <span aria-hidden className="text-crit-ink">
             {' '}
             *
           </span>
@@ -237,9 +245,9 @@ export function AreaTexto({
         rows={2}
         defaultValue={padrao}
         aria-invalid={erro ? true : undefined}
-        className={`${estiloEntrada} ${erro ? 'border-red-500' : 'border-slate-300'}`}
+        className={`${estiloEntrada} h-auto py-2 ${erro ? 'border-crit' : 'border-line-2'}`}
       />
-      {erro && <span className="text-xs font-normal text-red-700">{erro}</span>}
+      {erro && <span className="text-[13px] font-normal text-crit-ink">{erro}</span>}
     </div>
   )
 }
@@ -255,7 +263,12 @@ export function Caixa({
 }) {
   return (
     <label className="flex items-center gap-2 text-sm font-medium">
-      <input type="checkbox" name={nome} defaultChecked={padrao} className="h-4 w-4" />
+      <input
+        type="checkbox"
+        name={nome}
+        defaultChecked={padrao}
+        className="size-4 accent-[var(--accent)]"
+      />
       {rotulo}
     </label>
   )
@@ -268,22 +281,21 @@ export function Oculto({ nome, valor }: { nome: string; valor: string }) {
 export function BotaoEnviar({
   children,
   variante = 'primario',
+  pequeno = false,
+  desabilitado = false,
 }: {
   children: ReactNode
-  variante?: 'primario' | 'secundario' | 'perigo'
+  variante?: VarianteBotao
+  pequeno?: boolean
+  desabilitado?: boolean
 }) {
   const { pendente } = useEstadoAcao()
-  const estilos = {
-    primario: 'bg-slate-900 text-white hover:bg-slate-700',
-    secundario: 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
-    perigo: 'bg-red-700 text-white hover:bg-red-600',
-  }
   return (
     <button
       type="submit"
-      disabled={pendente}
+      disabled={pendente || desabilitado}
       aria-busy={pendente}
-      className={`rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60 ${estilos[variante]}`}
+      className={classeBotao(variante, pequeno)}
     >
       {pendente ? 'Enviando…' : children}
     </button>

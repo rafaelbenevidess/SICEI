@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { BotaoEnviar, Campo, DadosDaAcao, FormAcao, Selecao } from './formulario'
 import { Paginacao } from './Paginacao'
 import { Rodape } from './Rodape'
-import { Aviso, BadgeStatus, Vazio } from './ui'
+import { Aviso, BadgeStatus, rotulosDoNivel, Vazio } from './ui'
 
 afterEach(cleanup)
 
@@ -143,5 +143,25 @@ describe('Rodapé · Titular do SICEI e cliente licenciada', () => {
     render(<Rodape anoAtual={2026} licenciada={null} />)
     expect(screen.queryByText(/Licenciado para/)).not.toBeInTheDocument()
     expect(screen.getByText(/Contato comercial/)).toBeInTheDocument()
+  })
+})
+
+describe('Barra de nível · Rótulos sem sobreposição', () => {
+  it('marcadores longe ficam centralizados; perto, cada um vai para um lado', () => {
+    const r = rotulosDoNivel([
+      { pos: 15, nome: 'mínimo' },
+      { pos: 17, nome: 'reposição' },
+      { pos: 80, nome: 'alvo' },
+    ])
+    expect(r.map((m) => m.ancora)).toEqual(['fim', 'inicio', 'meio'])
+  })
+
+  it('nas pontas o rótulo encosta para dentro da barra', () => {
+    const r = rotulosDoNivel([
+      { pos: 2, nome: 'mínimo' },
+      { pos: 50, nome: 'reposição' },
+      { pos: 98, nome: 'alvo' },
+    ])
+    expect(r.map((m) => m.ancora)).toEqual(['inicio', 'meio', 'fim'])
   })
 })

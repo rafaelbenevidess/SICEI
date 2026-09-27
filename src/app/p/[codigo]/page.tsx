@@ -11,7 +11,7 @@ export default async function QrDaPosicao({ params }: { params: Promise<{ codigo
   if (!u) redirect(`/login?volta=${encodeURIComponent(`/p/${codigo}`)}`)
   const cod = codigo.toUpperCase()
   const posicao = lerCodigoDaPosicao(cod) ? await itemDaPosicao(cod) : null
-  if (posicao?.itemId) redirect(`/itens/${posicao.itemId}`)
+  if (posicao?.itemId) redirect(`/itens/${posicao.itemId}?qr=${encodeURIComponent(cod)}`)
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-4">
       <h1 className="text-2xl font-bold">Posição {cod}</h1>

@@ -1,7 +1,134 @@
 @import 'tailwindcss';
 
+/* variante escuro: para trocar imagens da marca conforme o tema */
+@custom-variant escuro (&:where([data-theme='escuro'], [data-theme='escuro'] *));
+
+/*
+ * Tokens do design do SICEI (design_handoff_sicei/README.md, "Design tokens").
+ * Os mesmos nomes nos dois temas; o escuro vale com data-theme="escuro" no <html>.
+ */
+:root {
+  --bg: oklch(0.975 0.004 250);
+  --surface: #fff;
+  --surface-2: oklch(0.968 0.005 250);
+  --surface-3: oklch(0.94 0.006 250);
+  --line: oklch(0.918 0.006 250);
+  --line-2: oklch(0.86 0.008 250);
+  --ink: oklch(0.21 0.015 255);
+  --ink-2: oklch(0.42 0.015 255);
+  --ink-3: oklch(0.55 0.012 255);
+  --accent: oklch(0.52 0.17 258);
+  --accent-hover: oklch(0.46 0.17 258);
+  --accent-soft: oklch(0.95 0.03 258);
+  --accent-ink: oklch(0.43 0.15 258);
+  --on-accent: #fff;
+  --ok: oklch(0.62 0.14 155);
+  --ok-soft: oklch(0.95 0.04 155);
+  --ok-ink: oklch(0.42 0.1 155);
+  --warn: oklch(0.76 0.15 75);
+  --warn-soft: oklch(0.96 0.05 85);
+  --warn-ink: oklch(0.47 0.11 60);
+  --crit: oklch(0.58 0.2 27);
+  --crit-soft: oklch(0.955 0.03 25);
+  --crit-ink: oklch(0.48 0.17 27);
+  --zero-bg: oklch(0.25 0.015 255);
+  --zero-ink: #fff;
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+  --sombra-pop: 0 12px 32px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.06);
+  color-scheme: light;
+}
+
+[data-theme='escuro'] {
+  --bg: oklch(0.165 0.01 255);
+  --surface: oklch(0.205 0.012 255);
+  --surface-2: oklch(0.235 0.012 255);
+  --surface-3: oklch(0.27 0.012 255);
+  --line: oklch(0.285 0.012 255);
+  --line-2: oklch(0.35 0.012 255);
+  --ink: oklch(0.95 0.005 255);
+  --ink-2: oklch(0.79 0.01 255);
+  --ink-3: oklch(0.65 0.01 255);
+  --accent: oklch(0.7 0.14 258);
+  --accent-hover: oklch(0.76 0.13 258);
+  --accent-soft: oklch(0.3 0.06 258);
+  --accent-ink: oklch(0.82 0.1 258);
+  --on-accent: oklch(0.17 0.02 258);
+  --ok: oklch(0.72 0.14 155);
+  --ok-soft: oklch(0.3 0.05 155);
+  --ok-ink: oklch(0.86 0.1 155);
+  --warn: oklch(0.8 0.14 80);
+  --warn-soft: oklch(0.32 0.06 75);
+  --warn-ink: oklch(0.88 0.11 85);
+  --crit: oklch(0.68 0.18 27);
+  --crit-soft: oklch(0.32 0.08 27);
+  --crit-ink: oklch(0.87 0.09 27);
+  --zero-bg: oklch(0.92 0.005 255);
+  --zero-ink: oklch(0.18 0.01 255);
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --sombra-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-ink: var(--ok-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+  --color-crit: var(--crit);
+  --color-crit-soft: var(--crit-soft);
+  --color-crit-ink: var(--crit-ink);
+  --color-zero-bg: var(--zero-bg);
+  --color-zero-ink: var(--zero-ink);
+  --shadow-cartao: var(--sombra);
+  --shadow-pop: var(--sombra-pop);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    /* números tabulares: as colunas de saldo precisam alinhar */
+    font-feature-settings: 'tnum' 1;
+  }
+
+  a {
+    color: var(--accent-ink);
+  }
+
+  /* foco visível em todos os controles (RNF-10) */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    border-color: var(--accent);
+  }
+}
+
 @media print {
   .nao-imprimir {
     display: none !important;
+  }
+  body {
+    background: #fff;
   }
 }

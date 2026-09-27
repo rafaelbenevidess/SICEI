@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     'build/**',
     'next-env.d.ts',
     'public/relatorio-testes/**',
+    // referência de design (protótipo HTML), não é código do sistema
+    'design_handoff_sicei/**',
     '.vitest/**',
     'src/generated/**',
     'coverage/**',

@@ -109,6 +109,26 @@ test('RN-26: item em posição nova avisa da etiqueta até ela ser impressa', as
   await expect(page.locator('tbody tr').first()).toContainText('A04-G02-C01 (PST-007)')
 })
 
+test('RF-08 / RF-11: registrar saída acha o item digitado de qualquer jeito, com autocompletar', async ({
+  page,
+}) => {
+  await entrarComoAdmin(page)
+  await page.goto('/movimentacoes/nova?modo=saida')
+  const busca = page.getByRole('combobox', { name: 'Buscar item' })
+  await busca.fill('pst')
+  await expect(page.getByRole('option')).not.toHaveCount(0)
+  await busca.fill('Pst 2')
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await expect(page.getByText(/Código reconhecido/)).toBeVisible()
+  await busca.press('Enter')
+  await expect(page.locator('form[aria-label="Registrar saída"]')).toContainText('PST-002')
+
+  // a busca da lista de itens usa a mesma regra
+  await page.goto('/itens?q=a01g01c02')
+  await expect(page.locator('tbody tr')).toHaveCount(1)
+  await expect(page.locator('tbody tr')).toContainText('PST-002')
+})
+
 test('RF-26: parâmetros avisam o limite e a mudança vai para as últimas alterações', async ({
   page,
 }) => {

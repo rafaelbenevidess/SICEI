@@ -30,9 +30,9 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 562 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Unitários | 594 | Regras de negócio, validações, telas e componentes (99% das linhas) |
 | Integração | 72 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash |
-| Ponta a ponta | 19 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
+| Ponta a ponta | 20 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
 
 ```bash
 npm test                  # unitários
@@ -63,10 +63,10 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 | # | Documento | Versão |
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.4 |
-| 02 | [Requisitos](docs/02-requisitos.md) | 1.6 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.6 |
+| 02 | [Requisitos](docs/02-requisitos.md) | 1.7 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.7 |
 | 04 | [Segurança](docs/04-seguranca.md) | 1.3 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.3 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.4 |
 | 06 | [Operação](docs/06-operacao.md) | 1.0 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).

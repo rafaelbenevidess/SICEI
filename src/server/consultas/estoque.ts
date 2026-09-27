@@ -1,4 +1,5 @@
 import 'server-only'
+import { buscarItens } from '@/domain/busca'
 import { pode } from '@/domain/permissoes'
 import { historicoComVariacao, listaDeFornecedores, type CompraRegistrada } from '@/domain/precos'
 import {
@@ -24,30 +25,31 @@ export interface FiltroItens {
 /** RF-11: saldo em tempo real, com status, posição e filtros. */
 export async function listarItens(f: FiltroItens) {
   const where: Prisma.ItemWhereInput = { ativo: f.inativos ? undefined : true }
+  // a busca por texto é feita depois, com a regra tolerante do domínio (buscarItens)
   const q = f.q?.trim()
-  if (q) {
-    where.OR = [
-      { codigo: { contains: q, mode: 'insensitive' } },
-      { descricao: { contains: q, mode: 'insensitive' } },
-      { iso: { contains: q, mode: 'insensitive' } },
-      { classe: { contains: q, mode: 'insensitive' } },
-      { posicao: { codigo: { contains: q, mode: 'insensitive' } } },
-    ]
-  }
   if (f.status === 'ALERTA') where.status = { in: ['ATENCAO', 'CRITICO', 'ZERADO'] }
   else if (f.status === 'CRITICOS') where.status = { in: ['CRITICO', 'ZERADO'] }
   else if (f.status && ['OK', 'ATENCAO', 'CRITICO', 'ZERADO'].includes(f.status))
     where.status = f.status as StatusItem
   if (f.aplicacao) where.aplicacao = f.aplicacao as Prisma.ItemWhereInput['aplicacao']
-  const [itens, { janelaConsumoDias }] = await Promise.all([
+  const [todos, { janelaConsumoDias }] = await Promise.all([
     prisma.item.findMany({
       where,
       include: { posicao: { select: { codigo: true } }, fabricante: { select: { nome: true } } },
       orderBy: [{ codigo: 'asc' }],
-      take: 500,
+      take: q ? 5000 : 500,
     }),
     lerParametros(),
   ])
+  // RF-11: "Pst001", "pst 1" e "PST-1" acham o PST-001; o mais parecido vem primeiro
+  const itens = q
+    ? buscarItens(
+        q,
+        todos.map((i) => ({ ...i, posicao: i.posicao?.codigo ?? null, original: i })),
+      )
+        .slice(0, 500)
+        .map((r) => r.original)
+    : todos
   // consumo da janela de todos os itens numa consulta só, para o alvo da barra de nível
   const consumos = itens.length
     ? await prisma.$queryRaw<{ item_id: string; total: bigint }[]>`

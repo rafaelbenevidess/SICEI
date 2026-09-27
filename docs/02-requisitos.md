@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.6 (validada) |
+| **Versão** | 1.7 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -124,6 +124,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 6. **Dado** um almoxarife no celular que leu o QR da gaveta, **quando** registra a saída, **então** o item já vem preenchido e ele só informa quantidade, destino, OP e colaborador antes de confirmar.
 7. **Dado** um item com saldo 3, **quando** o almoxarife digita 5, **então** a tela avisa "Saída recusada" com o saldo disponível e o botão de confirmar fica bloqueado, antes mesmo de enviar. O servidor continua recusando se o pedido chegar (critério 2).
 8. **Dado** uma saída gravada, **quando** a tela confirma, **então** mostra o saldo antes e agora, avisa se o item entrou em Atenção, Crítico ou Zerado e oferece ler outra etiqueta ou voltar ao item.
+9. **Dado** a tela de registrar sem item escolhido, **quando** o almoxarife digita, **então** a lista de itens se filtra a cada letra (critério 4 do RF-11); quando o código é reconhecido, a tela avisa e o Enter abre o item; setas escolhem outro da lista.
 
 ### RF-09. Estornar movimentação
 1. **Dado** uma saída de 4 unidades lançada por engano, **quando** o Gestor estorna com justificativa, **então** o saldo volta a subir 4, o estorno aponta para a saída original e ela aparece marcada como estornada.
@@ -135,6 +136,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 1. **Dado** qualquer perfil, **quando** abre a lista de itens, **então** vê código, descrição, saldo, mínimo, ponto de reposição, status (com cor e texto) e posição.
 2. **Dado** uma saída registrada por outro usuário, **quando** a consulta é aberta ou atualizada, **então** o saldo já reflete a saída.
 3. **Dado** o filtro "somente críticos e zerados", **quando** aplicado, **então** só aparecem itens com esses status.
+4. **Dado** o item PST-001 na posição A01-G01-C01 com ISO "CNMG 120408", **quando** alguém busca "Pst001", "pst 1", "PST-1", "a01g01c01" ou "cnmg120408", **então** o PST-001 aparece. Maiúsculas, acentos, traços, espaços e zeros à esquerda não importam, e o código exato vem primeiro. Vale para a lista de itens, a busca do topo e a escolha do item ao registrar.
 
 ### RF-12. Estoque mínimo e máximo
 1. **Dado** um máximo menor ou igual ao mínimo, **quando** o Gestor tenta salvar, **então** a alteração é recusada.
@@ -337,3 +339,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.4 | 27/09/2026 | RF-22: leitura do QR dentro do SICEI com a câmera de qualquer celular (critérios 4 a 7). |
 | 1.5 | 27/09/2026 | Critérios novos: RF-03 (próximo código, fabricante e fornecedor cadastrados na hora, aba Itens em Cadastros), RF-13 (pop-up de alertas sem ciente ao entrar), RF-21 (filtro com todas as ações), RF-22 (etiqueta pendente ao mudar de posição). |
 | 1.6 | 27/09/2026 | RF-13, critério 5: o pop-up aparece só no login; depois de VER não volta até o próximo login, e ver os alertas não obriga a dar ciente. |
+| 1.7 | 27/09/2026 | RF-11, critério 4: busca que aceita o código escrito de qualquer jeito. RF-08, critério 9: autocompletar na escolha do item ao registrar. |

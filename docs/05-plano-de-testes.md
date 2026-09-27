@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.3 |
+| **Versão** | 1.4 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -49,6 +49,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RF-21 log e conferência | `lib/mudanca.test.ts` (antes → depois, hash encurtado) | `seguranca.test.ts` (conferência registrada no log; Consulta não executa) |
 | RF-26 parâmetros | `parametros.test.ts` (limites e últimas alterações) | `cadastros.test.ts` |
 | RN-22 checklist da senha na tela | `senha.test.ts` (`checklistDaSenha`) | — |
+| RF-11 busca tolerante | `busca.test.ts` (casos em `busca.casos.ts`, também no Laboratório), `EscolhaDeItem.test.tsx` (autocompletar com o "Pst001" do print) | E2E da saída pelo computador |
 | RF-02 prévia do login | `login.test.ts` (`previaDoLogin`) | — |
 | Interface | `componentes.test.tsx` (selo com texto, campo de senha, toast, rótulos do gauge), `tema.test.ts`, `menu.test.ts` | — |
 | Segurança web | `proxy.test.ts` (CSP), `redirecionamento.test.ts` (open redirect) | — |
@@ -87,9 +88,10 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 6. CSV de itens e de movimentações.
 7. Novo item a partir da aba Itens de Cadastros: código PST-007 já sugerido, PST-001 avisado como em uso e bloqueado, fabricante e fornecedor cadastrados na hora e já escolhidos, item gravado.
 8. O item novo vai para A04-G02-C01 → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
-9. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
+9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02".
+10. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
 
-Resultado da última execução: 19 de 19 passaram.
+Resultado da última execução: 20 de 20 passaram.
 
 ## 5. Histórico do documento
 
@@ -99,3 +101,4 @@ Resultado da última execução: 19 de 19 passaram.
 | 1.1 | 27/09/2026 | Redesign: E2E em dois projetos (celular 360 px e computador 1366 px), roteiros novos e testes da interface na rastreabilidade. |
 | 1.2 | 27/09/2026 | Leitura do QR dentro do SICEI: testes unitários, de componente e E2E com câmera falsa. |
 | 1.3 | 27/09/2026 | Testes do pop-up de alertas, do próximo código, da etiqueta pendente e do catálogo de ações; E2E com 19 fluxos. |
+| 1.4 | 27/09/2026 | Busca tolerante e autocompletar ao registrar: testes de unidade, de componente e E2E. |

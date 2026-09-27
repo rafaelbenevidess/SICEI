@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.6 (para revisão) |
+| **Versão** | 1.7 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -89,6 +89,8 @@ src/
 │   ├── login.ts            geração de login a partir do nome (RN-21)
 │   ├── senha.ts            política de senha e geração da provisória (RN-21, RN-22)
 │   ├── cnpj.ts             validação e máscara de CNPJ (RN-04)
+│   ├── busca.ts            busca tolerante de itens: código, posição, ISO, classe (RF-11)
+│   ├── codigo.ts           próximo código interno da sequência (RN-01)
 │   ├── parametros.ts       limites dos parâmetros e histórico de alterações (RF-26)
 │   ├── importacao.ts       validação e resumo das linhas do CSV (RF-25)
 │   ├── permissoes.ts       matriz perfil × permissão (doc 02, seção 5)
@@ -475,6 +477,7 @@ O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na bar
 - Pop-up de alertas (RF-13): no login, a Server Action grava o cookie de sessão `sicei_aviso_alertas`. Enquanto ele existir e houver alerta aberto sem ciente, o layout mostra a Gestor e Administrador um diálogo `alertdialog` no centro da tela, sem botão de fechar, com "Existem N alertas sem ciente" e o botão VER. VER apaga o cookie e leva a `/alertas`; abrir `/alertas` por outro caminho também apaga. Como o menu lateral não é recarregado a cada clique (o layout do App Router fica no navegador entre as páginas), o `Shell` também guarda, no estado da tela, que a pessoa já passou por `/alertas` (`avisoJaVisto`); assim o aviso não volta ao navegar pelo menu. O cookie apagado garante o mesmo ao recarregar. Um novo login grava o cookie de novo. A regra de quando mostrar fica em `lib/avisoDeAlertas.ts`.
 - Etiqueta pendente (RN-26): aviso na página do item até a etiqueta ser impressa (seção 5.6).
 - Código interno (RN-01): o cadastro sugere o próximo da sequência (`domain/codigo.ts`) e avisa na hora se o código já existe; o banco continua recusando código repetido.
+- Busca de itens (RF-11): `domain/busca.ts` compara sem maiúsculas, acentos, traços, espaços e zeros à esquerda ("Pst001" = "PST-001"; "a01g01c02" = "A01-G01-C02") e pontua o resultado (código exato, posição, começo do código, ISO, classe, descrição). A mesma função roda no navegador, no autocompletar da escolha do item ao registrar, e no servidor, na lista de itens e na busca do topo.
 
 ### 10.5 Prévia no navegador, decisão no servidor
 
@@ -509,3 +512,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.4 | 27/09/2026 | Leitura do QR dentro do SICEI com a câmera de qualquer celular (seção 10.3, stack, ADR-13). |
 | 1.5 | 27/09/2026 | Coluna `posicao.etiqueta_pendente` e fluxo da impressão (5.6); avisos de alertas, etiqueta e código (10.4); o que o IP do log representa (seção 6). |
 | 1.6 | 27/09/2026 | Seção 10.4: o pop-up de alertas não volta depois de VER, nem pela navegação do menu. |
+| 1.7 | 27/09/2026 | Busca tolerante de itens (`domain/busca.ts`) no navegador e no servidor, e autocompletar ao registrar (10.4). |

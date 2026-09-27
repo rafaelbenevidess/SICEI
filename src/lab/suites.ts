@@ -6,6 +6,8 @@
 import { decidirAlerta, type NivelAlerta } from '@/domain/alertas'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
+import { buscarItens } from '@/domain/busca'
+import { casosBusca, ITENS_DE_EXEMPLO } from '@/domain/busca.casos'
 import { cnpjValido } from '@/domain/cnpj'
 import { proximoCodigo } from '@/domain/codigo'
 import { casosProximoCodigo } from '@/domain/codigo.casos'
@@ -809,6 +811,32 @@ export const SUITES: SuiteLab[] = [
     casos: casos(casosAtribuicao),
     executar: (e) => avaliarAtribuicao(e as Parameters<typeof avaliarAtribuicao>[0]),
     formatar: (v) => formatarDecisao(v, () => 'ok'),
+  },
+  {
+    id: 'RF-11',
+    titulo: 'Busca de itens que aceita o código de qualquer jeito',
+    regra:
+      'Maiúsculas, acentos, traços, espaços e zeros à esquerda não importam: "Pst001", "pst 1" e "PST-1" acham o PST-001. Código exato vem primeiro.',
+    casos: casos(casosBusca),
+    executar: (e) => buscarItens(e as string, ITENS_DE_EXEMPLO).map((i) => i.codigo),
+    formatar: (v) => ((v as string[]).length ? (v as string[]).join(', ') : 'nenhum'),
+    formulario: {
+      campos: [
+        { nome: 'termo', rotulo: 'O que a pessoa digitou', tipo: 'texto', padrao: 'Pst001' },
+      ],
+      esperado: {
+        nome: 'esperado',
+        rotulo: 'Códigos esperados (separados por vírgula; vazio = nenhum)',
+        tipo: 'texto',
+      },
+      executar: (v) => {
+        const r = buscarItens(v.termo ?? '', ITENS_DE_EXEMPLO).map((i) => i.codigo)
+        return {
+          resultado: r.join(', '),
+          explicacao: `itens de exemplo: ${ITENS_DE_EXEMPLO.map((i) => i.codigo).join(', ')}`,
+        }
+      },
+    },
   },
   {
     id: 'RF-03',

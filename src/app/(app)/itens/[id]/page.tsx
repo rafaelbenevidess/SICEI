@@ -121,23 +121,26 @@ export default async function PaginaItem({
               Editar
             </LinkBotao>
           )}
-          {podeEntrada && (
-            <LinkBotao
-              href={`/movimentacoes/nova?modo=entrada&item=${item.id}`}
-              variante="secundario"
-              icone={ArrowDownToLine}
-            >
-              Entrada
-            </LinkBotao>
-          )}
-          {podeSaida && (
-            <LinkBotao
-              href={`/movimentacoes/nova?modo=saida&item=${item.id}`}
-              icone={ArrowUpFromLine}
-            >
-              Registrar saída
-            </LinkBotao>
-          )}
+          {/* no celular, entrada e saída ficam na barra fixa embaixo */}
+          <span className="contents max-md:hidden">
+            {podeEntrada && (
+              <LinkBotao
+                href={`/movimentacoes/nova?modo=entrada&item=${item.id}`}
+                variante="secundario"
+                icone={ArrowDownToLine}
+              >
+                Entrada
+              </LinkBotao>
+            )}
+            {podeSaida && (
+              <LinkBotao
+                href={`/movimentacoes/nova?modo=saida&item=${item.id}`}
+                icone={ArrowUpFromLine}
+              >
+                Registrar saída
+              </LinkBotao>
+            )}
+          </span>
         </>
       }
     >
@@ -422,6 +425,33 @@ export default async function PaginaItem({
       )}
 
       {!item.ativo && <Vazio>Item inativo: não recebe movimentações novas.</Vazio>}
+      {(podeEntrada || podeSaida) && (
+        <>
+          <div aria-hidden className="h-16 md:hidden" />
+          <nav
+            aria-label="Registrar movimentação"
+            className={`nao-imprimir fixed inset-x-0 bottom-16 z-20 grid gap-2 border-t border-line bg-surface px-4 py-2.5 md:hidden [&>a]:h-[52px] ${podeEntrada && podeSaida ? 'grid-cols-[1fr_2fr]' : 'grid-cols-1'}`}
+          >
+            {podeEntrada && (
+              <LinkBotao
+                href={`/movimentacoes/nova?modo=entrada&item=${item.id}`}
+                variante="secundario"
+                icone={ArrowDownToLine}
+              >
+                Entrada
+              </LinkBotao>
+            )}
+            {podeSaida && (
+              <LinkBotao
+                href={`/movimentacoes/nova?modo=saida&item=${item.id}`}
+                icone={ArrowUpFromLine}
+              >
+                Registrar saída
+              </LinkBotao>
+            )}
+          </nav>
+        </>
+      )}
     </Pagina>
   )
 }

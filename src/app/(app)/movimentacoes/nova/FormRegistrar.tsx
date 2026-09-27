@@ -3,12 +3,16 @@
 import {
   ArrowRight,
   Check,
+  CircleCheck,
   CircleX,
   Clock,
   CornerDownLeft,
   Factory,
+  Minus,
   MonitorSmartphone,
   Plus,
+  ScanLine,
+  TriangleAlert,
   Truck,
   Undo2,
   User,
@@ -17,14 +21,22 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { acaoFornecedorRapido, acaoMovimentar } from '@/app/acoes/estoque'
 import { mascararCnpj, situacaoDoCnpj } from '@/domain/cnpj'
 import { quantidadeEmUnidades, statusDoItem } from '@/domain/estoque'
 import { avaliarMovimentacao, type TipoComum } from '@/domain/movimentacao'
-import { BotaoEnviar, Campo, FormAcao, Oculto, Selecao } from '@/components/formulario'
-import { Aviso, BadgeStatus, ChipCodigo, classeBotao } from '@/components/ui'
-import { formatarMoeda } from '@/lib/formatar'
+import {
+  BotaoEnviar,
+  Campo,
+  FormAcao,
+  GrupoDeChips,
+  Oculto,
+  Selecao,
+} from '@/components/formulario'
+import { Aviso, BadgeStatus, ChipCodigo, classeBotao, LinkBotao } from '@/components/ui'
+import type { EstadoAcao } from '@/server/web/acao'
+import { formatarMoeda, NOME_STATUS } from '@/lib/formatar'
 
 type Opcao = { valor: string; rotulo: string }
 
@@ -109,6 +121,8 @@ export function FormRegistrar({
   const [fornecedores, setFornecedores] = useState(fornecedoresIniciais)
   const [fornecedorId, setFornecedorId] = useState('')
   const [novoForn, setNovoForn] = useState(false)
+  const [registrado, setRegistrado] = useState<EstadoAcao['dados'] | null>(null)
+  const [rodada, setRodada] = useState(0)
 
   const compra = tipo === 'COMPRA'
   const unidadeReal = compra ? unidade : 'UNIDADE'
@@ -130,6 +144,21 @@ export function FormRegistrar({
       : statusDoItem({ saldo: depois, minimo: item.minimo, pontoReposicao: item.pontoReposicao })
   const saldoInsuficiente = decisao !== null && !decisao.ok && modo === 'saida'
   const ultimo = fornecedorId ? ultimosPrecos[fornecedorId] : undefined
+  const passo = (delta: number) => setQtd(String(Math.max(1, (Number(qtd) || 0) + delta)))
+
+  if (registrado)
+    return (
+      <Confirmacao
+        modo={modo}
+        item={item}
+        dados={registrado}
+        aoRegistrarOutra={() => {
+          setRegistrado(null)
+          setQtd('')
+          setRodada((r) => r + 1)
+        }}
+      />
+    )
 
   return (
     <div className="grid items-start gap-6 min-[75rem]:grid-cols-[minmax(0,1fr)_360px]">
@@ -137,8 +166,9 @@ export function FormRegistrar({
         acao={acaoMovimentar}
         rotulo={modo === 'entrada' ? 'Registrar entrada' : 'Registrar saída'}
         className="flex min-w-0 flex-col gap-6 rounded-[14px] border border-line bg-surface p-6 shadow-cartao sm:p-7"
-        aoConcluir={() => {
-          setQtd('')
+        key={rodada}
+        aoConcluir={(estado) => {
+          setRegistrado(estado.dados ?? {})
           router.refresh()
         }}
       >
@@ -193,6 +223,14 @@ export function FormRegistrar({
         <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
           <div className="flex min-w-0 flex-col gap-1.5">
             <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={() => passo(-1)}
+                aria-label="Diminuir a quantidade"
+                className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
+              >
+                <Minus aria-hidden className="size-4" />
+              </button>
               <div className="w-0 min-w-0 flex-1">
                 <Campo
                   nome="quantidade"
@@ -204,9 +242,17 @@ export function FormRegistrar({
                   obrigatorio
                   value={qtd}
                   onChange={(e) => setQtd(e.target.value)}
-                  className={`h-11 text-base font-semibold ${saldoInsuficiente ? '!border-crit' : ''}`}
+                  className={`h-11 text-center text-base font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none ${saldoInsuficiente ? '!border-crit' : ''}`}
                 />
               </div>
+              <button
+                type="button"
+                onClick={() => passo(1)}
+                aria-label="Aumentar a quantidade"
+                className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
+              >
+                <Plus aria-hidden className="size-4" />
+              </button>
               {compra && (
                 <div
                   role="radiogroup"
@@ -299,13 +345,19 @@ export function FormRegistrar({
 
           {(tipo === 'CONSUMO_PRODUCAO' || tipo === 'DEVOLUCAO_PRODUCAO') && (
             <>
-              <Selecao
-                nome="destinoId"
-                rotulo="Destino"
-                opcoes={destinos}
-                vazio="Escolha…"
-                obrigatorio
-              />
+              {destinos.length <= 8 ? (
+                <div className="col-span-full">
+                  <GrupoDeChips nome="destinoId" rotulo="Destino" opcoes={destinos} obrigatorio />
+                </div>
+              ) : (
+                <Selecao
+                  nome="destinoId"
+                  rotulo="Destino"
+                  opcoes={destinos}
+                  vazio="Escolha…"
+                  obrigatorio
+                />
+              )}
               <Selecao
                 nome="colaboradorId"
                 rotulo={
@@ -343,8 +395,8 @@ export function FormRegistrar({
           </Aviso>
         )}
 
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5">
-          <Link href={`/itens/${item.id}`} className={classeBotao('secundario')}>
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5 max-md:sticky max-md:bottom-16 max-md:z-10 max-md:-mx-6 max-md:-mb-6 max-md:rounded-b-[14px] max-md:bg-surface max-md:px-6 max-md:pb-4 max-md:[&>button]:h-[54px] max-md:[&>button]:flex-1">
+          <Link href={`/itens/${item.id}`} className={`${classeBotao('secundario')} max-md:hidden`}>
             Cancelar
           </Link>
           <BotaoEnviar desabilitado={saldoInsuficiente || unidades === null}>
@@ -408,6 +460,77 @@ export function FormRegistrar({
         </div>
       </aside>
     </div>
+  )
+}
+
+/** Tela depois de gravar (no celular é a confirmação do fluxo pela etiqueta QR). */
+function Confirmacao({
+  modo,
+  item,
+  dados,
+  aoRegistrarOutra,
+}: {
+  modo: 'entrada' | 'saida'
+  item: { id: string; codigo: string; posicao: string | null }
+  dados: NonNullable<EstadoAcao['dados']>
+  aoRegistrarOutra: () => void
+}) {
+  // a confirmação ocupa o lugar do formulário: volta ao topo para ela aparecer inteira
+  useEffect(() => window.scrollTo({ top: 0 }), [])
+  const status = String(dados.status ?? '')
+  const preocupa = status === 'ATENCAO' || status === 'CRITICO' || status === 'ZERADO'
+  return (
+    <section
+      role="status"
+      aria-label={modo === 'saida' ? 'Saída registrada' : 'Entrada registrada'}
+      className="mx-auto flex w-full max-w-lg flex-col gap-5 rounded-[14px] border border-line bg-surface p-6 shadow-cartao sm:p-8"
+    >
+      <span className="grid size-16 place-items-center rounded-2xl bg-ok-soft text-ok-ink">
+        <CircleCheck aria-hidden className="size-8" />
+      </span>
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {modo === 'saida' ? 'Saída registrada' : 'Entrada registrada'}
+        </h2>
+        <p className="mt-1 text-ink-2">
+          {dados.quantidade} {Number(dados.quantidade) === 1 ? 'unidade' : 'unidades'} de{' '}
+          <span className="font-mono font-semibold text-ink">{item.codigo}</span>.
+        </p>
+      </div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-line p-4">
+        <div>
+          <p className="text-[13px] text-ink-2">Antes</p>
+          <p className="text-[28px] leading-tight font-semibold">{dados.saldoAnterior}</p>
+        </div>
+        <ArrowRight aria-hidden className="size-4 text-ink-3" />
+        <div>
+          <p className="text-[13px] text-ink-2">Agora</p>
+          <p className="text-[28px] leading-tight font-semibold">{dados.saldoPosterior}</p>
+        </div>
+      </div>
+      {preocupa && (
+        <div className="flex gap-2.5 rounded-xl bg-warn-soft px-4 py-3 text-sm text-warn-ink">
+          <TriangleAlert aria-hidden className="mt-0.5 size-[18px] shrink-0" />
+          <p>
+            O item está em <b>{NOME_STATUS[status] ?? status}</b>. O alerta aparece em Alertas e o
+            Gestor é avisado.
+          </p>
+        </div>
+      )}
+      <div className="flex flex-col gap-2">
+        {modo === 'saida' && (
+          <LinkBotao href="/p" icone={ScanLine}>
+            Ler outra etiqueta
+          </LinkBotao>
+        )}
+        <button type="button" onClick={aoRegistrarOutra} className={classeBotao('secundario')}>
+          {modo === 'saida' ? 'Registrar outra saída deste item' : 'Registrar outra entrada'}
+        </button>
+        <LinkBotao href={`/itens/${item.id}`} variante="secundario">
+          Voltar ao item
+        </LinkBotao>
+      </div>
+    </section>
   )
 }
 

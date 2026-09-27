@@ -179,7 +179,7 @@ export function Aviso({
       className={`flex flex-wrap items-start gap-3 rounded-xl px-4 py-3.5 text-sm ${classe}`}
     >
       <Icone aria-hidden className="mt-px size-[18px] shrink-0" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 basis-56">
         {titulo && <p className="font-semibold">{titulo}</p>}
         <div>{children}</div>
       </div>
@@ -333,23 +333,36 @@ export function Gauge({
         {larga && marcador(e.alvo, 'bg-line-2', 'Alvo', alvo)}
       </div>
       {larga && (
-        <div className="relative mt-2 h-8 text-xs text-ink-3">
-          {rotulosDoNivel([
+        <RotulosDoNivel
+          marcas={rotulosDoNivel([
             { pos: e.minimo, nome: 'mínimo', valor: minimo },
             { pos: e.reposicao, nome: 'reposição', valor: pontoReposicao },
             { pos: e.alvo, nome: 'alvo', valor: alvo },
-          ]).map((m) => (
-            <span
-              key={m.nome}
-              className={`absolute flex flex-col leading-tight whitespace-nowrap ${ANCORAS[m.ancora]}`}
-              style={{ left: `${m.pos}%` }}
-            >
-              <strong className="font-semibold text-ink-2">{m.valor}</strong>
-              {m.nome}
-            </span>
-          ))}
-        </div>
+          ])}
+        />
       )}
+    </div>
+  )
+}
+
+function RotulosDoNivel({
+  marcas,
+}: {
+  marcas: ReturnType<typeof rotulosDoNivel<{ pos: number; nome: string; valor: number }>>
+}) {
+  const duas = marcas.some((m) => m.linha === 1)
+  return (
+    <div className={`relative mt-2 text-xs text-ink-3 ${duas ? 'h-16 md:h-8' : 'h-8'}`}>
+      {marcas.map((m) => (
+        <span
+          key={m.nome}
+          className={`absolute flex flex-col leading-tight whitespace-nowrap ${ANCORAS[m.ancora]} ${m.linha === 1 ? 'top-8 md:top-0' : 'top-0'}`}
+          style={{ left: `${m.pos}%` }}
+        >
+          <strong className="font-semibold text-ink-2">{m.valor}</strong>
+          {m.nome}
+        </span>
+      ))}
     </div>
   )
 }
@@ -361,13 +374,21 @@ const ANCORAS = {
 }
 
 /**
- * Onde ancorar cada rótulo da barra larga: centralizado no marcador, mas encostado para
+ * Onde pôr cada rótulo da barra larga: centralizado no marcador, mas encostado para
  * o lado oposto quando dois marcadores ficam perto (menos de 10%) ou na ponta da barra.
+ * Marcadores a uma distância média (10% a 25%) não cabem lado a lado no celular: o
+ * segundo desce para a linha de baixo.
  */
 export function rotulosDoNivel<T extends { pos: number }>(
   marcas: T[],
-): (T & { ancora: keyof typeof ANCORAS })[] {
+): (T & { ancora: keyof typeof ANCORAS; linha: 0 | 1 })[] {
   const ordem = [...marcas].sort((a, b) => a.pos - b.pos)
+  const linhas = new Map<T, 0 | 1>()
+  ordem.forEach((m, i) => {
+    const antes = ordem[i - 1]
+    const distancia = antes ? m.pos - antes.pos : Infinity
+    linhas.set(m, distancia >= 10 && distancia < 25 && linhas.get(antes) === 0 ? 1 : 0)
+  })
   return marcas.map((m) => {
     const i = ordem.indexOf(m)
     const antes = ordem[i - 1]
@@ -375,7 +396,7 @@ export function rotulosDoNivel<T extends { pos: number }>(
     let ancora: keyof typeof ANCORAS = 'meio'
     if (m.pos < 5 || (antes && m.pos - antes.pos < 10)) ancora = 'inicio'
     if (m.pos > 95 || (depois && depois.pos - m.pos < 10)) ancora = 'fim'
-    return { ...m, ancora }
+    return { ...m, ancora, linha: linhas.get(m) ?? 0 }
   })
 }
 

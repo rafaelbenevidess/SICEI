@@ -37,6 +37,12 @@ export async function acaoMovimentar(_: EstadoAcao, form: FormData): Promise<Est
     revalidatePath(`/itens/${r.movimentacao.itemId}`)
     return {
       mensagem: `${NOME_TIPO[r.movimentacao.tipo]} de ${r.movimentacao.quantidade} registrada. Novo saldo: ${r.saldo}.`,
+      dados: {
+        quantidade: r.movimentacao.quantidade,
+        saldoAnterior: r.movimentacao.saldoAnterior,
+        saldoPosterior: r.saldo,
+        status: r.status,
+      },
     }
   })
 }

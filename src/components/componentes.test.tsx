@@ -168,6 +168,24 @@ describe('Barra de nível · Rótulos sem sobreposição', () => {
     expect(r.map((m) => m.ancora)).toEqual(['fim', 'inicio', 'meio'])
   })
 
+  it('marcadores a 10–25% de distância: o segundo desce para a linha de baixo', () => {
+    const r = rotulosDoNivel([
+      { pos: 43, nome: 'mínimo' },
+      { pos: 46, nome: 'reposição' },
+      { pos: 64, nome: 'alvo' },
+    ])
+    expect(r.map((m) => m.linha)).toEqual([0, 0, 1])
+  })
+
+  it('marcadores longe uns dos outros ficam todos na mesma linha', () => {
+    const r = rotulosDoNivel([
+      { pos: 10, nome: 'mínimo' },
+      { pos: 40, nome: 'reposição' },
+      { pos: 80, nome: 'alvo' },
+    ])
+    expect(r.map((m) => m.linha)).toEqual([0, 0, 0])
+  })
+
   it('nas pontas o rótulo encosta para dentro da barra', () => {
     const r = rotulosDoNivel([
       { pos: 2, nome: 'mínimo' },

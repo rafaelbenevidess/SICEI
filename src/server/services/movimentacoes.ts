@@ -9,6 +9,7 @@ import {
 import { exigirPermissao, permissaoDoTipo } from '@/domain/permissoes'
 import { validar } from '@/domain/schemas/comum'
 import { schemaEstorno, schemaInventario, schemaMovimentacao } from '@/domain/schemas/movimentacao'
+import type { StatusItem } from '@/domain/tipos'
 import type { Movimentacao } from '@/generated/prisma/client'
 import { registrarAuditoria } from '../audit/registrar'
 import type { Ator } from '../contexto'
@@ -36,6 +37,8 @@ export async function travarItem(tx: Tx, itemId: string): Promise<ItemTravado> {
 export interface ResultadoMovimentacao {
   movimentacao: Movimentacao
   saldo: number
+  /** Status do item depois da movimentação (RN-17) */
+  status: StatusItem
   notificacoes: string[]
 }
 
@@ -179,6 +182,7 @@ export async function registrarMovimentacao(
     return {
       movimentacao,
       saldo: decisao.valor.saldoPosterior,
+      status: recalculo.status,
       notificacoes: recalculo.notificacoes,
     }
   })
@@ -265,6 +269,7 @@ export async function estornarMovimentacao(
       return {
         movimentacao: estorno,
         saldo: decisao.valor.saldoPosterior,
+        status: recalculo.status,
         notificacoes: recalculo.notificacoes,
       }
     })

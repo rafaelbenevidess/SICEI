@@ -271,6 +271,62 @@ export function Selecao({
   )
 }
 
+/** Escolha única em botões grandes (44 px), bons para o dedo no celular. Envia como radio. */
+export function GrupoDeChips({
+  nome,
+  rotulo,
+  opcoes,
+  obrigatorio,
+}: {
+  nome: string
+  rotulo: string
+  opcoes: { valor: string; rotulo: string }[]
+  obrigatorio?: boolean
+}) {
+  const erro = useErro(nome)
+  const id = `chips-${nome}-${useId()}`
+  return (
+    <fieldset
+      className="flex min-w-0 flex-col gap-1.5"
+      aria-invalid={erro ? true : undefined}
+      aria-describedby={erro ? `${id}-erro` : undefined}
+    >
+      <legend className="mb-1.5 text-[13px] font-medium">
+        {rotulo}
+        {obrigatorio && (
+          <span aria-hidden className="text-crit-ink">
+            {' '}
+            *
+          </span>
+        )}
+      </legend>
+      <div className="flex flex-wrap gap-2">
+        {opcoes.map((o) => (
+          <label key={o.valor} className="cursor-pointer">
+            <input
+              type="radio"
+              name={nome}
+              value={o.valor}
+              required={obrigatorio}
+              className="peer sr-only"
+            />
+            <span
+              className={`inline-flex h-11 items-center rounded-full border bg-surface px-4 text-sm hover:bg-surface-2 peer-checked:border-accent peer-checked:bg-accent-soft peer-checked:font-medium peer-checked:text-accent-ink peer-focus-visible:ring-3 peer-focus-visible:ring-accent-soft ${erro ? 'border-crit' : 'border-line-2'}`}
+            >
+              {o.rotulo}
+            </span>
+          </label>
+        ))}
+      </div>
+      {erro && (
+        <span id={`${id}-erro`} className="text-[13px] text-crit-ink">
+          {erro}
+        </span>
+      )}
+    </fieldset>
+  )
+}
+
 /** Campo de senha com o botão de mostrar e esconder o que foi digitado. */
 export function CampoSenha(props: Omit<Parameters<typeof Campo>[0], 'type' | 'acessorio'>) {
   const [visivel, setVisivel] = useState(false)

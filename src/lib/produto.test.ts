@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { anosDeDireitos, licenciada, PRODUTO } from './produto'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { anosDeDireitos, licenciada, nomeDaLicenciada, PRODUTO } from './produto'
 
 describe('Produto · Dados do SICEI e da licença', () => {
   it('sigla e nome por extenso', () => {
@@ -22,6 +22,20 @@ describe('Produto · Dados do SICEI e da licença', () => {
     ['   ', null],
     [undefined, null],
   ])('SICEI_LICENCIADA=%j mostra %j', (valor, esperado) => {
-    expect(licenciada(valor)).toBe(esperado)
+    expect(nomeDaLicenciada(valor)).toBe(esperado)
+  })
+
+  describe('licenciada() lê SICEI_LICENCIADA', () => {
+    afterEach(() => vi.unstubAllEnvs())
+
+    it('com a variável definida devolve o nome', () => {
+      vi.stubEnv('SICEI_LICENCIADA', 'DDA Metalúrgica')
+      expect(licenciada()).toBe('DDA Metalúrgica')
+    })
+
+    it('com a variável vazia devolve null', () => {
+      vi.stubEnv('SICEI_LICENCIADA', '')
+      expect(licenciada()).toBeNull()
+    })
   })
 })

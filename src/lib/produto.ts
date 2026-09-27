@@ -19,10 +19,13 @@ export function anosDeDireitos(anoAtual: number, anoInicial: number = PRODUTO.an
   return anoAtual > anoInicial ? `${anoInicial}–${anoAtual}` : String(anoInicial)
 }
 
-/** Empresa licenciada desta instalação, ou null se a variável não foi configurada. */
-export function licenciada(
-  valor: string | undefined = process.env.SICEI_LICENCIADA,
-): string | null {
+/** Limpa o nome da licenciada; vazio ou ausente vira null. */
+export function nomeDaLicenciada(valor: string | undefined): string | null {
   const nome = valor?.trim()
   return nome ? nome : null
+}
+
+/** Empresa licenciada desta instalação (variável SICEI_LICENCIADA), ou null se não configurada. */
+export function licenciada(): string | null {
+  return nomeDaLicenciada(process.env.SICEI_LICENCIADA)
 }

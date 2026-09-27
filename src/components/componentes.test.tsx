@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { BotaoEnviar, Campo, CampoSenha, DadosDaAcao, FormAcao, Selecao } from './formulario'
+import { Marca } from './Marca'
 import { Paginacao } from './Paginacao'
 import { Rodape } from './Rodape'
 import { Aviso, BadgeStatus, rotulosDoNivel, Vazio } from './ui'
@@ -137,6 +138,22 @@ describe('Formulários ligados a Server Actions', () => {
     expect(screen.getByLabelText('Quantidade A').id).not.toBe(
       screen.getByLabelText('Quantidade B').id,
     )
+  })
+})
+
+describe('Marca · Ícone em vetor e nome em texto', () => {
+  it('o nome SICEI é texto (não imagem) e a licenciada aparece embaixo', () => {
+    const { container } = render(<Marca licenciada="DDA Metalúrgica" />)
+    expect(screen.getByText('SICEI')).toBeInTheDocument()
+    expect(screen.getByText('DDA Metalúrgica')).toBeInTheDocument()
+    expect(container.querySelector('img')).toBeNull()
+    // o ícone é SVG decorativo: leitor de tela lê só o nome
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  })
+  it('sem licenciada, só o nome', () => {
+    render(<Marca />)
+    expect(screen.getByText('SICEI')).toBeInTheDocument()
+    expect(screen.queryByText('DDA Metalúrgica')).not.toBeInTheDocument()
   })
 })
 

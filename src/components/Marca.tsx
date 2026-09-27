@@ -1,35 +1,20 @@
-import Image from 'next/image'
+import { IconeSicei } from './SimboloSicei'
 
-/** Ícone + nome "SICEI" (a imagem do nome troca conforme o tema) e, embaixo, a licenciada. */
+/**
+ * Ícone + nome "SICEI" escrito na fonte da interface (Geist), e embaixo a licenciada.
+ * O nome é texto de verdade: nítido em qualquer tela e com a cor do tema.
+ */
 export function Marca({ licenciada }: { licenciada?: string | null }) {
   return (
     <span className="flex items-center gap-2.5">
-      <Image
-        src="/brand/sicei-icon.png"
-        alt=""
-        width={32}
-        height={32}
-        className="size-8 rounded-lg"
-        priority
-      />
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <Image
-          src="/brand/sicei-wordmark-escuro.png"
-          alt="SICEI"
-          width={50}
-          height={14}
-          className="h-3.5 w-auto escuro:hidden"
-          priority
-        />
-        <Image
-          src="/brand/sicei-wordmark-claro.png"
-          alt="SICEI"
-          width={47}
-          height={14}
-          className="hidden h-3.5 w-auto escuro:block"
-          priority
-        />
-        {licenciada && <span className="truncate text-xs text-ink-3">{licenciada}</span>}
+      <IconeSicei className="size-8 shrink-0" />
+      <span className="flex min-w-0 flex-col justify-center gap-1">
+        <span className="text-[17px] leading-none font-extrabold tracking-[0.02em] text-ink">
+          SICEI
+        </span>
+        {licenciada && (
+          <span className="truncate text-xs leading-none text-ink-3">{licenciada}</span>
+        )}
       </span>
     </span>
   )

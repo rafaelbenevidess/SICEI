@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import { SimboloSicei } from './SimboloSicei'
 import type { ReactNode } from 'react'
 import { anosDeDireitos, licenciada, PRODUTO } from '@/lib/produto'
 import { Marca } from './Marca'
@@ -33,14 +33,10 @@ export function TelaDeAcesso({ children }: { children: ReactNode }) {
           backgroundSize: '56px 40px',
         }}
       >
-        <Image
-          src="/brand/sicei-logo-escuro-2.png"
-          alt=""
-          width={575}
-          height={169}
-          className="h-14 w-auto self-start"
-          priority
-        />
+        <span className="flex items-center gap-4 self-start">
+          <SimboloSicei className="h-14 w-auto text-[#3d6bff]" />
+          <span className="text-[44px] leading-none font-extrabold tracking-[0.02em]">SICEI</span>
+        </span>
         <div className="max-w-[460px]">
           <p className="font-mono text-xs tracking-wide text-[#8fb0ff]">A01-G03-C04 · PT-0012</p>
           <p className="mt-3 text-[34px] leading-[1.15] font-semibold tracking-tight">

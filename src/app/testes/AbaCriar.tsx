@@ -51,7 +51,7 @@ export function AbaCriar() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-ink-2">
         Escolha uma regra, informe as entradas e o resultado que você espera. O SICEI calcula com a
         função real e diz se o seu teste passou.
       </p>
@@ -60,7 +60,7 @@ export function AbaCriar() {
         <select
           value={chave}
           onChange={(e) => trocarSuite(e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-2 font-normal"
+          className="rounded-lg border border-line-2 px-2 py-2 font-normal"
         >
           {suitesComFormulario.map((s) => (
             <option key={chaveDaSuite(s)} value={chaveDaSuite(s)}>
@@ -69,7 +69,7 @@ export function AbaCriar() {
           ))}
         </select>
       </label>
-      <p className="rounded-md bg-slate-50 p-2 text-sm text-slate-700">{suite.regra}</p>
+      <p className="rounded-lg bg-surface-2 p-2 text-sm text-ink">{suite.regra}</p>
 
       <form onSubmit={testar} className="grid gap-3 sm:grid-cols-2">
         {form.campos.map((c) => (
@@ -84,7 +84,7 @@ export function AbaCriar() {
         <div className="flex flex-wrap gap-2 sm:col-span-2">
           <button
             type="submit"
-            className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+            className="rounded-lg bg-ink px-4 py-2 font-medium text-bg hover:opacity-90"
           >
             Testar
           </button>
@@ -92,7 +92,7 @@ export function AbaCriar() {
             type="button"
             onClick={salvar}
             disabled={esperado.trim() === ''}
-            className="rounded-md border border-slate-300 px-4 py-2 font-medium hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-lg border border-line-2 px-4 py-2 font-medium hover:bg-surface-2 disabled:opacity-50"
           >
             Salvar este teste
           </button>
@@ -102,12 +102,12 @@ export function AbaCriar() {
       {resultado && (
         <div
           role="status"
-          className={`rounded-md border p-3 ${
+          className={`rounded-lg border p-3 ${
             esperado.trim() === ''
-              ? 'border-slate-300 bg-slate-50'
+              ? 'border-line-2 bg-surface-2'
               : passou
-                ? 'border-green-300 bg-green-50'
-                : 'border-red-300 bg-red-50'
+                ? 'border-ok bg-ok-soft'
+                : 'border-crit bg-crit-soft'
           }`}
         >
           <p className="font-medium">
@@ -126,14 +126,14 @@ export function AbaCriar() {
               </>
             )}
           </p>
-          <p className="text-sm text-slate-600">{resultado.explicacao}</p>
+          <p className="text-sm text-ink-2">{resultado.explicacao}</p>
         </div>
       )}
 
       {meus.length > 0 && (
         <div>
           <h2 className="mb-2 font-medium">Seus testes salvos ({meus.length})</h2>
-          <p className="mb-2 text-sm text-slate-500">
+          <p className="mb-2 text-sm text-ink-3">
             Eles rodam junto com os oficiais em “Executar todos”.
           </p>
           <ul className="flex flex-col gap-1 text-sm">
@@ -142,7 +142,7 @@ export function AbaCriar() {
                 <span className="flex-1">
                   {t.suite} → esperado <code>{t.esperado}</code>
                 </span>
-                <button onClick={() => remover(t.id)} className="text-red-700 underline">
+                <button onClick={() => remover(t.id)} className="text-crit-ink underline">
                   remover
                 </button>
               </li>
@@ -165,7 +165,7 @@ function Campo({
   onChange: (v: string) => void
   destaque?: boolean
 }) {
-  const classe = `rounded-md border px-2 py-2 font-normal ${destaque ? 'border-blue-400' : 'border-slate-300'}`
+  const classe = `rounded-lg border px-2 py-2 font-normal ${destaque ? 'border-accent' : 'border-line-2'}`
   return (
     <label className="flex flex-col gap-1 text-sm font-medium">
       {campo.rotulo}
@@ -186,7 +186,7 @@ function Campo({
           className={classe}
         />
       )}
-      {campo.ajuda && <span className="text-xs font-normal text-slate-500">{campo.ajuda}</span>}
+      {campo.ajuda && <span className="text-xs font-normal text-ink-3">{campo.ajuda}</span>}
     </label>
   )
 }

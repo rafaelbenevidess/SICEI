@@ -52,18 +52,16 @@ export function AbaExecutar() {
         <button
           onClick={() => executar(todas)}
           disabled={rodando}
-          className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-lg bg-ink px-4 py-2 font-medium text-bg hover:opacity-90 disabled:opacity-50"
         >
           {rodando ? 'Executando…' : 'Executar todos'}
         </button>
         {lista.length > 0 && (
           <p role="status" className="text-sm">
-            <strong className={passaram === lista.length ? 'text-green-700' : 'text-red-700'}>
+            <strong className={passaram === lista.length ? 'text-ok-ink' : 'text-crit-ink'}>
               {passaram} de {lista.length} passaram
             </strong>
-            {duracao !== null && (
-              <span className="text-slate-500"> em {duracao.toFixed(0)} ms</span>
-            )}
+            {duracao !== null && <span className="text-ink-3"> em {duracao.toFixed(0)} ms</span>}
           </p>
         )}
       </div>
@@ -74,16 +72,16 @@ export function AbaExecutar() {
         return (
           <details
             key={chave}
-            className="rounded-md border border-slate-200"
+            className="rounded-lg border border-line"
             open={rs?.some((r) => !r.passou)}
           >
             <summary className="flex cursor-pointer flex-wrap items-center gap-2 px-3 py-2">
-              <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs">{suite.id}</span>
+              <span className="rounded bg-surface-2 px-2 py-0.5 font-mono text-xs">{suite.id}</span>
               <span className="font-medium">{suite.titulo}</span>
-              <span className="text-sm text-slate-500">({suite.casos.length} casos)</span>
+              <span className="text-sm text-ink-3">({suite.casos.length} casos)</span>
               {rs && (
                 <span
-                  className={`text-sm font-medium ${rs.every((r) => r.passou) ? 'text-green-700' : 'text-red-700'}`}
+                  className={`text-sm font-medium ${rs.every((r) => r.passou) ? 'text-ok-ink' : 'text-crit-ink'}`}
                 >
                   {rs.filter((r) => r.passou).length}/{rs.length} ✓
                 </span>
@@ -93,13 +91,13 @@ export function AbaExecutar() {
                   e.preventDefault()
                   executar([chave])
                 }}
-                className="ml-auto rounded border border-slate-300 px-2 py-0.5 text-sm hover:bg-slate-50"
+                className="ml-auto rounded border border-line-2 px-2 py-0.5 text-sm hover:bg-surface-2"
               >
                 Executar este grupo
               </button>
             </summary>
-            <div className="border-t border-slate-200 px-3 py-2">
-              <p className="mb-2 text-sm text-slate-600">{suite.regra}</p>
+            <div className="border-t border-line px-3 py-2">
+              <p className="mb-2 text-sm text-ink-2">{suite.regra}</p>
               <TabelaResultados casos={suite.casos.map((c) => c.descricao)} resultados={rs} />
             </div>
           </details>
@@ -107,10 +105,10 @@ export function AbaExecutar() {
       })}
 
       {resultados.meus && (
-        <div className="rounded-md border border-slate-200 p-3">
+        <div className="rounded-lg border border-line p-3">
           <h2 className="mb-2 font-medium">Seus testes</h2>
           {resultados.meus.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhum teste criado ainda. Use a aba 2.</p>
+            <p className="text-sm text-ink-3">Nenhum teste criado ainda. Use a aba 2.</p>
           ) : (
             <TabelaResultados
               casos={resultados.meus.map((r) => r.descricao)}
@@ -144,7 +142,7 @@ function TabelaResultados({
             </span>
             {descricao}
             {r && (
-              <span className="block pl-6 text-xs text-slate-500">
+              <span className="block pl-6 text-xs text-ink-3">
                 esperado: <code>{r.esperado}</code> · obtido: <code>{r.obtido}</code>
               </span>
             )}

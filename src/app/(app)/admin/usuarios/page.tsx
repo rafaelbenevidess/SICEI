@@ -17,7 +17,7 @@ export default async function Usuarios() {
       titulo="Usuários"
       descricao="Contas geridas só pela empresa. Login e senha gerados pelo sistema; nenhum e-mail."
     >
-      <div className="grid items-start gap-6 min-[75rem]:grid-cols-[380px_minmax(0,1fr)]">
+      <div className="grid items-start gap-6 min-[100rem]:grid-cols-[380px_minmax(0,1fr)]">
         <Cartao titulo="Novo usuário">
           {/* inclui inativos: login nunca é reaproveitado (RN-21b) */}
           <FormNovoUsuario logins={lista.map((u) => u.login)} />

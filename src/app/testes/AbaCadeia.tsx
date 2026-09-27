@@ -42,7 +42,7 @@ export function AbaCadeia() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-ink-2">
         Estes são 5 registros de auditoria encadeados (RN-09a). Cada um guarda o hash SHA-256 do
         anterior. Altere qualquer valor, como a quantidade do registro 2, e clique em “Verificar
         integridade”. Tente também “recalcular o hash” do registro alterado, como faria um
@@ -51,7 +51,7 @@ export function AbaCadeia() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={async () => setResultado(await verificarCadeia(cadeia))}
-          className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+          className="rounded-lg bg-ink px-4 py-2 font-medium text-bg hover:opacity-90"
         >
           Verificar integridade
         </button>
@@ -60,7 +60,7 @@ export function AbaCadeia() {
             setCadeia(original)
             setResultado(null)
           }}
-          className="rounded-md border border-slate-300 px-4 py-2 font-medium hover:bg-slate-50"
+          className="rounded-lg border border-line-2 px-4 py-2 font-medium hover:bg-surface-2"
         >
           Restaurar original
         </button>
@@ -68,10 +68,10 @@ export function AbaCadeia() {
       {resultado && (
         <p
           role="status"
-          className={`rounded-md border p-3 font-medium ${
+          className={`rounded-lg border p-3 font-medium ${
             resultado.integra
-              ? 'border-green-300 bg-green-50 text-green-800'
-              : 'border-red-300 bg-red-50 text-red-800'
+              ? 'border-ok bg-ok-soft text-ok-ink'
+              : 'border-crit bg-crit-soft text-crit-ink'
           }`}
         >
           {resultado.integra
@@ -85,29 +85,29 @@ export function AbaCadeia() {
           return (
             <li
               key={r.seq}
-              className={`rounded-md border p-3 ${quebrado ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}
+              className={`rounded-lg border p-3 ${quebrado ? 'border-crit bg-crit-soft' : 'border-line'}`}
             >
               <p className="mb-2 font-mono text-sm font-bold">Registro {r.seq}</p>
               <div className="grid gap-2 sm:grid-cols-3">
                 {Object.entries(r.dados).map(([campo, valor]) => (
-                  <label key={campo} className="flex flex-col text-xs font-medium text-slate-600">
+                  <label key={campo} className="flex flex-col text-xs font-medium text-ink-2">
                     {campo}
                     <input
                       value={String(valor)}
                       onChange={(e) => alterar(i, campo, e.target.value)}
                       aria-label={`registro ${r.seq}, ${campo}`}
-                      className="rounded border border-slate-300 px-2 py-1 font-mono text-sm text-slate-900"
+                      className="rounded border border-line-2 px-2 py-1 font-mono text-sm text-ink"
                     />
                   </label>
                 ))}
               </div>
-              <p className="mt-2 break-all font-mono text-[11px] text-slate-500">
+              <p className="mt-2 break-all font-mono text-[11px] text-ink-3">
                 anterior: {r.prevHash}
               </p>
-              <p className="break-all font-mono text-[11px] text-slate-500">hash: {r.hash}</p>
+              <p className="break-all font-mono text-[11px] text-ink-3">hash: {r.hash}</p>
               <button
                 onClick={() => recalcularHash(i)}
-                className="mt-1 text-xs text-blue-700 underline"
+                className="mt-1 text-xs text-accent-ink underline"
               >
                 recalcular o hash deste registro
               </button>

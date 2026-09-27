@@ -20,7 +20,7 @@ export function Laboratorio() {
       <div
         role="tablist"
         aria-label="Seções do laboratório"
-        className="flex flex-wrap gap-2 border-b border-slate-200"
+        className="flex flex-wrap gap-2 border-b border-line"
       >
         {ABAS.map((a) => (
           <button
@@ -30,10 +30,10 @@ export function Laboratorio() {
             aria-selected={aba === a.id}
             aria-controls={`painel-${a.id}`}
             onClick={() => setAba(a.id)}
-            className={`-mb-px rounded-t-md border px-3 py-2 text-sm font-medium ${
+            className={`-mb-px rounded-t-lg border px-3 py-2 text-sm font-medium ${
               aba === a.id
-                ? 'border-slate-200 border-b-white bg-white text-slate-900'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-line border-b-surface bg-surface text-ink'
+                : 'border-transparent text-ink-2 hover:text-ink'
             }`}
           >
             {a.rotulo}
@@ -44,7 +44,7 @@ export function Laboratorio() {
         role="tabpanel"
         id={`painel-${aba}`}
         aria-labelledby={`aba-${aba}`}
-        className="rounded-b-md border border-t-0 border-slate-200 bg-white p-4"
+        className="rounded-b-[14px] border border-t-0 border-line bg-surface p-4 shadow-cartao sm:p-6"
       >
         {aba === 'executar' && <AbaExecutar />}
         {aba === 'criar' && <AbaCriar />}

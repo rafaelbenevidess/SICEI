@@ -1,35 +1,32 @@
-import Link from 'next/link'
+import { FlaskConical, LogIn } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { TelaDeAcesso } from '@/components/TelaDeAcesso'
+import { LinkBotao } from '@/components/ui'
 import { licenciada } from '@/lib/produto'
 import { usuarioAtual } from '@/server/web/sessao-atual'
 
+/** Página inicial pública: entrar no sistema ou abrir o Laboratório de testes (RNF-13). */
 export default async function Inicio() {
   if (await usuarioAtual()) redirect('/painel')
   const empresa = licenciada()
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-3xl font-bold">SICEI</h1>
-      <p className="text-lg text-slate-700">
+    <TelaDeAcesso>
+      <h1 className="text-[30px] font-semibold tracking-tight">SICEI</h1>
+      <p className="mt-1 text-lg text-ink-2">
         Sistema Inteligente de Controle de Estoques Industriais
       </p>
-      <p className="text-slate-600">
+      <p className="mt-4 text-ink-2">
         Controle de estoque de pastilhas industriais.
         {empresa && ` Licenciado para ${empresa}.`} Trabalho acadêmico.
       </p>
-      <nav className="flex flex-col gap-3 sm:flex-row">
-        <Link
-          href="/login"
-          className="rounded-md bg-slate-900 px-4 py-2 text-center font-medium text-white hover:bg-slate-700"
-        >
+      <nav className="mt-8 flex flex-col gap-3 [&>a]:h-12">
+        <LinkBotao href="/login" icone={LogIn}>
           Entrar
-        </Link>
-        <Link
-          href="/testes"
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-center font-medium hover:bg-slate-50"
-        >
+        </LinkBotao>
+        <LinkBotao href="/testes" variante="secundario" icone={FlaskConical}>
           Laboratório de testes
-        </Link>
+        </LinkBotao>
       </nav>
-    </main>
+    </TelaDeAcesso>
   )
 }

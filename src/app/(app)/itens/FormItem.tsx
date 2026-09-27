@@ -111,7 +111,7 @@ export function FormItem({
         ajuda="Opcional"
       />
       {novo && fornecedores && (
-        <fieldset className="grid gap-3 rounded-md border border-slate-200 p-3 sm:col-span-2 sm:grid-cols-3">
+        <fieldset className="grid gap-3 rounded-lg border border-line p-3 sm:col-span-2 sm:grid-cols-3">
           <legend className="px-1 text-sm font-semibold">Primeiro fornecedor (RN-05)</legend>
           <Selecao
             nome="fornecedorId"

@@ -90,7 +90,7 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
     <FormAcao
       acao={acaoCriarUsuario}
       rotulo="Novo usuário"
-      className="flex flex-col gap-4"
+      className="@container flex flex-col gap-4"
       aoConcluir={() => {
         setNome('')
         setSobrenome('')
@@ -98,7 +98,8 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
       }}
     >
       <Credenciais />
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* estreito (ao lado da tabela): empilhado; largo (acima da tabela): em linha */}
+      <div className="grid gap-4 sm:grid-cols-2 @3xl:grid-cols-3">
         <Campo
           nome="nome"
           rotulo="Nome"
@@ -113,14 +114,20 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
           value={sobrenome}
           onChange={(e) => setSobrenome(e.target.value)}
         />
+        <div className="sm:col-span-2 @3xl:col-span-1">
+          <Campo nome="setor" rotulo="Setor" obrigatorio />
+        </div>
       </div>
-      <Campo nome="setor" rotulo="Setor" obrigatorio />
       <fieldset>
         <legend className="mb-1.5 text-[13px] font-medium">
           Perfil <span className="text-crit-ink">*</span>
         </legend>
         <input type="hidden" name="perfil" value={perfil} />
-        <div role="radiogroup" aria-label="Perfil" className="grid grid-cols-2 gap-2">
+        <div
+          role="radiogroup"
+          aria-label="Perfil"
+          className="grid grid-cols-2 gap-2 @3xl:grid-cols-4"
+        >
           {OPCOES_PERFIL.map((o) => (
             <button
               key={o.valor}
@@ -135,18 +142,20 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
           ))}
         </div>
       </fieldset>
-      <div className="rounded-[10px] bg-surface-2 px-4 py-3">
-        <p className="text-[13px] text-ink-2">Login que será gerado</p>
-        <p className="mt-1 font-mono text-[17px] font-semibold" aria-live="polite">
-          {previa?.login ?? '—'}
-        </p>
-        <p className="mt-1 text-xs text-ink-3">{previa?.nota ?? 'Informe nome e sobrenome.'}</p>
-      </div>
-      <div className="[&>button]:w-full">
-        <BotaoEnviar desabilitado={!previa || !perfil}>
-          <UserPlus aria-hidden />
-          Criar usuário
-        </BotaoEnviar>
+      <div className="grid items-end gap-4 @3xl:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="rounded-[10px] bg-surface-2 px-4 py-3">
+          <p className="text-[13px] text-ink-2">Login que será gerado</p>
+          <p className="mt-1 font-mono text-[17px] font-semibold" aria-live="polite">
+            {previa?.login ?? '—'}
+          </p>
+          <p className="mt-1 text-xs text-ink-3">{previa?.nota ?? 'Informe nome e sobrenome.'}</p>
+        </div>
+        <div className="[&>button]:w-full">
+          <BotaoEnviar desabilitado={!previa || !perfil}>
+            <UserPlus aria-hidden />
+            Criar usuário
+          </BotaoEnviar>
+        </div>
       </div>
     </FormAcao>
   )

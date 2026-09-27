@@ -93,7 +93,7 @@ export function Shell({
   }
 
   const menu = (
-    <div className="flex h-full flex-col gap-5 px-3.5 pt-5 pb-4">
+    <div className="flex h-full flex-col gap-4 px-3.5 pt-5 pb-4">
       <div className="flex items-center justify-between px-2">
         <Link href="/painel" className="no-underline" aria-label="SICEI, ir para o painel">
           <Marca licenciada={licenciada} />
@@ -109,7 +109,7 @@ export function Shell({
       </div>
       <nav aria-label="Menu principal" className="-mx-1 flex-1 overflow-y-auto px-1">
         {grupos.map((g) => (
-          <div key={g.titulo} className="mb-4">
+          <div key={g.titulo} className="mb-3">
             <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-[0.07em] text-ink-3 uppercase">
               {g.titulo}
             </p>
@@ -122,7 +122,7 @@ export function Shell({
                     <Link
                       href={i.href}
                       aria-current={eh ? 'page' : undefined}
-                      className={`flex h-9 items-center gap-2.5 rounded-lg px-2.5 no-underline ${eh ? 'bg-surface-3 font-semibold text-ink' : 'font-medium text-ink-2 hover:bg-surface-2 hover:text-ink'}`}
+                      className={`flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 no-underline ${eh ? 'bg-surface-3 font-semibold text-ink' : 'font-medium text-ink-2 hover:bg-surface-2 hover:text-ink'}`}
                     >
                       <Icone
                         aria-hidden
@@ -143,7 +143,7 @@ export function Shell({
         ))}
         <Link
           href="/testes"
-          className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 font-medium text-ink-3 no-underline hover:bg-surface-2 hover:text-ink"
+          className="flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 font-medium text-ink-3 no-underline hover:bg-surface-2 hover:text-ink"
         >
           <FlaskConical aria-hidden className="size-[17px]" />
           Laboratório de testes

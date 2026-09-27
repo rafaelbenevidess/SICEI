@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { licenciada } from '@/lib/produto'
 import { usuarioAtual } from '@/server/web/sessao-atual'
 
 export default async function Inicio() {
   if (await usuarioAtual()) redirect('/painel')
+  const empresa = licenciada()
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-6 px-4 py-16">
       <h1 className="text-3xl font-bold">SICEI</h1>
@@ -11,8 +13,8 @@ export default async function Inicio() {
         Sistema Inteligente de Controle de Estoques Industriais
       </p>
       <p className="text-slate-600">
-        Controle de estoque de pastilhas industriais. Licenciado para a DDA Metalúrgica. Trabalho
-        acadêmico.
+        Controle de estoque de pastilhas industriais.
+        {empresa && ` Licenciado para ${empresa}.`} Trabalho acadêmico.
       </p>
       <nav className="flex flex-col gap-3 sm:flex-row">
         <Link

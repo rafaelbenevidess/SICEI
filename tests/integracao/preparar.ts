@@ -1,10 +1,11 @@
 // Prepara o banco de teste do zero antes da suíte de integração:
-// apaga o schema, recria e aplica as migrations com o usuário dono (simi_owner).
+// apaga o schema, recria e aplica as migrations com o usuário dono (sicei_dev_owner).
 import { execSync } from 'node:child_process'
 import pg from 'pg'
 
 export const URL_DONO_TESTE =
-  process.env.DIRECT_URL_TESTE ?? 'postgresql://simi_owner:simi_owner_dev@localhost:5432/simi_teste'
+  process.env.DIRECT_URL_TESTE ??
+  'postgresql://sicei_dev_owner:sicei_dev_owner_senha@localhost:5432/sicei_teste'
 
 export default async function preparar() {
   const cliente = new pg.Client({ connectionString: URL_DONO_TESTE })

@@ -2,7 +2,7 @@ import 'server-only'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@/generated/prisma/client'
 
-/** Prisma Client com o usuário da aplicação (simi_app), que não altera o histórico. */
+/** Prisma Client com o usuário da aplicação (sicei_<empresa>_app), que não altera o histórico. */
 function criarCliente() {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
   return new PrismaClient({ adapter })

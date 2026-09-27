@@ -39,7 +39,7 @@ export default defineConfig({
           env: {
             DATABASE_URL:
               process.env.DATABASE_URL_TESTE ??
-              'postgresql://simi_app:simi_app_dev@localhost:5432/simi_teste',
+              'postgresql://sicei_dev_app:sicei_dev_app_senha@localhost:5432/sicei_teste',
             SMTP_HOST: '',
           },
         },

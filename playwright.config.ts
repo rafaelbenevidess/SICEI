@@ -1,10 +1,11 @@
 import { defineConfig, devices } from '@playwright/test'
 
 // Testes ponta a ponta (doc 05, seção 4). Rodam contra o build de produção,
-// num banco próprio (simi_e2e) preparado por tests/e2e/preparar.ts.
+// num banco próprio (sicei_e2e) preparado por tests/e2e/preparar.ts.
 const porta = 3100
 const DATABASE_URL =
-  process.env.DATABASE_URL_E2E ?? 'postgresql://simi_app:simi_app_dev@localhost:5432/simi_e2e'
+  process.env.DATABASE_URL_E2E ??
+  'postgresql://sicei_dev_app:sicei_dev_app_senha@localhost:5432/sicei_e2e'
 
 export default defineConfig({
   testDir: 'tests/e2e',

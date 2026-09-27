@@ -211,7 +211,7 @@ O `CHECK (saldo >= 0)` fica como última defesa: mesmo que um bug passe pelo có
 
 Três camadas de proteção:
 
-1. **Permissão no banco.** A aplicação se conecta com um usuário (`simi_app`) que só tem `SELECT` e `INSERT` em `movimentacao` e `audit_log`. Mesmo que alguém invada a aplicação, não consegue alterar o histórico. As migrations rodam com outro usuário (`simi_owner`).
+1. **Permissão no banco.** A aplicação se conecta com um usuário (`sicei_<empresa>_app`) que só tem `SELECT` e `INSERT` em `movimentacao` e `audit_log`. Mesmo que alguém invada a aplicação, não consegue alterar o histórico. As migrations rodam com outro usuário (`sicei_<empresa>_owner`).
 2. **Trigger.** `BEFORE UPDATE OR DELETE` nessas duas tabelas dispara um erro, o que protege também contra engano de quem tem acesso de dono.
 3. **Cadeia de hash.** Cada registro do `audit_log` guarda:
 
@@ -310,7 +310,17 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revis
 
 **Conexão com o Neon:** a aplicação usa a URL com pooling (`DATABASE_URL`) e as migrations usam a URL direta (`DIRECT_URL`), configurada no `prisma.config.ts`. O lock de linha e o `pg_advisory_xact_lock` valem só dentro da transação, então funcionam com o pooling do Neon.
 
-**Nomes herdados do SIMI:** o projeto se chamava SIMI. Os nomes do banco já publicados continuam iguais: os usuários `simi_app` e `simi_owner`, o banco `simi` e a função `simi_bloquear_alteracao`. A função fica numa migration já aplicada, e o Prisma recusa migration alterada depois de aplicada. Renomear os usuários exigiria trocar as senhas e as variáveis da Vercel ao mesmo tempo. Nenhum desses nomes aparece para quem usa o sistema.
+**Uma instalação por cliente:** cada empresa que licencia o SICEI recebe a própria instalação, com projeto próprio na Vercel e no Neon. Nada é compartilhado entre clientes, nem o banco (ADR-12). Os nomes seguem a empresa:
+
+| Item | Padrão | DDA Metalúrgica |
+|---|---|---|
+| Endereço | `sicei-<empresa>.vercel.app` | `sicei-ddametalurgica.vercel.app` |
+| Banco | `sicei_<sigla>` | `sicei_dda` |
+| Dono do banco (migrations) | `sicei_<sigla>_owner` | `sicei_dda_owner` |
+| Usuário da aplicação | `sicei_<sigla>_app` | `sicei_dda_app` |
+| Nome no rodapé e no login | variável `SICEI_LICENCIADA` | `DDA Metalúrgica` |
+
+A migration `nomes_sicei` dá as permissões a todo usuário que segue o padrão `sicei_<sigla>_app`, então o mesmo código serve para qualquer cliente. O projeto se chamava SIMI: a primeira migration ainda cria a função `simi_bloquear_alteracao`, e a `nomes_sicei` a renomeia para `sicei_bloquear_alteracao` (migration já aplicada não pode ser editada).
 
 **Backup (RNF-04):**
 - Um workflow agendado no GitHub Actions roda `pg_dump` todo dia e guarda o arquivo como artifact por 30 dias.
@@ -374,7 +384,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 
 ### 9.3 Laboratório de testes para o avaliador (RNF-13)
 
-O professor precisa ver os testes, rodar os testes e **testar por conta própria**, sem instalar nada. Para isso o SICEI tem uma página pública em `https://<domínio-do-simi>/testes`, com três abas.
+O professor precisa ver os testes, rodar os testes e **testar por conta própria**, sem instalar nada. Para isso o SICEI tem uma página pública em `https://sicei-<empresa>.vercel.app/testes`, com três abas.
 
 **Aba 1: Executar os testes.**
 - Mostra os testes das regras de negócio agrupados por regra (RN-15, RN-21...), cada um com a descrição em português.
@@ -445,6 +455,7 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 | 09 | Vercel + Neon, com Docker Compose como alternativa | VPS paga | Custo zero para o trabalho, com um plano B que roda sem internet. |
 | 10 | Laboratório de testes em `/testes`: testes rodando no navegador do avaliador + relatório do Vitest gerado no build | Só um relatório estático; GitHub Pages; só a aba Actions do GitHub | O avaliador executa e cria testes sem instalar nada, no mesmo endereço do sistema. E o build só publica o que passou nos testes. |
 | 11 | Casos de teste escritos como dados (`*.casos.ts`) e decisões extraídas para funções puras | Testes só no formato tradicional; lógica dentro dos services | Os mesmos casos rodam na CI e no navegador, e quase todo o sistema fica testável em unidade. |
+| 12 | Uma instalação por cliente (projeto próprio na Vercel e no Neon), com a empresa no endereço e nos nomes do banco | Um sistema só com várias empresas no mesmo banco (multi-inquilino) | Isolamento total dos dados de cada cliente sem mudar o modelo de dados, e cada licença pode ser suspensa ou encerrada sem afetar as outras. O custo por cliente continua zero nos planos gratuitos. |
 
 ## 11. Histórico do documento
 
@@ -452,4 +463,4 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 |---|---|---|
 | 1.0 | 25/09/2026 | Primeira versão: stack, arquitetura, modelo de dados, fluxos críticos, segurança, deploy e testes. |
 | 1.1 | 26/09/2026 | Testes unitários em todo o sistema (9.1) e Laboratório de testes para o avaliador executar e criar testes na web (9.3, ADR-10 e ADR-11). |
-| 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Os nomes do banco já publicados ficam como estão (seção 7). |
+| 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Uma instalação por cliente, com a empresa no endereço e nos nomes do banco (seção 7, ADR-12). |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { anosDeDireitos, PRODUTO } from './produto'
+import { anosDeDireitos, licenciada, PRODUTO } from './produto'
 
 describe('Produto · Dados do SICEI e da licença', () => {
   it('sigla e nome por extenso', () => {
@@ -13,5 +13,15 @@ describe('Produto · Dados do SICEI e da licença', () => {
     [2025, 2026, '2026'],
   ])('ano atual %i com início em %i mostra "%s"', (atual, inicial, esperado) => {
     expect(anosDeDireitos(atual, inicial)).toBe(esperado)
+  })
+
+  it.each([
+    ['DDA Metalúrgica', 'DDA Metalúrgica'],
+    ['  Metalúrgica Exemplo  ', 'Metalúrgica Exemplo'],
+    ['', null],
+    ['   ', null],
+    [undefined, null],
+  ])('SICEI_LICENCIADA=%j mostra %j', (valor, esperado) => {
+    expect(licenciada(valor)).toBe(esperado)
   })
 })

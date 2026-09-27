@@ -20,7 +20,7 @@
 | CSRF | Server Actions só aceitam a mesma origem; cookie `SameSite=Lax`. | Next.js 16 |
 | Cabeçalhos | CSP, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS em produção. | `src/proxy.ts` |
 | Redirecionamento | O parâmetro `volta` do login só aceita caminhos internos, sem caracteres de controle. | `src/lib/redirecionamento.ts` |
-| Integridade do histórico | Usuário `simi_app` sem UPDATE/DELETE em `movimentacao` e `audit_log`; triggers que barram até o dono do banco; log encadeado por SHA-256; verificação que aponta o registro adulterado e a movimentação que não bate com o log. | `prisma/migrations/*regras_do_banco`, `src/server/audit/*` |
+| Integridade do histórico | Usuário `sicei_<sigla>_app` sem UPDATE/DELETE em `movimentacao` e `audit_log`; triggers que barram até o dono do banco; log encadeado por SHA-256; verificação que aponta o registro adulterado e a movimentação que não bate com o log. | `prisma/migrations/*regras_do_banco`, `*nomes_sicei`, `src/server/audit/*` |
 | Regras no banco | `CHECK` de saldo não negativo, campos obrigatórios por tipo, coerência do saldo; índices únicos parciais. | migration `regras_do_banco` |
 | Rotina diária | Aceita só `Authorization: Bearer CRON_SECRET`, comparado em tempo constante. Sem segredo configurado, recusa tudo. | `src/app/api/cron/diario/route.ts` |
 | Segredos | Só em variáveis de ambiente; `.env` fora do Git; `.env.example` sem valores reais. A senha provisória nunca vai para banco, log ou auditoria. | `.gitignore`, `usuarios.ts` |

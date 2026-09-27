@@ -24,14 +24,14 @@ beforeAll(async () => {
 })
 
 describe('RN-09a · O usuário da aplicação não altera o histórico', () => {
-  it('UPDATE em movimentacao é negado ao simi_app', async () => {
+  it('UPDATE em movimentacao é negado ao usuário da aplicação', async () => {
     await expect(
       comoAplicacao((db) =>
         db.query('UPDATE movimentacao SET quantidade = 99 WHERE id = $1', [movId]),
       ),
     ).rejects.toThrow(/permission denied|permissão negada/)
   })
-  it('DELETE em audit_log é negado ao simi_app', async () => {
+  it('DELETE em audit_log é negado ao usuário da aplicação', async () => {
     await expect(comoAplicacao((db) => db.query('DELETE FROM audit_log'))).rejects.toThrow(
       /permission denied|permissão negada/,
     )

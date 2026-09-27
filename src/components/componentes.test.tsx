@@ -130,12 +130,18 @@ describe('Formulários ligados a Server Actions', () => {
 
 describe('Rodapé · Titular do SICEI e cliente licenciada', () => {
   it('mostra o titular, a licenciada e o contato comercial com link de e-mail', () => {
-    render(<Rodape anoAtual={2026} />)
+    render(<Rodape anoAtual={2026} licenciada="DDA Metalúrgica" />)
     expect(screen.getByText(/SICEI © 2026 Benevides Soluções Industriais/)).toBeInTheDocument()
     expect(screen.getByText(/Licenciado para DDA Metalúrgica/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'comercial@sicei.exemplo.com.br' })).toHaveAttribute(
       'href',
       'mailto:comercial@sicei.exemplo.com.br',
     )
+  })
+
+  it('sem licenciada configurada, não mostra "Licenciado para"', () => {
+    render(<Rodape anoAtual={2026} licenciada={null} />)
+    expect(screen.queryByText(/Licenciado para/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Contato comercial/)).toBeInTheDocument()
   })
 })

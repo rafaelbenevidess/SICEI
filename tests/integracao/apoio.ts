@@ -90,7 +90,7 @@ export async function comoDono<T>(fn: (c: pg.Client) => Promise<T>): Promise<T> 
   }
 }
 
-/** Conexão direta com o usuário da aplicação (simi_app). */
+/** Conexão direta com o usuário da aplicação (sicei_<empresa>_app). */
 export async function comoAplicacao<T>(fn: (c: pg.Client) => Promise<T>): Promise<T> {
   const c = new pg.Client({ connectionString: process.env.DATABASE_URL })
   await c.connect()

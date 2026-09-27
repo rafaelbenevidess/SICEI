@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next'
 import { connection } from 'next/server'
 import { Rodape } from '@/components/Rodape'
+import { licenciada } from '@/lib/produto'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: { default: 'SICEI', template: '%s · SICEI' },
   description:
-    'Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais, licenciado para a DDA Metalúrgica',
+    'Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais',
 }
 
 export const viewport: Viewport = {
@@ -21,7 +22,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="pt-BR">
       <body className="min-h-dvh bg-slate-50 text-slate-900 antialiased">
         {children}
-        <Rodape anoAtual={new Date().getFullYear()} />
+        <Rodape anoAtual={new Date().getFullYear()} licenciada={licenciada()} />
       </body>
     </html>
   )

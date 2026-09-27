@@ -3,9 +3,11 @@ import pg from 'pg'
 
 export const SENHA_INICIAL_ADMIN = 'SenhaInicialE2E26'
 const URL_DONO =
-  process.env.DIRECT_URL_E2E ?? 'postgresql://simi_owner:simi_owner_dev@localhost:5432/simi_e2e'
+  process.env.DIRECT_URL_E2E ??
+  'postgresql://sicei_dev_owner:sicei_dev_owner_senha@localhost:5432/sicei_e2e'
 const URL_APP =
-  process.env.DATABASE_URL_E2E ?? 'postgresql://simi_app:simi_app_dev@localhost:5432/simi_e2e'
+  process.env.DATABASE_URL_E2E ??
+  'postgresql://sicei_dev_app:sicei_dev_app_senha@localhost:5432/sicei_e2e'
 
 /** Banco limpo, migrations e dados de demonstração antes da suíte ponta a ponta. */
 export default async function preparar() {

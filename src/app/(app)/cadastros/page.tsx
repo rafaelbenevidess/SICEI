@@ -1,16 +1,38 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { Factory, Grid3x3, HardHat, Info, MapPin, QrCode, Truck } from 'lucide-react'
+import {
+  Factory,
+  FileUp,
+  Grid3x3,
+  HardHat,
+  Info,
+  MapPin,
+  Package,
+  Plus,
+  QrCode,
+  Truck,
+} from 'lucide-react'
 import { formatarCnpj } from '@/domain/cnpj'
 import { pode } from '@/domain/permissoes'
-import { Abas, ChipCodigo, LinkBotao, Pagina, Selo, Tabela, Vazio } from '@/components/ui'
-import { NOME_TIPO_DESTINO } from '@/lib/formatar'
+import {
+  Abas,
+  BadgeStatus,
+  ChipCodigo,
+  ChipPosicao,
+  LinkBotao,
+  Pagina,
+  Selo,
+  Tabela,
+  Vazio,
+} from '@/components/ui'
+import { NOME_TIPO_DESTINO, nomeDaPastilha } from '@/lib/formatar'
 import {
   listarColaboradores,
   listarDestinos,
   listarFabricantes,
   listarFornecedores,
+  listarItensDoCadastro,
   listarPosicoes,
 } from '@/server/consultas/cadastros'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
@@ -26,11 +48,25 @@ import { MapaAlmoxarifado } from './MapaAlmoxarifado'
 
 export const metadata: Metadata = { title: 'Cadastros' }
 
-const ABAS = ['fabricantes', 'fornecedores', 'destinos', 'colaboradores', 'posicoes'] as const
+const ABAS = [
+  'itens',
+  'fabricantes',
+  'fornecedores',
+  'destinos',
+  'colaboradores',
+  'posicoes',
+] as const
 type Aba = (typeof ABAS)[number]
 
 const INFO: Record<Aba, { rotulo: string; descricao: string; novo: string; Icone: typeof Truck }> =
   {
+    itens: {
+      rotulo: 'Itens',
+      descricao:
+        'As pastilhas controladas no estoque. Cada item nasce com fabricante e pelo menos um fornecedor.',
+      novo: 'Novo item',
+      Icone: Package,
+    },
     fabricantes: {
       rotulo: 'Fabricantes',
       descricao: 'Quem produz as pastilhas. O nome não se repete, sem diferenciar maiúsculas.',
@@ -64,7 +100,7 @@ const INFO: Record<Aba, { rotulo: string; descricao: string; novo: string; Icone
     },
   }
 
-/** RF-04, RF-05, RF-06, RF-27 e RF-28 numa página com abas. */
+/** RF-03, RF-04, RF-05, RF-06, RF-27 e RF-28 numa página com abas. */
 export default async function Cadastros({
   searchParams,
 }: {
@@ -72,11 +108,10 @@ export default async function Cadastros({
 }) {
   const u = await exigirPermissaoDaPagina('cadastros:ver')
   const p = await searchParams
-  const aba: Aba = (ABAS as readonly string[]).includes(p.aba ?? '')
-    ? (p.aba as Aba)
-    : 'fabricantes'
+  const aba: Aba = (ABAS as readonly string[]).includes(p.aba ?? '') ? (p.aba as Aba) : 'itens'
   const editar = pode(u.perfil, 'cadastros:editar')
-  const [fabricantes, fornecedores, destinos, colaboradores, posicoes] = await Promise.all([
+  const [itens, fabricantes, fornecedores, destinos, colaboradores, posicoes] = await Promise.all([
+    listarItensDoCadastro(),
     listarFabricantes(),
     listarFornecedores(),
     listarDestinos(),
@@ -84,6 +119,7 @@ export default async function Cadastros({
     listarPosicoes(),
   ])
   const contagem: Record<Aba, number> = {
+    itens: itens.length,
     fabricantes: fabricantes.length,
     fornecedores: fornecedores.length,
     destinos: destinos.length,
@@ -115,7 +151,72 @@ export default async function Cadastros({
   let formulario: ReactNode = null
   let tituloForm = INFO[aba].novo
 
-  if (aba === 'fabricantes') {
+  if (aba === 'itens') {
+    // o formulário do item é grande: fica na própria tela, aqui só o atalho
+    formulario = (
+      <div className="flex flex-col gap-3">
+        <p className="text-[13px] text-ink-2">
+          O cadastro abre com o próximo código da sequência já preenchido, e o fabricante e o
+          fornecedor podem ser cadastrados ali mesmo.
+        </p>
+        <LinkBotao href="/itens/novo" icone={Plus}>
+          Cadastrar item
+        </LinkBotao>
+        {pode(u.perfil, 'importacao:executar') && (
+          <LinkBotao href="/admin/importacao" variante="secundario" icone={FileUp}>
+            Importar planilha
+          </LinkBotao>
+        )}
+      </div>
+    )
+    tabela = (
+      <Tabela rotulo="Itens" larguraMinima={620}>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Pastilha</th>
+            <th>Posição</th>
+            <th>Situação</th>
+            {editar && <th className="text-right">Ações</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {itens.map((i) => (
+            <tr key={i.id} className={i.ativo ? '' : 'opacity-60'}>
+              <td>
+                <Link href={`/itens/${i.id}`} className="no-underline">
+                  <ChipCodigo forte>{i.codigo}</ChipCodigo>
+                </Link>
+              </td>
+              <td>
+                <span className="block font-medium">{nomeDaPastilha(i)}</span>
+                <span className="text-[13px] text-ink-3">
+                  {i.fabricante.nome} · {i._count.fornecedores}{' '}
+                  {i._count.fornecedores === 1 ? 'fornecedor' : 'fornecedores'}
+                </span>
+              </td>
+              <td>
+                <ChipPosicao>{i.posicao?.codigo}</ChipPosicao>
+              </td>
+              <td>{i.ativo ? <BadgeStatus status={i.status} /> : <Selo>Inativo</Selo>}</td>
+              {editar && (
+                <td>
+                  <span className="flex items-center justify-end gap-1">
+                    <Link
+                      href={`/itens/${i.id}/editar`}
+                      className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-ink-2 no-underline hover:bg-surface-2"
+                    >
+                      Editar
+                    </Link>
+                  </span>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </Tabela>
+    )
+  } else if (aba === 'fabricantes') {
     const alvo = fabricantes.find((f) => f.id === editando)
     if (alvo) tituloForm = 'Editar fabricante'
     formulario = <FormFabricante key={alvo?.id ?? 'novo'} id={alvo?.id} nome={alvo?.nome} />

@@ -33,3 +33,23 @@ export const posicoesOcupadas = () =>
     orderBy: { codigo: 'asc' },
     take: 500,
   })
+
+/** RF-03: itens na aba de cadastros, inclusive os inativos (RN-02). */
+export const listarItensDoCadastro = () =>
+  prisma.item.findMany({
+    orderBy: { codigo: 'asc' },
+    select: {
+      id: true,
+      codigo: true,
+      descricao: true,
+      iso: true,
+      classe: true,
+      ativo: true,
+      saldo: true,
+      status: true,
+      fabricante: { select: { nome: true } },
+      posicao: { select: { codigo: true } },
+      _count: { select: { fornecedores: true } },
+    },
+    take: 1000,
+  })

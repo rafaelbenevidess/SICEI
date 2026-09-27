@@ -20,7 +20,18 @@ export default defineConfig({
     launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
   },
   projects: [
-    { name: 'celular', use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } } },
+    {
+      name: 'celular',
+      testIgnore: /computador\.spec\.ts/,
+      use: { ...devices['Pixel 7'], viewport: { width: 360, height: 780 } },
+    },
+    {
+      // depende do celular: o primeiro teste de lá troca a senha provisória do Admin
+      name: 'computador',
+      testMatch: /computador\.spec\.ts/,
+      dependencies: ['celular'],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 900 } },
+    },
   ],
   webServer: {
     command: `npx next start -p ${porta}`,

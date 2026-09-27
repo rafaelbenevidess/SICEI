@@ -50,3 +50,27 @@ export async function listarAuditoria(
     })),
   }
 }
+
+/** RF-26: últimas alterações de parâmetros, lidas do log. */
+export async function historicoDeParametros(quantos = 10) {
+  const linhas = await prisma.auditLog.findMany({
+    where: { acao: 'PARAMETROS_ALTERADOS' },
+    orderBy: { seq: 'desc' },
+    take: quantos,
+  })
+  const ids = [...new Set(linhas.map((l) => l.usuarioId).filter((x): x is string => !!x))]
+  const logins = new Map(
+    (
+      await prisma.usuario.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, login: true },
+      })
+    ).map((u) => [u.id, u.login]),
+  )
+  return linhas.map((l) => ({
+    antes: l.antes,
+    depois: l.depois,
+    quando: l.criadoEm,
+    login: l.usuarioId ? (logins.get(l.usuarioId) ?? '?') : 'sistema',
+  }))
+}

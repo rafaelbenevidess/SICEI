@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { ErroDeNegocio } from '@/server/erros'
+import { conferirIntegridade, type ResultadoConferencia } from '@/server/services/auditoria'
 import { importarPlanilha, previaImportacao } from '@/server/services/importacao'
 import { atualizarParametros } from '@/server/services/parametros'
 import {
@@ -63,7 +64,7 @@ export async function acaoParametros(_: EstadoAcao, form: FormData): Promise<Est
   return executarAcao(async () => {
     await atualizarParametros(await atorDaAcao(), dadosDoFormulario(form))
     revalidatePath('/admin/parametros')
-    return { mensagem: 'Parâmetros salvos.' }
+    return { mensagem: 'Parâmetros salvos. Mudança registrada no log.' }
   })
 }
 
@@ -83,4 +84,23 @@ export async function acaoImportar(conteudo: string): Promise<EstadoAcao> {
     revalidatePath('/itens')
     return { mensagem: `${r.itens} itens importados, com o saldo inicial lançado como ajuste.` }
   })
+}
+
+export interface EstadoConferencia {
+  resultado?: ResultadoConferencia
+  login?: string
+  erro?: string
+}
+
+/** RF-21: verificação de integridade pedida pelo Admin; a execução fica no log (RN-23). */
+export async function acaoConferirIntegridade(): Promise<EstadoConferencia> {
+  let resultado: ResultadoConferencia | undefined
+  let login: string | undefined
+  const estado = await executarAcao(async () => {
+    const ator = await atorDaAcao()
+    login = ator.login
+    resultado = await conferirIntegridade(ator)
+    revalidatePath('/admin/auditoria')
+  })
+  return estado.ok && resultado ? { resultado, login } : { erro: estado.erro }
 }

@@ -1,18 +1,27 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { jsonCanonico } from '@/domain/auditoria'
 import { Paginacao } from '@/components/Paginacao'
-import { Aviso, Cartao, Pagina, Tabela } from '@/components/ui'
-import { formatarDataHora } from '@/lib/formatar'
-import { conferirSaldos, verificarIntegridade } from '@/server/audit/verificar'
+import { Pagina, Tabela, Vazio } from '@/components/ui'
+import { descreverDispositivo } from '@/lib/dispositivo'
+import { formatarDataHora, formatarNumero } from '@/lib/formatar'
+import { hashCurto, resumoDaMudanca } from '@/lib/mudanca'
 import { listarAuditoria } from '@/server/consultas/auditoria'
-import { registrarConferencia } from '@/server/services/auditoria'
-import { exigirPermissaoDaPagina, origemDaRequisicao } from '@/server/web/sessao-atual'
+import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
+import { CartaoConferencia } from './CartaoConferencia'
 
 export const metadata: Metadata = { title: 'Auditoria' }
 
-const campo = 'rounded-md border border-slate-300 px-2 py-2 text-sm'
+const campo =
+  'h-10 w-full min-w-0 rounded-lg border border-line-2 bg-surface px-3 text-base text-ink placeholder:text-ink-3 sm:text-sm'
 
+/** Cor da ação: falhas em vermelho, movimentações em azul. */
+function corDaAcao(acao: string): string {
+  if (/FALHOU|BLOQUE|ADULTER/.test(acao)) return 'text-crit-ink'
+  if (acao.startsWith('MOVIMENTACAO')) return 'text-accent-ink'
+  return 'text-ink'
+}
+
+/** RF-21: log de auditoria somente inclusão, com verificação de integridade. */
 export default async function Auditoria({
   searchParams,
 }: {
@@ -22,147 +31,147 @@ export default async function Auditoria({
     acao?: string
     usuario?: string
     pagina?: string
-    verificar?: string
   }>
 }) {
-  const u = await exigirPermissaoDaPagina('auditoria:ver')
+  await exigirPermissaoDaPagina('auditoria:ver')
   const f = await searchParams
   const pagina = Math.max(1, Number(f.pagina) || 1)
-
-  let verificacao: Awaited<ReturnType<typeof verificarIntegridade>> | null = null
-  let divergencias: Awaited<ReturnType<typeof conferirSaldos>> | null = null
-  if (f.verificar === '1') {
-    ;[verificacao, divergencias] = await Promise.all([verificarIntegridade(), conferirSaldos()])
-    await registrarConferencia(
-      { usuarioId: u.id, login: u.login, perfil: u.perfil, ...(await origemDaRequisicao()) },
-      {
-        cadeiaIntegra: verificacao.cadeia.integra,
-        movimentacoesDivergentes: verificacao.movimentacoesDivergentes.length,
-        saldosDivergentes: divergencias.length,
-      },
-    )
-  }
   const { linhas, total, paginas } = await listarAuditoria(f, pagina)
+  const filtrado = Boolean(f.de || f.ate || f.acao || f.usuario)
 
   return (
     <Pagina
       titulo="Log de auditoria"
-      descricao={`Registro somente inclusão, encadeado por hash (RN-09a). ${total} registro(s).`}
+      descricao={`Somente inclusão, encadeado por hash. Nenhum perfil pode alterar ou apagar registros. ${formatarNumero(total)} ${total === 1 ? 'registro' : 'registros'}${filtrado ? ' com estes filtros' : ''}.`}
     >
-      <Cartao titulo="Verificação de integridade e conferência de saldo (RF-21, RN-09b)">
-        <form className="flex flex-wrap items-center gap-3">
-          <input type="hidden" name="verificar" value="1" />
-          <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white">
-            Verificar agora
-          </button>
-          <span className="text-sm text-slate-600">
-            Recalcula todos os hashes, confere cada movimentação com o log e cada saldo com a soma
-            das movimentações.
-          </span>
-        </form>
-        {verificacao && divergencias && (
-          <div className="mt-3 flex flex-col gap-2">
-            <Aviso tipo={verificacao.cadeia.integra ? 'ok' : 'erro'}>
-              {verificacao.cadeia.integra
-                ? `Cadeia íntegra: ${verificacao.cadeia.verificados} registros conferidos.`
-                : `Adulteração detectada no registro ${verificacao.cadeia.seq}: ${verificacao.cadeia.motivo}`}
-            </Aviso>
-            <Aviso tipo={verificacao.movimentacoesDivergentes.length === 0 ? 'ok' : 'erro'}>
-              {verificacao.movimentacoesDivergentes.length === 0
-                ? 'Todas as movimentações batem com o log.'
-                : `Movimentações que não batem com o log: ${verificacao.movimentacoesDivergentes.join(', ')}`}
-            </Aviso>
-            <Aviso tipo={divergencias.length === 0 ? 'ok' : 'erro'}>
-              {divergencias.length === 0 ? (
-                'Nenhuma divergência de saldo.'
-              ) : (
-                <ul>
-                  {divergencias.map((d) => (
-                    <li key={d.itemId}>
-                      {d.codigo}: saldo guardado {d.saldoGuardado}, pelas movimentações{' '}
-                      {d.saldoPelasMovimentacoes}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Aviso>
-          </div>
-        )}
-      </Cartao>
+      <CartaoConferencia />
 
-      <form
-        className="grid gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-5"
-        role="search"
-      >
-        <label className="flex flex-col text-xs font-medium">
-          De
-          <input type="date" name="de" defaultValue={f.de} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
-          Até
-          <input type="date" name="ate" defaultValue={f.ate} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
-          Ação
-          <input
-            name="acao"
-            defaultValue={f.acao}
-            placeholder="ESTORNO, LOGIN…"
-            className={campo}
-          />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
-          Usuário
-          <input name="usuario" defaultValue={f.usuario} className={campo} />
-        </label>
-        <div className="flex items-end gap-2">
-          <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white">
+      <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
+        <form
+          role="search"
+          aria-label="Filtros do log"
+          className="flex flex-wrap items-end gap-3 border-b border-line p-4"
+        >
+          <fieldset className="flex min-w-0 items-center gap-2">
+            <legend className="sr-only">Período</legend>
+            <label className="sr-only" htmlFor="log-de">
+              De
+            </label>
+            <input
+              id="log-de"
+              type="date"
+              name="de"
+              defaultValue={f.de}
+              className={`${campo} w-auto`}
+            />
+            <span className="text-ink-3">–</span>
+            <label className="sr-only" htmlFor="log-ate">
+              Até
+            </label>
+            <input
+              id="log-ate"
+              type="date"
+              name="ate"
+              defaultValue={f.ate}
+              className={`${campo} w-auto`}
+            />
+          </fieldset>
+          <label className="min-w-40 flex-1 basis-48">
+            <span className="sr-only">Ação</span>
+            <input
+              name="acao"
+              defaultValue={f.acao}
+              placeholder="Ação: ESTORNO, LOGIN…"
+              className={campo}
+            />
+          </label>
+          <label className="min-w-32 flex-1 basis-40">
+            <span className="sr-only">Usuário</span>
+            <input
+              name="usuario"
+              defaultValue={f.usuario}
+              placeholder="Usuário"
+              className={campo}
+            />
+          </label>
+          <button type="submit" className="h-10 rounded-lg bg-ink px-4 text-sm font-medium text-bg">
             Filtrar
           </button>
-          <Link
-            href="/admin/auditoria"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
-            Limpar
-          </Link>
-        </div>
-      </form>
+          {filtrado && (
+            <Link href="/admin/auditoria" className="h-10 content-center px-2 text-sm text-ink-2">
+              Limpar
+            </Link>
+          )}
+        </form>
 
-      <Tabela rotulo="Registros de auditoria">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Data</th>
-            <th>Ação</th>
-            <th>Usuário</th>
-            <th className="hidden lg:table-cell">Antes → depois</th>
-            <th className="hidden md:table-cell">Origem</th>
-          </tr>
-        </thead>
-        <tbody>
-          {linhas.map((l) => (
-            <tr key={l.seq} className="align-top">
-              <td className="font-mono text-xs">{l.seq}</td>
-              <td className="whitespace-nowrap">{formatarDataHora(l.criadoEm)}</td>
-              <td className="font-mono text-xs">
-                {l.acao}
-                <span className="block text-slate-500">
-                  {l.entidade}
-                  {l.entidadeId ? ` ${l.entidadeId.slice(0, 8)}…` : ''}
-                </span>
-              </td>
-              <td>{l.login}</td>
-              <td className="hidden max-w-md lg:table-cell">
-                <code className="block break-all text-[11px] text-slate-600">
-                  {l.antes ? jsonCanonico(l.antes).slice(0, 200) : '—'} →{' '}
-                  {l.depois ? jsonCanonico(l.depois).slice(0, 200) : '—'}
-                </code>
-              </td>
-              <td className="hidden text-xs md:table-cell">{l.ip ?? '—'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Tabela>
+        {linhas.length === 0 ? (
+          <div className="p-4">
+            <Vazio>Nenhum registro com esses filtros.</Vazio>
+          </div>
+        ) : (
+          <Tabela rotulo="Registros de auditoria" emCartao larguraMinima={1080}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Quando</th>
+                <th>Ação</th>
+                <th>Usuário</th>
+                <th>Antes → depois</th>
+                <th>Origem</th>
+                <th>Hash</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((l) => {
+                const m = resumoDaMudanca(l.antes, l.depois)
+                return (
+                  <tr key={l.seq} className="align-top">
+                    <td className="font-mono text-xs text-ink-3">{l.seq}</td>
+                    <td className="whitespace-nowrap">{formatarDataHora(l.criadoEm)}</td>
+                    <td>
+                      <span
+                        className={`block font-mono text-xs font-semibold ${corDaAcao(l.acao)}`}
+                      >
+                        {l.acao}
+                      </span>
+                      <span className="block text-xs text-ink-3">
+                        {l.entidade}
+                        {l.entidadeId ? ` ${l.entidadeId.slice(0, 8)}…` : ''}
+                      </span>
+                    </td>
+                    <td className="font-mono text-xs">{l.login}</td>
+                    <td className="max-w-md font-mono text-xs">
+                      {m.antes || m.depois ? (
+                        <>
+                          {m.antes ? (
+                            <del className="text-crit-ink">{m.antes}</del>
+                          ) : (
+                            <span className="text-ink-3">—</span>
+                          )}{' '}
+                          <span className="text-ink-3">→</span>{' '}
+                          {m.depois ? (
+                            <ins className="text-ok-ink no-underline">{m.depois}</ins>
+                          ) : (
+                            <span className="text-ink-3">—</span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-ink-3">—</span>
+                      )}
+                    </td>
+                    <td className="text-xs whitespace-nowrap text-ink-2">
+                      {l.ip ?? '—'} · {descreverDispositivo(l.userAgent)}
+                    </td>
+                    <td className="font-mono text-xs whitespace-nowrap text-ink-3" title={l.hash}>
+                      {hashCurto(l.hash)}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </Tabela>
+        )}
+      </div>
       <Paginacao
         pagina={pagina}
         paginas={paginas}

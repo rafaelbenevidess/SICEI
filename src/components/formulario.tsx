@@ -132,6 +132,8 @@ export function Campo({
   ajuda,
   obrigatorio,
   prefixo,
+  sufixo,
+  rotuloOculto,
   className = '',
   ...resto
 }: {
@@ -141,12 +143,16 @@ export function Campo({
   obrigatorio?: boolean
   /** texto fixo dentro do campo, à esquerda (ex.: "R$") */
   prefixo?: string
+  /** unidade dentro do campo, à direita (ex.: "dias") */
+  sufixo?: string
+  /** rótulo só para leitores de tela, quando o título já aparece ao lado */
+  rotuloOculto?: boolean
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'name'>) {
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
   return (
     <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
-      <label htmlFor={id}>
+      <label htmlFor={id} className={rotuloOculto ? 'sr-only' : undefined}>
         {rotulo}
         {obrigatorio && (
           <span aria-hidden className="text-crit-ink">
@@ -170,9 +176,17 @@ export function Campo({
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro ? `${id}-erro` : ajuda ? `${id}-ajuda` : undefined}
           required={obrigatorio}
-          className={`${estiloEntrada} ${prefixo ? 'pl-10' : ''} ${erro ? 'border-crit' : 'border-line-2'} ${className}`}
+          className={`${estiloEntrada} ${prefixo ? 'pl-10' : ''} ${sufixo ? 'pr-20' : ''} ${erro ? 'border-crit' : 'border-line-2'} ${className}`}
           {...resto}
         />
+        {sufixo && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[13px] font-normal text-ink-3"
+          >
+            {sufixo}
+          </span>
+        )}
       </span>
       {ajuda && !erro && (
         <span id={`${id}-ajuda`} className="text-xs font-normal text-ink-3">

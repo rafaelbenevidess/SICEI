@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { conferirSaldos, verificarIntegridade } from '@/server/audit/verificar'
 import type { Ator } from '@/server/contexto'
 import { prisma } from '@/server/db'
+import { conferirIntegridade } from '@/server/services/auditoria'
 import { registrarMovimentacao } from '@/server/services/movimentacoes'
 import { cenario, comoAplicacao, comoDono, criarAtor } from './apoio'
 
@@ -76,6 +77,26 @@ describe('RN-09a / RN-09b · Verificação de integridade e conferência de sald
     expect(r.cadeia.integra).toBe(true)
     expect(r.movimentacoesDivergentes).toEqual([])
     expect(await conferirSaldos()).toEqual([])
+  })
+
+  it('RF-21: a conferência pedida pelo Admin devolve o resumo e fica registrada no log', async () => {
+    const r = await conferirIntegridade(admin)
+    expect(r.cadeiaIntegra).toBe(true)
+    expect(r.adulteracao).toBeNull()
+    expect(r.registrosConferidos).toBeGreaterThan(0)
+    expect(r.saldosDivergentes).toEqual([])
+    expect(r.itensConferidos).toBeGreaterThan(0)
+    const ultimo = await prisma.auditLog.findFirst({ orderBy: { seq: 'desc' } })
+    expect(ultimo).toMatchObject({
+      acao: 'CONFERENCIA_INTEGRIDADE',
+      usuarioId: admin.usuarioId,
+      depois: { cadeiaIntegra: true, movimentacoesDivergentes: 0, saldosDivergentes: 0 },
+    })
+  })
+
+  it('RF-21: perfil sem permissão de auditoria não executa a conferência', async () => {
+    const consulta = await criarAtor('CONSULTA')
+    await expect(conferirIntegridade(consulta)).rejects.toThrow()
   })
 
   it('saldo alterado direto no banco aparece como divergência', async () => {

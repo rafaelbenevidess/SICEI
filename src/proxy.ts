@@ -7,6 +7,9 @@ export function ehPublica(caminho: string): boolean {
   return caminho === '/' || PUBLICAS.some((p) => caminho === p || caminho.startsWith(`${p}/`))
 }
 
+/** Câmera só para o próprio SICEI (tela Ler QR, RN-26); microfone e localização bloqueados. */
+export const POLITICA_DE_PERMISSOES = 'camera=(self), microphone=(), geolocation=()'
+
 export function montarCsp(nonce: string, desenvolvimento: boolean): string {
   return [
     "default-src 'self'",
@@ -47,7 +50,7 @@ export function proxy(request: NextRequest) {
   resposta.headers.set('X-Content-Type-Options', 'nosniff')
   resposta.headers.set('X-Frame-Options', 'DENY')
   resposta.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  resposta.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  resposta.headers.set('Permissions-Policy', POLITICA_DE_PERMISSOES)
   if (process.env.NODE_ENV === 'production') {
     resposta.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains')
   }

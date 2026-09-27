@@ -37,8 +37,8 @@ import {
 import { casosEstorno, casosInventario, casosMovimentacao } from '@/domain/movimentacao.casos'
 import { NOME_DO_PERFIL, PERMISSOES, pode, type Permissao } from '@/domain/permissoes'
 import { casosPermissao } from '@/domain/permissoes.casos'
-import { avaliarAtribuicao, codigoDaPosicao } from '@/domain/posicao'
-import { casosAtribuicao, casosCodigoPosicao } from '@/domain/posicao.casos'
+import { avaliarAtribuicao, codigoDaPosicao, codigoDoQr } from '@/domain/posicao'
+import { casosAtribuicao, casosCodigoPosicao, casosLeituraQr } from '@/domain/posicao.casos'
 import { ultimoPrecoValido, variacaoPercentual } from '@/domain/precos'
 import { casosUltimoPreco, casosVariacao } from '@/domain/precos.casos'
 import { validarMovimentacao } from '@/domain/schemas/movimentacao'
@@ -807,6 +807,32 @@ export const SUITES: SuiteLab[] = [
     casos: casos(casosAtribuicao),
     executar: (e) => avaliarAtribuicao(e as Parameters<typeof avaliarAtribuicao>[0]),
     formatar: (v) => formatarDecisao(v, () => 'ok'),
+  },
+  {
+    id: 'RN-26',
+    titulo: 'Leitura do QR da etiqueta',
+    regra:
+      'A câmera lê a URL da etiqueta e o sistema usa só o código da posição (A01-G03-C04). Texto sem código válido não abre nada.',
+    casos: casos(casosLeituraQr),
+    executar: (e) => codigoDoQr(e as string),
+    formatar: (v) => (v === null ? 'não é etiqueta' : String(v)),
+    formulario: {
+      campos: [
+        {
+          nome: 'texto',
+          rotulo: 'Texto lido pela câmera',
+          tipo: 'texto',
+          padrao: 'https://sicei-ddametalurgica.vercel.app/p/A01-G03-C04',
+        },
+      ],
+      esperado: { nome: 'esperado', rotulo: 'Código esperado', tipo: 'texto' },
+      executar: (v) => {
+        const r = codigoDoQr(v.texto ?? '')
+        return r
+          ? { resultado: r, explicacao: 'o sistema abre /p/' + r }
+          : { resultado: 'não é etiqueta', explicacao: 'nenhum código de posição válido' }
+      },
+    },
   },
   {
     id: 'Permissões',

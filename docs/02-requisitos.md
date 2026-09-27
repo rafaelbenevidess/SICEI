@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.2 (validada) |
+| **Versão** | 1.4 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -184,6 +184,10 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 1. **Dado** uma ou mais posições ocupadas, **quando** o almoxarife pede a impressão, **então** o sistema gera uma página de etiquetas com QR, código da posição, código interno e descrição, pronta para imprimir em A4.
 2. **Dado** uma etiqueta impressa, **quando** alguém lê o QR com a câmera do celular estando logado, **então** a página do item abre, com o botão de registrar saída à mão.
 3. **Dado** alguém sem login, **quando** lê o QR, **então** cai na tela de login e, depois de entrar, vai para o item.
+4. **Dado** o almoxarife logado num celular Android ou iPhone, **quando** toca em "Ler QR", **então** a câmera traseira abre dentro do SICEI e, ao enquadrar a etiqueta, a página do item abre sozinha, sem outro aplicativo.
+5. **Dado** um QR que não é etiqueta do SICEI (por exemplo, o de uma nota fiscal), **quando** a câmera o lê, **então** a tela avisa e continua lendo, sem abrir nada. Um QR de outro site nunca leva o usuário para fora do SICEI: o sistema usa só o código da posição.
+6. **Dado** a câmera negada, ausente ou em uso por outro aplicativo, **quando** a tela "Ler QR" abre, **então** explica o motivo, oferece tentar de novo e deixa digitar o código da posição.
+7. **Dado** a leitura pela câmera, **quando** ela acontece, **então** a imagem é analisada só no aparelho; nenhuma imagem da câmera vai para o servidor.
 
 ### RF-25. Importação inicial
 1. **Dado** um CSV no modelo fornecido pelo sistema, **quando** o Administrador importa, **então** o sistema mostra uma prévia com as linhas válidas e os erros de cada linha inválida, antes de gravar qualquer coisa.
@@ -324,3 +328,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.1 | 26/09/2026 | Novo RNF-13: testes unitários em todo o sistema, executáveis pelo avaliador na web, com criação de casos próprios. RNF-08 com meta de 90% no domínio. |
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhum requisito mudou. |
 | 1.3 | 27/09/2026 | Critérios novos com o redesign da interface: prévia do login (RF-02), fornecedor cadastrado na hora da compra (RF-07), aviso de saldo antes de enviar e confirmação da saída (RF-08), critérios do RF-20 (CSV de itens e movimentações, log da exportação), resumo do log e registro da verificação (RF-21), importação bloqueada com erro (RF-25), limites e histórico dos parâmetros (RF-26). Nenhum requisito novo nem removido. |
+| 1.4 | 27/09/2026 | RF-22: leitura do QR dentro do SICEI com a câmera de qualquer celular (critérios 4 a 7). |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ehPublica, montarCsp } from './proxy'
+import { ehPublica, montarCsp, POLITICA_DE_PERMISSOES } from './proxy'
 
 describe('Proxy · rotas públicas', () => {
   it.each([
@@ -28,5 +28,13 @@ describe('Doc 03 seção 6 · CSP', () => {
   })
   it('desenvolvimento permite eval (exigido pelo React em dev)', () => {
     expect(montarCsp('abc', true)).toContain("'unsafe-eval'")
+  })
+})
+
+describe('RN-26 · Permissões do navegador', () => {
+  it('câmera liberada só para o próprio SICEI; microfone e localização bloqueados', () => {
+    expect(POLITICA_DE_PERMISSOES).toContain('camera=(self)')
+    expect(POLITICA_DE_PERMISSOES).toContain('microphone=()')
+    expect(POLITICA_DE_PERMISSOES).toContain('geolocation=()')
   })
 })

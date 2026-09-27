@@ -55,3 +55,46 @@ export const casosAtribuicao: CasoDeTeste<
     esperado: { ok: false, motivo: 'Esta posição está inativa.' },
   },
 ]
+
+export const casosLeituraQr: CasoDeTeste<string, string | null>[] = [
+  {
+    descricao: 'URL impressa na etiqueta → A01-G03-C04',
+    entrada: 'https://sicei-ddametalurgica.vercel.app/p/A01-G03-C04',
+    esperado: 'A01-G03-C04',
+  },
+  {
+    descricao: 'URL de teste local, com barra no fim → A02-G01-C07',
+    entrada: 'http://localhost:3000/p/A02-G01-C07/',
+    esperado: 'A02-G01-C07',
+  },
+  {
+    descricao: 'só o código, em minúsculas e com espaços → A01-G03-C04',
+    entrada: '  a01-g03-c04 ',
+    esperado: 'A01-G03-C04',
+  },
+  {
+    descricao: 'código com formato errado na URL → não é etiqueta do SICEI',
+    entrada: 'https://sicei-ddametalurgica.vercel.app/p/A1-G3-C4',
+    esperado: null,
+  },
+  {
+    descricao: 'outra página do sistema → não é etiqueta',
+    entrada: 'https://sicei-ddametalurgica.vercel.app/itens/123',
+    esperado: null,
+  },
+  {
+    descricao: 'QR de outro site com caminho /p/<código> → usa só o código, sem sair do SICEI',
+    entrada: 'https://outro-site.com/p/A05-G02-C01',
+    esperado: 'A05-G02-C01',
+  },
+  {
+    descricao: 'texto qualquer (ex.: QR de nota fiscal) → não é etiqueta',
+    entrada: 'NF-e 35260912345678000190550010000123451000123456',
+    esperado: null,
+  },
+  {
+    descricao: 'nível 00 é inválido → não é etiqueta',
+    entrada: 'A00-G01-C01',
+    esperado: null,
+  },
+]

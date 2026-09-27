@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.2 (para revisão) |
+| **Versão** | 1.4 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -53,7 +53,7 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 | Validação | **Zod 4** | O mesmo schema valida o formulário no navegador e os dados no servidor. |
 | Interface | **Tailwind CSS 4** com tokens próprios (tema claro e escuro), fonte **Geist** e ícones **lucide-react** | Os componentes são do próprio projeto (`components/ui.tsx` e `components/formulario.tsx`), feitos a partir do design do SICEI (seção 10). Sem biblioteca de componentes: menos dependências e controle total de acessibilidade. |
 | Gráficos | Barras em HTML e CSS montadas no servidor | O painel (RF-16) só precisa do consumo diário do mês. Uma biblioteca de gráficos pesaria mais que a própria tela. |
-| QR | **qrcode** | Gera o QR das etiquetas no servidor (RF-22). |
+| QR | **qrcode** (gerar) + leitor nativo do navegador ou **jsQR** (ler) | O `qrcode` gera o QR das etiquetas no servidor. Na tela "Ler QR", o navegador que tem leitor nativo (`BarcodeDetector`, Chrome no Android) usa o dele; os outros, como o Safari do iPhone, usam o jsQR, em JavaScript puro, baixado só quando precisa (RF-22, ADR-13). |
 | CSV | **Papa Parse** | Leitura da planilha na importação (RF-25) e geração dos CSV exportados (RF-20). |
 | PDF | Página de impressão com CSS `@media print` | Relatórios e etiquetas saem pelo "Imprimir → Salvar como PDF" do navegador, sem biblioteca nem serviço extra. |
 | E-mail | **Nodemailer** (SMTP) | Funciona com qualquer e-mail corporativo. No desenvolvimento, o **Mailpit** captura os e-mails localmente. |
@@ -466,7 +466,7 @@ Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, 
 
 ### 10.3 Celular (RNF-01, RNF-02)
 
-O fluxo principal no celular começa na etiqueta: a câmera nativa lê o QR e abre `/p/<código>`, que leva ao item. No item, uma barra fixa traz "Entrada" e "Registrar saída". A saída cabe numa tela: quantidade com − e +, destino em botões de 44 px, OP, quem retirou e o botão de confirmar preso embaixo. Depois de gravar, a tela de confirmação mostra o saldo antes e agora, avisa se o item entrou em alerta e oferece "Ler outra etiqueta". A tela "Ler QR" (`/p`) explica o uso da câmera e aceita o código digitado quando a etiqueta está apagada.
+O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na barra inferior), a câmera traseira abre dentro do SICEI; ao enquadrar a etiqueta, o sistema tira o código da posição do texto lido (`codigoDoQr`, em `domain/posicao.ts`) e abre `/p/<código>`, que leva ao item. A câmera do celular fora do sistema também funciona, porque o QR é a própria URL. No item, uma barra fixa traz "Entrada" e "Registrar saída". A saída cabe numa tela: quantidade com − e +, destino em botões de 44 px, OP, quem retirou e o botão de confirmar preso embaixo. Depois de gravar, a tela de confirmação mostra o saldo antes e agora, avisa se o item entrou em alerta e oferece "Ler outra etiqueta". Se a câmera não abrir (permissão negada, aparelho sem câmera, conexão sem HTTPS), a tela explica o motivo e aceita o código digitado. A imagem é analisada no aparelho, a cada 200 ms, reduzida a no máximo 640 px; nada da câmera vai para o servidor. O cabeçalho `Permissions-Policy` libera a câmera só para o próprio SICEI (`camera=(self)`).
 
 ### 10.4 Prévia no navegador, decisão no servidor
 
@@ -488,6 +488,7 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 10 | Laboratório de testes em `/testes`: testes rodando no navegador do avaliador + relatório do Vitest gerado no build | Só um relatório estático; GitHub Pages; só a aba Actions do GitHub | O avaliador executa e cria testes sem instalar nada, no mesmo endereço do sistema. E o build só publica o que passou nos testes. |
 | 11 | Casos de teste escritos como dados (`*.casos.ts`) e decisões extraídas para funções puras | Testes só no formato tradicional; lógica dentro dos services | Os mesmos casos rodam na CI e no navegador, e quase todo o sistema fica testável em unidade. |
 | 12 | Uma instalação por cliente (projeto próprio na Vercel e no Neon), com a empresa no endereço e nos nomes do banco | Um sistema só com várias empresas no mesmo banco (multi-inquilino) | Isolamento total dos dados de cada cliente sem mudar o modelo de dados, e cada licença pode ser suspensa ou encerrada sem afetar as outras. O custo por cliente continua zero nos planos gratuitos. |
+| 13 | Leitura do QR dentro do SICEI: leitor nativo do navegador quando existe, senão jsQR | Só a câmera do celular fora do sistema; biblioteca maior (ZXing) para tudo | A câmera nativa depende do aparelho (alguns Android abrem o QR noutro aplicativo ou pedem confirmação). Lendo dentro do SICEI, o fluxo é o mesmo em qualquer celular e volta direto para a tela de saída. O leitor nativo é mais rápido onde existe; o jsQR cobre o resto sem servidor. |
 
 ## 12. Histórico do documento
 
@@ -497,3 +498,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.1 | 26/09/2026 | Testes unitários em todo o sistema (9.1) e Laboratório de testes para o avaliador executar e criar testes na web (9.3, ADR-10 e ADR-11). |
 | 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Uma instalação por cliente, com a empresa no endereço e nos nomes do banco (seção 7, ADR-12). |
 | 1.3 | 27/09/2026 | Redesign da interface (seção 10): tokens com tema claro e escuro, menu lateral, tela de acesso, fluxo do celular pela etiqueta QR e prévias no navegador. Stack corrigida para o que o código usa (Tailwind com componentes próprios, Geist, lucide-react; sem shadcn/ui, Recharts nem pino). Pasta `consultas/` no lugar de `repositories/`. E2E em 360 px e 1366 px. ADRs passam a ser a seção 11. |
+| 1.4 | 27/09/2026 | Leitura do QR dentro do SICEI com a câmera de qualquer celular (seção 10.3, stack, ADR-13). |

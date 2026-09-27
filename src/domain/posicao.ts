@@ -37,6 +37,32 @@ export function lerCodigoDaPosicao(codigo: string): EnderecoPosicao | null {
     : null
 }
 
+/**
+ * RN-26: tira o código da posição do texto lido no QR. A etiqueta traz a URL
+ * `<endereço do sistema>/p/A01-G03-C04`; o código sozinho também vale. Só o código é
+ * aproveitado, e o sistema navega para a própria rota /p/<código>: um QR de outro site nunca
+ * leva o usuário para fora do SICEI. Devolve null se o texto não tiver um código válido.
+ */
+export function codigoDoQr(texto: string): string | null {
+  const bruto = texto.trim()
+  if (lerCodigoDaPosicao(bruto)) return bruto.toUpperCase()
+  let caminho: string
+  try {
+    caminho = new URL(bruto).pathname
+  } catch {
+    return null
+  }
+  const m = /^\/p\/([^/]+)\/?$/.exec(caminho)
+  if (!m) return null
+  let codigo: string
+  try {
+    codigo = decodeURIComponent(m[1])
+  } catch {
+    return null
+  }
+  return lerCodigoDaPosicao(codigo) ? codigo.trim().toUpperCase() : null
+}
+
 /** RN-25: decide se o item pode ser guardado na posição. */
 export function avaliarAtribuicao(entrada: {
   itemId: string

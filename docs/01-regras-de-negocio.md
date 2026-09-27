@@ -6,7 +6,7 @@
 | **Titular** | Benevides Soluções Industriais, dona do SICEI e responsável pelo contato comercial |
 | **Cliente** | DDA Metalúrgica (Santa Catarina), que usa o sistema sob licença. Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.2 (validada) |
+| **Versão** | 1.3 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
@@ -111,7 +111,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 - Mudar um item de posição é permitido, e a mudança fica no log.
 - A organização física recomendada é agrupar por aplicação (torneamento, fresamento, furação, rosca) e, dentro dela, por formato. O sistema não obriga essa organização.
 
-**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR com a câmera do celular abre a página do item no SICEI, desde que o usuário esteja logado. Se o item mudar de posição, a etiqueta precisa ser reimpressa.
+**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR abre a página do item no SICEI, desde que o usuário esteja logado. A leitura pode ser feita pela tela "Ler QR" do próprio SICEI, que usa a câmera de qualquer celular (Android ou iPhone), ou pela câmera do celular fora do sistema. Se a etiqueta estiver apagada, o código da posição pode ser digitado. Se o item mudar de posição, a etiqueta precisa ser reimpressa.
 
 ### 5.2 Movimentações e saldo
 
@@ -246,3 +246,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 1.0 | 25/09/2026 | Decisões validadas: endereçamento de 3 níveis e etiqueta QR (RN-25, RN-26), saída com OP e colaborador, NF obrigatória, só quantidades, login e senha gerados pelo sistema, integração fora do escopo. |
 | 1.1 | 26/09/2026 | RN-18: alerta que melhora sem sair do alerta é atualizado para o nível atual. Glossário: crítico é saldo igual ou abaixo do mínimo. |
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. O SICEI pertence à Benevides Soluções Industriais, e a DDA passa a constar como cliente licenciada. Nenhuma regra mudou. |
+| 1.3 | 27/09/2026 | RN-26: a etiqueta pode ser lida dentro do SICEI, pela tela "Ler QR", com a câmera de qualquer celular, ou digitada quando estiver apagada. |

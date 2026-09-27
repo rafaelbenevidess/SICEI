@@ -2,7 +2,7 @@
 
 # SICEI: regras do projeto
 
-SICEI, Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais da DDA Metalúrgica. O projeto se chamava SIMI; os nomes de infraestrutura já publicados (`simi_app`, `simi_owner`, banco `simi`, função `simi_bloquear_alteracao`, repositório no GitHub) continuam com o nome antigo. **Trabalho acadêmico**: um professor vai avaliar o código, os testes e a documentação.
+SICEI, Sistema Inteligente de Controle de Estoques Industriais: controle de estoque de pastilhas industriais. O SICEI é propriedade da Benevides Soluções Industriais (nome fictício, em `src/lib/produto.ts`); a DDA Metalúrgica é cliente e usa o sistema sob licença. Contato comercial e créditos são sempre do titular, nunca da DDA. O projeto se chamava SIMI; os nomes de infraestrutura já publicados (`simi_app`, `simi_owner`, banco `simi`, função `simi_bloquear_alteracao`, repositório no GitHub) continuam com o nome antigo. **Trabalho acadêmico**: um professor vai avaliar o código, os testes e a documentação.
 
 ## Fonte da verdade
 

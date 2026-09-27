@@ -18,7 +18,7 @@ export default async function PaginaLogin({
       <div>
         <h1 className="text-3xl font-bold">SICEI</h1>
         <p className="text-slate-600">Sistema Inteligente de Controle de Estoques Industriais</p>
-        <p className="text-sm text-slate-500">Pastilhas industriais · DDA Metalúrgica</p>
+        <p className="text-sm text-slate-500">Licenciado para DDA Metalúrgica</p>
       </div>
       <FormularioLogin volta={volta ?? ''} />
       <p className="text-xs text-slate-500">

@@ -3,7 +3,8 @@
 | | |
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
-| **Cliente** | DDA Metalúrgica (Santa Catarina). Trabalho acadêmico baseado na demanda da empresa |
+| **Titular** | Benevides Soluções Industriais, dona do SICEI e responsável pelo contato comercial |
+| **Cliente** | DDA Metalúrgica (Santa Catarina), que usa o sistema sob licença. Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
 | **Versão** | 1.2 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
@@ -244,4 +245,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 0.1 | 25/09/2026 | Primeira versão, com vários fornecedores por item e histórico de preços, log inalterável, contas geridas internamente e retenção de 7 anos. |
 | 1.0 | 25/09/2026 | Decisões validadas: endereçamento de 3 níveis e etiqueta QR (RN-25, RN-26), saída com OP e colaborador, NF obrigatória, só quantidades, login e senha gerados pelo sistema, integração fora do escopo. |
 | 1.1 | 26/09/2026 | RN-18: alerta que melhora sem sair do alerta é atualizado para o nível atual. Glossário: crítico é saldo igual ou abaixo do mínimo. |
-| 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhuma regra mudou. |
+| 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. O SICEI pertence à Benevides Soluções Industriais, e a DDA passa a constar como cliente licenciada. Nenhuma regra mudou. |

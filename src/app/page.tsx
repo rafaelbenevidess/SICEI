@@ -11,7 +11,8 @@ export default async function Inicio() {
         Sistema Inteligente de Controle de Estoques Industriais
       </p>
       <p className="text-slate-600">
-        Controle de estoque de pastilhas industriais da DDA Metalúrgica. Trabalho acadêmico.
+        Controle de estoque de pastilhas industriais. Licenciado para a DDA Metalúrgica. Trabalho
+        acadêmico.
       </p>
       <nav className="flex flex-col gap-3 sm:flex-row">
         <Link

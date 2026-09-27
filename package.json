@@ -2,6 +2,8 @@
   "name": "sicei",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "Benevides Soluções Industriais",
   "description": "SICEI: controle de estoque de pastilhas industriais (DDA Metalúrgica)",
   "scripts": {
     "dev": "next dev",

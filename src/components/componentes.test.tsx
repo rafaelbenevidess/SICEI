@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { BotaoEnviar, Campo, DadosDaAcao, FormAcao, Selecao } from './formulario'
 import { Paginacao } from './Paginacao'
+import { Rodape } from './Rodape'
 import { Aviso, BadgeStatus, Vazio } from './ui'
 
 afterEach(cleanup)
@@ -123,6 +124,18 @@ describe('Formulários ligados a Server Actions', () => {
     )
     expect(screen.getByLabelText('Quantidade A').id).not.toBe(
       screen.getByLabelText('Quantidade B').id,
+    )
+  })
+})
+
+describe('Rodapé · Titular do SICEI e cliente licenciada', () => {
+  it('mostra o titular, a licenciada e o contato comercial com link de e-mail', () => {
+    render(<Rodape anoAtual={2026} />)
+    expect(screen.getByText(/SICEI © 2026 Benevides Soluções Industriais/)).toBeInTheDocument()
+    expect(screen.getByText(/Licenciado para DDA Metalúrgica/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'comercial@sicei.exemplo.com.br' })).toHaveAttribute(
+      'href',
+      'mailto:comercial@sicei.exemplo.com.br',
     )
   })
 })

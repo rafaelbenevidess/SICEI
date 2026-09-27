@@ -17,7 +17,8 @@ A DDA controla as pastilhas em planilhas preenchidas à mão. Entrada e saída �
 - Guarda todos os fornecedores de cada item, com o último preço de cada um e o histórico de preços.
 - Avisa no painel e por e-mail quando um item chega ao ponto de reposição, e sugere quanto comprar.
 - Gera relatórios de consumo, movimentação e reposição, com exportação em CSV e impressão em PDF.
-- Imprime etiquetas QR para as gavetas. A câmera do celular lê a etiqueta e abre o item.
+- Imprime etiquetas QR para as gavetas. A câmera do celular lê a etiqueta, abre o item e a saída é registrada numa tela só.
+- Tema claro e escuro, e telas pensadas para o celular do almoxarife e para o computador do escritório.
 - Cria usuários a partir do nome e sobrenome: o sistema gera o login e a senha provisória, sem e-mail.
 - Registra cada operação num log de auditoria encadeado por hash. Uma verificação aponta qualquer registro adulterado, e o banco recusa alteração e exclusão do histórico.
 
@@ -29,9 +30,9 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 395 | Regras de negócio, validações, telas e componentes (98,8% das linhas) |
-| Integração | 65 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash |
-| Ponta a ponta | 9 | Fluxos no navegador em tela de celular: login, troca de senha, saída, estorno, relatório |
+| Unitários | 501 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Integração | 70 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash |
+| Ponta a ponta | 16 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, saída pela etiqueta QR, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
 
 ```bash
 npm test                  # unitários
@@ -62,10 +63,10 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 | # | Documento | Versão |
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.2 |
-| 02 | [Requisitos](docs/02-requisitos.md) | 1.2 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.2 |
-| 04 | [Segurança](docs/04-seguranca.md) | 1.0 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.0 |
+| 02 | [Requisitos](docs/02-requisitos.md) | 1.3 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.3 |
+| 04 | [Segurança](docs/04-seguranca.md) | 1.1 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.1 |
 | 06 | [Operação](docs/06-operacao.md) | 1.0 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).
@@ -83,8 +84,9 @@ Decisões do autor:
 - Stack Next.js com PostgreSQL, publicação na Vercel e no Neon.
 - Testes unitários em todo o sistema, com um laboratório na web para o professor executar e criar testes.
 - O SICEI como produto próprio, licenciado por empresa, com uma instalação para cada cliente.
+- O design da interface: as telas, o tema escuro, a versão de celular e a marca, entregues como protótipo em `design_handoff_sicei/`.
 
-Feito pelo assistente, a partir dessas decisões: a redação dos documentos, o código, os testes, a integração contínua, a publicação e as revisões de código e de segurança.
+Feito pelo assistente, a partir dessas decisões: a redação dos documentos, o código (incluindo a implementação do design do autor), os testes, a integração contínua, a publicação e as revisões de código e de segurança.
 
 Como o autor acompanhou: aprovou cada etapa (regras, requisitos, system design) antes de a próxima começar, respondeu às dúvidas de negócio levantadas no caminho, testou o sistema publicado e pediu as mudanças de nome, licença e modelo de instalação.
 

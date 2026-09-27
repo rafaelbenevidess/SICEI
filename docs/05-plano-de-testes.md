@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.0 |
+| **Versão** | 1.1 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -11,10 +11,10 @@
 | Nível | Onde fica | Ferramenta | Roda na CI |
 |---|---|---|---|
 | Unidade: regras de negócio | `src/domain/*.test.ts`, com os casos em `*.casos.ts` | Vitest | Sim, em todo push |
-| Unidade: laboratório, formatação, proxy | `src/lab`, `src/lib`, `src/proxy.test.ts` | Vitest | Sim |
-| Unidade: componentes | `src/app/testes/Laboratorio.test.tsx` | Vitest + Testing Library | Sim |
+| Unidade: laboratório, formatação, tema, filtros, resumo do log, proxy | `src/lab`, `src/lib`, `src/components/shell/menu.test.ts`, `src/proxy.test.ts` | Vitest | Sim |
+| Unidade: componentes | `src/components/componentes.test.tsx`, `src/app/testes/Laboratorio.test.tsx` | Vitest + Testing Library | Sim |
 | Integração | `tests/integracao/*.test.ts` | Vitest + PostgreSQL real | Sim, com PostgreSQL como serviço |
-| Ponta a ponta | `tests/e2e/fluxos.spec.ts` (roteiro da seção 4, no celular 390 px, contra o build de produção) | Playwright | Sim, com PostgreSQL como serviço |
+| Ponta a ponta | `tests/e2e/fluxos.spec.ts` (celular, 360 px) e `tests/e2e/computador.spec.ts` (1366 px), roteiros da seção 4, contra o build de produção | Playwright | Sim, com PostgreSQL como serviço |
 
 A regra do projeto (RNF-08) é: tudo o que pode ser testado em unidade tem teste unitário, e código novo só entra com os testes dele. As decisões de negócio ficam em funções puras em `src/domain`, e por isso quase tudo é testável sem banco.
 
@@ -40,7 +40,12 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-22 senha e bloqueio | `senha.test.ts` | `usuarios.test.ts` (5ª falha bloqueia, rate limit por IP) |
 | RN-25 posições | `posicao.test.ts` | `cadastros.test.ts` |
 | Matriz de permissões | `permissoes.test.ts` (72 casos) | cada service testado com o perfil sem permissão |
-| RF-25 importação | `importacao.test.ts` | `cadastros.test.ts` (prévia sem gravar, gravação tudo ou nada) |
+| RF-25 importação | `importacao.test.ts` (inclui o resumo de cada linha da prévia) | `cadastros.test.ts` (prévia sem gravar, gravação tudo ou nada) |
+| RF-21 log e conferência | `lib/mudanca.test.ts` (antes → depois, hash encurtado) | `seguranca.test.ts` (conferência registrada no log; Consulta não executa) |
+| RF-26 parâmetros | `parametros.test.ts` (limites e últimas alterações) | `cadastros.test.ts` |
+| RN-22 checklist da senha na tela | `senha.test.ts` (`checklistDaSenha`) | — |
+| RF-02 prévia do login | `login.test.ts` (`previaDoLogin`) | — |
+| Interface | `componentes.test.tsx` (selo com texto, campo de senha, toast, rótulos do gauge), `tema.test.ts`, `menu.test.ts` | — |
 | Segurança web | `proxy.test.ts` (CSP), `redirecionamento.test.ts` (open redirect) | — |
 
 ## 3. Metas
@@ -49,18 +54,38 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 - Cobertura de linhas ≥ 90% em `src/domain` (hoje: 100%).
 - Build de produção bloqueado se qualquer teste unitário falhar.
 
-## 4. Roteiro de aceitação no navegador (celular 390 px)
+## 4. Roteiros de aceitação no navegador
 
-Automatizado em `tests/e2e/fluxos.spec.ts` (`npm run test:e2e`), com os dados de demonstração (`SEED_DEMO=1`):
+Automatizados com Playwright (`npm run test:e2e`), com os dados de demonstração (`SEED_DEMO=1`). O projeto do computador roda depois do celular, porque o primeiro teste troca a senha provisória do Admin.
 
-1. Entrar com a senha provisória → o sistema exige a troca → senha curta é recusada → senha válida leva ao painel.
-2. Painel mostra itens por status, alertas, consumo do mês e últimas movimentações, sem rolagem horizontal.
-3. Abrir um item → registrar saída acima do saldo → mensagem "Saldo disponível: N" → saída válida atualiza o saldo.
-4. Abrir a movimentação → estornar com justificativa → a original aparece como estornada.
-5. Criar usuário "Ana dos Santos" → o sistema mostra `ana.santos` e a senha provisória uma única vez.
-6. Relatório de reposição → exportar CSV.
-7. Abrir `/p/A01-G01-C01` (URL do QR) → cai na página do item guardado nessa posição.
-8. Auditoria → Verificar agora → cadeia íntegra, movimentações e saldos batem.
-9. `/testes` → Executar todos → todos os casos passam.
+### 4.1 Celular, 360 px (`fluxos.spec.ts`)
 
-A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalhos de segurança. Resultado da última execução: 9 de 9 passaram.
+1. Entrar com a senha provisória → o sistema exige a troca → com a senha curta a checklist fica pendente e o botão bloqueado → senha válida leva ao painel.
+2. Painel sem rolagem horizontal em 360 px.
+3. Abrir `/p/A01-G01-C02` (URL do QR) → item com a faixa "lida pela câmera" → "Registrar saída" na barra fixa → 9999 unidades: "Saída recusada" e botão bloqueado → 2 unidades com o botão +, destino em botão, OP e quem retirou → tela "Saída registrada" com "Ler outra etiqueta".
+4. Histórico filtrado pela OP → estornar com justificativa → a original aparece como estornada.
+5. Criar usuário "Pedro da Consulta": o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê preços nem o botão de saída, e não abre a gestão de usuários.
+6. Auditoria → Verificar agora → três resultados (cadeia, movimentações, saldos) e o registro da conferência.
+7. Relatório de reposição → exportar CSV.
+8. `/testes` → Executar todos → todos os casos passam.
+
+A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalhos de segurança.
+
+### 4.2 Computador, 1366 px (`computador.spec.ts`)
+
+1. Tema escuro guardado ao navegar e ao recarregar.
+2. Compra com fornecedor novo: CNPJ inválido avisado na hora, CNPJ válido aceito, fornecedor já escolhido na compra, entrada confirmada.
+3. Parâmetros: janela de 400 dias avisada e bloqueada; 60 dias salvos e listados em "Últimas alterações"; volta para 90.
+4. Log com o antes → depois dessa mudança.
+5. Importação: prévia com a linha 3 errada e importação bloqueada; arquivo corrigido importa 1 item.
+6. CSV de itens e de movimentações.
+7. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
+
+Resultado da última execução: 16 de 16 passaram.
+
+## 5. Histórico do documento
+
+| Versão | Data | Mudança |
+|---|---|---|
+| 1.0 | 26/09/2026 | Primeira versão. |
+| 1.1 | 27/09/2026 | Redesign: E2E em dois projetos (celular 360 px e computador 1366 px), roteiros novos e testes da interface na rastreabilidade. |

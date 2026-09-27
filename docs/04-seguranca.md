@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 04, Segurança |
-| **Versão** | 1.0 |
+| **Versão** | 1.1 |
 | **Base** | [03, System Design, seção 6](03-system-design.md#6-segurança) |
 
 ## 1. Controles implementados
@@ -16,7 +16,7 @@
 | Autorização | Matriz de permissões única (`domain/permissoes.ts`), conferida no servidor em todo service. Cada página e cada Server Action confere a sessão de novo. | `src/server/services/*`, `src/server/web/sessao-atual.ts` |
 | Injeção de SQL | Prisma parametrizado; SQL manual só com template marcado (`$queryRaw\`...${x}\``). Não há `$queryRawUnsafe`. | `src/server/consultas/*`, `src/server/estoque.ts` |
 | Validação de entrada | Toda entrada passa por schema Zod no servidor. IDs conferidos antes de ir ao banco. | `src/domain/schemas/*`, `src/server/erros.ts` |
-| XSS | React escapa a saída. O único `dangerouslySetInnerHTML` é o SVG do QR, gerado no servidor a partir de um código de posição validado. CSP com nonce e `strict-dynamic` nos scripts. | `src/proxy.ts`, `etiquetas/page.tsx` |
+| XSS | React escapa a saída. O único `dangerouslySetInnerHTML` é o SVG do QR, gerado no servidor a partir de um código de posição validado. CSP com nonce e `strict-dynamic` nos scripts. | `src/proxy.ts`, `etiquetas/FolhaDeEtiquetas.tsx` |
 | CSRF | Server Actions só aceitam a mesma origem; cookie `SameSite=Lax`. | Next.js 16 |
 | Cabeçalhos | CSP, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS em produção. | `src/proxy.ts` |
 | Redirecionamento | O parâmetro `volta` do login só aceita caminhos internos, sem caracteres de controle. | `src/lib/redirecionamento.ts` |
@@ -70,3 +70,23 @@ Feita com a skill `code-review` sobre `src/`, `prisma/`, `scripts/` e `tests/`. 
 - **Bloqueio proposital de contas**: como os logins seguem o padrão `nome.sobrenome`, alguém pode bloquear a conta de outra pessoa errando a senha 5 vezes. É o preço da regra RN-22, que exige desbloqueio pelo Administrador. O limite por IP reduz o alcance, e o bloqueio do próprio Administrador tem saída pelo script `npm run admin:recuperar` (doc 06).
 - **Mensagem de conta bloqueada revela que o login existe**: é exigência do critério 3 do RF-01 (orientar o usuário a procurar o Administrador). A resposta não revela se a senha estava certa.
 - **Backup com dados pessoais**: o dump contém nomes e logins, então precisa ficar em local privado (doc 06).
+
+## 5. Revisão do redesign (27/09/2026)
+
+O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
+
+| Ponto | Proteção |
+|---|---|
+| Verificação de integridade virou Server Action (`acaoConferirIntegridade`) | Antes era um GET com `?verificar=1` que gravava no log; um link ou pré-carregamento podia disparar a gravação. Agora só roda por POST, com a sessão conferida de novo e a permissão `auditoria:ver` no service. |
+| Fornecedor cadastrado na tela da compra (`acaoFornecedorRapido`) | Exige `cadastros:editar` no service, valida com Zod e grava fornecedor, vínculo e os dois registros de log numa transação só. |
+| CSV de itens e de movimentações | Conferem sessão, troca de senha pendente e permissão (`saldo:ver`, `historico:ver`); preço só sai para quem tem `precos:ver`. Na exportação de movimentações, só os filtros conhecidos entram no log (`lib/filtros.ts`), para ninguém gravar texto qualquer no log imutável pela URL. |
+| Cookie do tema (`sicei_tema`) | O servidor só aceita `claro` ou `escuro` (`temaDoCookie`). Não guarda nada sensível. |
+| Tela "Ler QR" (`/p`) | O código digitado só vira redirecionamento depois de passar pelo formato `A01-G03-C04`, e vai codificado na URL. |
+| Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
+
+## 6. Histórico do documento
+
+| Versão | Data | Mudança |
+|---|---|---|
+| 1.0 | 26/09/2026 | Primeira versão: controles, revisão de segurança, revisão de código e riscos aceitos. |
+| 1.1 | 27/09/2026 | Revisão do redesign (seção 5). O SVG do QR passou para `FolhaDeEtiquetas.tsx`. |

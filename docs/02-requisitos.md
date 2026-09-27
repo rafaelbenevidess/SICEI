@@ -74,6 +74,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 5. **Dado** um usuário com sessão aberta, **quando** o Administrador inativa a conta, **então** a sessão é encerrada imediatamente e o usuário não consegue mais entrar.
 6. **Dado** um usuário bloqueado ou que esqueceu a senha, **quando** o Administrador redefine a senha, **então** uma nova senha provisória é gerada, a conta é desbloqueada, a troca volta a ser obrigatória e tudo fica no log.
 7. **Dado** um usuário que não é Administrador, **quando** tenta acessar a gestão de usuários, **então** o acesso é negado pelo servidor, e não só escondido na tela.
+8. **Dado** o Administrador digitando "Maria Aparecida" e "de Souza" com `maria.souza` já existente, **quando** ainda não enviou o formulário, **então** a tela já mostra o login `maria.souza2` e o motivo do número. O login definitivo é o que o servidor gerar.
 
 ### RF-03. Cadastro de pastilhas
 1. **Dado** um código interno já usado, **quando** o Gestor tenta cadastrar outro item com ele, **então** o cadastro é recusado.
@@ -108,6 +109,8 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 3. **Dado** uma `DEVOLUCAO_PRODUCAO` sem destino, colaborador ou motivo, **quando** alguém tenta salvar, **então** o lançamento é recusado.
 4. **Dado** um item inativo, **quando** alguém tenta lançar entrada, **então** o lançamento é recusado.
 5. **Dado** uma quantidade zero, negativa ou fracionada, **quando** alguém tenta lançar, **então** o lançamento é recusado.
+6. **Dado** uma compra de um fornecedor que ainda não está cadastrado, **quando** o Gestor ou o Administrador usa "Fornecedor não está na lista?" na própria tela da entrada, **então** o fornecedor é criado e vinculado ao item numa transação só, o CNPJ é conferido enquanto digita (inválido, duplicado ou válido), o fornecedor já fica escolhido na compra e as duas operações ficam no log. O Almoxarife não vê essa opção, porque não cadastra fornecedores.
+7. **Dado** a quantidade digitada, **quando** o almoxarife ainda não confirmou, **então** a tela mostra a conversão de caixas em unidades, o saldo e o status depois da entrada. A gravação continua sendo decidida pelo servidor.
 
 ### RF-08. Registrar saída
 1. **Dado** um item com saldo 12, **quando** o almoxarife lança um `CONSUMO_PRODUCAO` de 4 unidades para o torno CNC 03, OP 2026-0457, retirado por `Carlos Pereira`, **então** o saldo passa a 8, o status é recalculado e a movimentação guarda destino, OP e colaborador.
@@ -116,6 +119,8 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 4. **Dado** um `CONSUMO_PRODUCAO` sem destino, sem OP ou sem colaborador, ou uma `PERDA_QUEBRA` sem motivo, **quando** alguém tenta salvar, **então** o lançamento é recusado.
 5. **Dado** um colaborador inativo, **quando** o almoxarife registra uma saída, **então** esse colaborador não aparece na lista.
 6. **Dado** um almoxarife no celular que leu o QR da gaveta, **quando** registra a saída, **então** o item já vem preenchido e ele só informa quantidade, destino, OP e colaborador antes de confirmar.
+7. **Dado** um item com saldo 3, **quando** o almoxarife digita 5, **então** a tela avisa "Saída recusada" com o saldo disponível e o botão de confirmar fica bloqueado, antes mesmo de enviar. O servidor continua recusando se o pedido chegar (critério 2).
+8. **Dado** uma saída gravada, **quando** a tela confirma, **então** mostra o saldo antes e agora, avisa se o item entrou em Atenção, Crítico ou Zerado e oferece ler outra etiqueta ou voltar ao item.
 
 ### RF-09. Estornar movimentação
 1. **Dado** uma saída de 4 unidades lançada por engano, **quando** o Gestor estorna com justificativa, **então** o saldo volta a subir 4, o estorno aponta para a saída original e ela aparece marcada como estornada.
@@ -162,11 +167,18 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 2. **Dado** um item inativo ou com status `OK`, **quando** o relatório é gerado, **então** ele não aparece.
 3. **Dado** um item na lista, **quando** o Gestor olha a linha, **então** vê a quantidade sugerida, o fornecedor preferencial, o de menor último preço e o lead time de cada um.
 
+### RF-20. Exportar relatórios
+1. **Dado** os relatórios, a lista de itens ou o histórico de movimentações com filtros aplicados, **quando** o usuário clica em "Exportar CSV", **então** recebe um arquivo `sicei-<tela>-<data>.csv` com as mesmas linhas da tela.
+2. **Dado** qualquer exportação, **quando** o arquivo é gerado, **então** a exportação fica no log com o usuário, os filtros e o número de linhas (RN-23). Preços só saem para quem pode vê-los (RN-05b).
+3. **Dado** um relatório na tela, **quando** o usuário escolhe "Imprimir / PDF", **então** o navegador gera o PDF sem o menu e sem os botões.
+
 ### RF-21. Log de auditoria
 1. **Dado** o Administrador ou o Gestor, **quando** filtra o log por usuário, ação e período, **então** vê os registros com valor anterior, valor novo, data, IP e dispositivo.
 2. **Dado** qualquer perfil, inclusive o Administrador, **quando** procura um jeito de editar ou apagar um registro do log, **então** essa função não existe no sistema.
 3. **Dado** um registro alterado direto no banco de dados, **quando** a verificação de integridade roda, **então** o sistema aponta o ponto exato onde a cadeia foi quebrada.
 4. **Dado** a conferência de saldo, **quando** roda, **então** compara o saldo de cada item com a soma das movimentações e lista as divergências, ou informa que não há nenhuma.
+5. **Dado** a lista do log, **quando** o Administrador olha uma linha, **então** vê de forma resumida só o que mudou (antes riscado, depois destacado), a origem com IP e dispositivo e o hash encurtado do registro.
+6. **Dado** a verificação de integridade, **quando** o Administrador a executa, **então** a própria execução e o resultado entram no log, com hora e usuário mostrados na tela.
 
 ### RF-22. Etiquetas QR
 1. **Dado** uma ou mais posições ocupadas, **quando** o almoxarife pede a impressão, **então** o sistema gera uma página de etiquetas com QR, código da posição, código interno e descrição, pronta para imprimir em A4.
@@ -176,9 +188,12 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 ### RF-25. Importação inicial
 1. **Dado** um CSV no modelo fornecido pelo sistema, **quando** o Administrador importa, **então** o sistema mostra uma prévia com as linhas válidas e os erros de cada linha inválida, antes de gravar qualquer coisa.
 2. **Dado** a confirmação da importação, **quando** ela roda, **então** os itens são criados e cada saldo inicial vira um `AJUSTE_POSITIVO` com a justificativa "saldo inicial da implantação". Se qualquer linha falhar na gravação, nada é gravado.
+3. **Dado** uma prévia com pelo menos uma linha com erro, **quando** o Administrador olha a tela, **então** o botão de importar fica bloqueado e a tela oferece enviar o arquivo corrigido.
 
 ### RF-26. Parâmetros do sistema
 1. **Dado** o Administrador, **quando** muda a janela de consumo médio de 90 para 60 dias, **então** os pontos de reposição e as sugestões passam a usar 60 dias, e a mudança fica no log.
+2. **Dado** uma janela fora de 1 a 365 dias ou uma sessão fora de 5 a 480 minutos, **quando** o Administrador digita, **então** a tela avisa o limite e não deixa salvar. O servidor recusa do mesmo jeito.
+3. **Dado** alterações anteriores, **quando** o Administrador abre os parâmetros, **então** vê as últimas alterações (antes → depois, quem e quando), lidas do log.
 
 ### RF-27. Cadastro de colaboradores
 1. **Dado** o Gestor, **quando** cadastra um colaborador com nome e setor, **então** ele passa a aparecer na lista de "quem retirou" das saídas. A matrícula é opcional, mas, se informada, não pode se repetir.
@@ -308,3 +323,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.0 | 25/09/2026 | RF-23, RF-24 e RNF-09 fora do escopo. Novos RF-27 (colaboradores) e RF-28 (posições). RF-14, RF-22 e RF-25 passam a Must. RF-02 reescrito com login e senha gerados pelo sistema. Saída com OP e colaborador, NF obrigatória, relatórios só em quantidade. |
 | 1.1 | 26/09/2026 | Novo RNF-13: testes unitários em todo o sistema, executáveis pelo avaliador na web, com criação de casos próprios. RNF-08 com meta de 90% no domínio. |
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhum requisito mudou. |
+| 1.3 | 27/09/2026 | Critérios novos com o redesign da interface: prévia do login (RF-02), fornecedor cadastrado na hora da compra (RF-07), aviso de saldo antes de enviar e confirmação da saída (RF-08), critérios do RF-20 (CSV de itens e movimentações, log da exportação), resumo do log e registro da verificação (RF-21), importação bloqueada com erro (RF-25), limites e histórico dos parâmetros (RF-26). Nenhum requisito novo nem removido. |

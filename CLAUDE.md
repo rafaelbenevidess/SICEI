@@ -37,7 +37,7 @@ Mudou uma regra, um requisito ou uma decisão técnica? Atualize o documento no 
 
 - `src/domain/`: funções **puras**. Não importa nada de `server/`, `app/`, Prisma ou Next. Só usa recursos que existem no Node **e** no navegador (ex.: `crypto.subtle`, nunca `node:crypto`), porque o Laboratório de testes roda essas funções no navegador.
 - `src/server/services/`: casos de uso. Sempre nesta ordem: `exigirPermissao` → validação Zod → transação → decisão (chamando `domain/`) → gravação → auditoria → commit.
-- `src/server/repositories/`: leitura do banco.
+- `src/server/consultas/`: leitura do banco.
 - `src/app/`: telas e Server Actions. Server Action é fina: confere a sessão **de novo**, chama o service e devolve o resultado. Tela nunca acessa o Prisma.
 - Toda decisão que puder ser tirada do service vai para `domain/`, para ser testável em unidade.
 - Permissão é conferida **no servidor**. Esconder botão na tela não é proteção.

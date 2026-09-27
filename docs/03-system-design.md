@@ -7,7 +7,7 @@
 | **Versão** | 1.2 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
-Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 10.
+Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
 
 ## 1. Visão geral
 
@@ -51,13 +51,13 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 | ORM | **Prisma ORM 7** com `@prisma/adapter-pg` e `prisma.config.ts` | Modelo tipado e migrations versionadas. O SQL puro (`$queryRaw`) entra nos pontos em que o ORM não alcança: lock de linha, triggers e permissões do banco. |
 | Autenticação | **Sessão própria guardada no banco** + **Argon2id** (`@node-rs/argon2`) | O login não usa e-mail, e o sistema precisa derrubar sessões na hora em que alguém é inativado (RN-21b). Uma sessão em tabela resolve os dois com pouco código. |
 | Validação | **Zod 4** | O mesmo schema valida o formulário no navegador e os dados no servidor. |
-| Interface | **Tailwind CSS 4** + **shadcn/ui** + react-hook-form + TanStack Table | Componentes acessíveis, responsivos e sem licença. |
-| Gráficos | **Recharts** | Gráficos do painel (RF-16). |
+| Interface | **Tailwind CSS 4** com tokens próprios (tema claro e escuro), fonte **Geist** e ícones **lucide-react** | Os componentes são do próprio projeto (`components/ui.tsx` e `components/formulario.tsx`), feitos a partir do design do SICEI (seção 10). Sem biblioteca de componentes: menos dependências e controle total de acessibilidade. |
+| Gráficos | Barras em HTML e CSS montadas no servidor | O painel (RF-16) só precisa do consumo diário do mês. Uma biblioteca de gráficos pesaria mais que a própria tela. |
 | QR | **qrcode** | Gera o QR das etiquetas no servidor (RF-22). |
 | CSV | **Papa Parse** | Leitura da planilha na importação (RF-25) e geração dos CSV exportados (RF-20). |
 | PDF | Página de impressão com CSS `@media print` | Relatórios e etiquetas saem pelo "Imprimir → Salvar como PDF" do navegador, sem biblioteca nem serviço extra. |
 | E-mail | **Nodemailer** (SMTP) | Funciona com qualquer e-mail corporativo. No desenvolvimento, o **Mailpit** captura os e-mails localmente. |
-| Logs técnicos | **pino** (JSON) | Logs estruturados de erro e acesso (RNF-11), separados do log de auditoria. |
+| Logs técnicos | JSON em uma linha na saída padrão | Logs estruturados de erro (RNF-11), separados do log de auditoria. A Vercel recolhe a saída padrão; não precisa de biblioteca. |
 | Testes | **Vitest 5** (unidade e integração, com repórter HTML e Vitest UI) + **Playwright** (ponta a ponta) | Ver seção 9. Os testes das regras também rodam no navegador do avaliador (seção 9.3). |
 | Qualidade | ESLint, Prettier, `tsc --noEmit`, GitHub Actions | Rodam em todo push. |
 | Hospedagem | **Vercel** (plano Hobby) + **Neon** (PostgreSQL, plano Free) | Custo zero para um projeto acadêmico. |
@@ -68,14 +68,16 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 ```
 src/
 ├── app/                    rotas e telas (App Router)
-│   ├── (publico)/login
+│   ├── login, trocar-senha, sem-permissao   telas fora do menu
 │   ├── (app)/painel, itens, movimentacoes, relatorios, alertas
-│   ├── (app)/cadastros/    fabricantes, fornecedores, destinos, colaboradores, posicoes
+│   ├── (app)/movimentacoes/nova/  registrar entrada ou saída (RF-07, RF-08)
+│   ├── (app)/cadastros/    fabricantes, fornecedores, destinos, colaboradores, posicoes (em abas)
 │   ├── (app)/admin/        usuarios, parametros, auditoria, importacao
-│   ├── p/[codigo]/         destino do QR: resolve a posição e abre o item
+│   ├── (app)/p/            "Ler QR" no celular; p/[codigo] é o destino do QR da etiqueta
 │   ├── testes/             Laboratório de testes público (seção 9.3)
 │   └── api/cron/           rotina diária (protegida por segredo)
-├── components/             componentes de interface
+├── components/             componentes de interface (ui.tsx, formulario.tsx, shell/)
+├── lib/                    formatação, tema, resumo do log e outras funções puras de tela
 ├── domain/                 regras puras, sem banco e sem framework
 │   ├── estoque.ts          consumo médio, ponto de reposição, status, sugestão (RN-15 a RN-20)
 │   ├── movimentacao.ts     decisões de entrada, saída e estorno (RN-08, RN-10 a RN-13)
@@ -86,12 +88,14 @@ src/
 │   ├── *.casos.ts          casos de teste como dados, usados pelo Vitest e pelo Laboratório
 │   ├── login.ts            geração de login a partir do nome (RN-21)
 │   ├── senha.ts            política de senha e geração da provisória (RN-21, RN-22)
-│   ├── cnpj.ts             validação de CNPJ (RN-04)
+│   ├── cnpj.ts             validação e máscara de CNPJ (RN-04)
+│   ├── parametros.ts       limites dos parâmetros e histórico de alterações (RF-26)
+│   ├── importacao.ts       validação e resumo das linhas do CSV (RF-25)
 │   ├── permissoes.ts       matriz perfil × permissão (doc 02, seção 5)
 │   └── schemas/            schemas Zod de cada formulário
 ├── server/
 │   ├── services/           casos de uso: registrarSaida, estornar, criarUsuario...
-│   ├── repositories/       consultas ao banco
+│   ├── consultas/          leituras do banco para as telas
 │   ├── auth/               sessão, hash de senha, bloqueio, rate limit
 │   ├── audit/              gravação e verificação do log encadeado
 │   ├── notificacao/        outbox de e-mail
@@ -102,13 +106,13 @@ prisma/
 ├── migrations/             inclui SQL de triggers, CHECKs e permissões
 └── seed.ts                 Administrador inicial e parâmetros padrão
 tests/
-├── unit/  integration/  e2e/
+├── integracao/  e2e/       (os testes de unidade ficam ao lado de cada módulo, em *.test.ts)
 ```
 
 **Regras de dependência:**
 
 1. `domain/` não importa nada de `server/` nem de `app/`. São funções puras, fáceis de testar, e é onde ficam as fórmulas do documento 01.
-2. As telas **nunca** acessam o banco diretamente. Leitura passa por `repositories/`, escrita passa por `services/`.
+2. As telas **nunca** acessam o banco diretamente. Leitura passa por `consultas/`, escrita passa por `services/`.
 3. Todo service de escrita segue a mesma sequência:
    1. `exigirPermissao(usuario, 'movimentacao:saida')`, que confere o perfil no servidor (RNF-05);
    2. validação da entrada com Zod;
@@ -377,7 +381,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 |---|---|---|---|
 | Unidade | Vitest 5 (+ Testing Library para componentes) | Tudo da tabela 9.1 marcado com "Sim". Os exemplos numéricos do documento 01 viram testes. | Toda RN com pelo menos um teste; ≥ 90% de cobertura de linhas em `domain/` |
 | Integração | Vitest + PostgreSQL real | Services com banco de verdade: saídas concorrentes (RN-08), estorno duplo (RN-12), trigger de imutabilidade e detecção de adulteração no banco (RN-09a), alerta único por item (RN-18), inativação derrubando sessões (RN-21b), cada ação testada com cada perfil | Todos os critérios de aceite do documento 02 com regra no servidor |
-| Ponta a ponta | Playwright | Primeiro acesso com troca de senha; criar usuário; entrada; saída pelo celular (viewport 360 px) a partir da URL do QR; estorno; alerta no painel; relatório de reposição | Fluxos principais do MVP |
+| Ponta a ponta | Playwright, em dois projetos: celular (360 px) e computador (1366 px) | Celular: primeiro acesso com a checklist da senha; saída pela etiqueta QR com barra fixa e confirmação; estorno; criar usuário com a prévia do login; Consulta sem preços; verificação de integridade; relatório de reposição. Computador: tema escuro guardado; compra com fornecedor cadastrado na hora; parâmetros com aviso e histórico; antes → depois no log; importação com prévia; CSV de itens e movimentações; nenhuma tela com rolagem horizontal | Fluxos principais do MVP nas duas larguras |
 | Estático | ESLint, `tsc`, Prettier | Estilo e tipos | Sem erros |
 
 **CI (GitHub Actions)**, em todo push e pull request: instalar, rodar lint, typecheck, testes de unidade e integração (PostgreSQL como serviço), build, e2e. Só entra na branch principal o que passar.
@@ -440,7 +444,35 @@ Para que isso seja possível, `domain/` só usa recursos que existem tanto no No
 
 O README também exibe o selo da CI do GitHub Actions, que mostra se a última versão passou em todos os testes.
 
-## 10. Decisões de arquitetura (ADRs)
+## 10. Interface
+
+O design do SICEI foi feito à parte e entregue num pacote (`design_handoff_sicei/`, com protótipo navegável e capturas de cada tela). O código segue esse pacote; a pasta fica no repositório como referência e não entra no build.
+
+### 10.1 Tokens e temas
+
+As cores são variáveis CSS no `:root` (tema claro) e em `[data-theme='escuro']`, ligadas ao Tailwind por `@theme inline` em `app/globals.css`. As telas usam só os nomes dos tokens (`bg`, `surface`, `ink`, `accent`, `ok`, `warn`, `crit` e variações), nunca uma cor fixa. Os tons de status seguem o RNF-10: todo selo tem texto além da cor.
+
+O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no servidor e já manda o `<html data-theme>` certo, então a página não pisca ao abrir e não precisa de script inline (que a CSP barraria).
+
+### 10.2 Estrutura das telas
+
+| Parte | Onde | O que faz |
+|---|---|---|
+| Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
+| Tela de acesso | `components/TelaDeAcesso.tsx` | Login, troca de senha, página inicial e "Acesso negado": formulário à esquerda e painel da marca à direita (some abaixo de 1040 px). |
+| Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, gauge de nível, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
+
+Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, `min-[100rem]` = 1600 px), para respeitar o zoom do navegador.
+
+### 10.3 Celular (RNF-01, RNF-02)
+
+O fluxo principal no celular começa na etiqueta: a câmera nativa lê o QR e abre `/p/<código>`, que leva ao item. No item, uma barra fixa traz "Entrada" e "Registrar saída". A saída cabe numa tela: quantidade com − e +, destino em botões de 44 px, OP, quem retirou e o botão de confirmar preso embaixo. Depois de gravar, a tela de confirmação mostra o saldo antes e agora, avisa se o item entrou em alerta e oferece "Ler outra etiqueta". A tela "Ler QR" (`/p`) explica o uso da câmera e aceita o código digitado quando a etiqueta está apagada.
+
+### 10.4 Prévia no navegador, decisão no servidor
+
+Várias telas mostram o resultado antes de enviar, usando as mesmas funções puras de `domain/`: o saldo e o status depois da movimentação, a conversão de caixas, o login que será gerado, a checklist da senha, a situação do CNPJ e os limites dos parâmetros. A prévia só ajuda quem digita. O servidor valida tudo de novo e é quem decide (RN-08, RNF-05).
+
+## 11. Decisões de arquitetura (ADRs)
 
 | ADR | Decisão | Alternativa descartada | Motivo |
 |---|---|---|---|
@@ -457,10 +489,11 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 | 11 | Casos de teste escritos como dados (`*.casos.ts`) e decisões extraídas para funções puras | Testes só no formato tradicional; lógica dentro dos services | Os mesmos casos rodam na CI e no navegador, e quase todo o sistema fica testável em unidade. |
 | 12 | Uma instalação por cliente (projeto próprio na Vercel e no Neon), com a empresa no endereço e nos nomes do banco | Um sistema só com várias empresas no mesmo banco (multi-inquilino) | Isolamento total dos dados de cada cliente sem mudar o modelo de dados, e cada licença pode ser suspensa ou encerrada sem afetar as outras. O custo por cliente continua zero nos planos gratuitos. |
 
-## 11. Histórico do documento
+## 12. Histórico do documento
 
 | Versão | Data | Mudança |
 |---|---|---|
 | 1.0 | 25/09/2026 | Primeira versão: stack, arquitetura, modelo de dados, fluxos críticos, segurança, deploy e testes. |
 | 1.1 | 26/09/2026 | Testes unitários em todo o sistema (9.1) e Laboratório de testes para o avaliador executar e criar testes na web (9.3, ADR-10 e ADR-11). |
 | 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Uma instalação por cliente, com a empresa no endereço e nos nomes do banco (seção 7, ADR-12). |
+| 1.3 | 27/09/2026 | Redesign da interface (seção 10): tokens com tema claro e escuro, menu lateral, tela de acesso, fluxo do celular pela etiqueta QR e prévias no navegador. Stack corrigida para o que o código usa (Tailwind com componentes próprios, Geist, lucide-react; sem shadcn/ui, Recharts nem pino). Pasta `consultas/` no lugar de `repositories/`. E2E em 360 px e 1366 px. ADRs passam a ser a seção 11. |

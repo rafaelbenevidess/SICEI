@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.5 (validada) |
+| **Versão** | 1.6 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -145,7 +145,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 2. **Dado** um alerta `ATENCAO` aberto, **quando** o saldo cai abaixo do mínimo, **então** o mesmo alerta sobe para `CRITICO` e nenhum alerta novo é criado.
 3. **Dado** um alerta aberto, **quando** uma compra leva o saldo acima do ponto de reposição, **então** o alerta fecha sozinho.
 4. **Dado** um alerta aberto, **quando** o Gestor marca como ciente, **então** ele continua aberto, mas aparece identificado com quem marcou e quando.
-5. **Dado** um Gestor ou Administrador e 3 alertas abertos sem ciente, **quando** ele entra no sistema, **então** aparece no centro da tela "Existem 3 alertas sem ciente", com um símbolo de atenção e o botão VER. Não há como fechar: o aviso continua em qualquer página até ele ir à tela de alertas. Almoxarife e Consulta, que não dão ciente, não veem o aviso.
+5. **Dado** um Gestor ou Administrador e 3 alertas abertos sem ciente, **quando** ele entra no sistema, **então** aparece no centro da tela "Existem 3 alertas sem ciente", com um símbolo de atenção e o botão VER. Não há como fechar: o aviso continua em qualquer página até ele tocar em VER, que leva à tela de alertas. Ir à tela de alertas não obriga a dar ciente (o ciente é de quem responde pelo alerta); serve para todo Gestor e Administrador saber que existem alertas e cobrar o responsável. Depois disso o aviso não volta, nem navegando pelo menu nem recarregando a página, até o próximo login. Almoxarife e Consulta, que não dão ciente, não veem o aviso.
 
 ### RF-14. Aviso por e-mail
 1. **Dado** o e-mail corporativo configurado, **quando** um item passa para `CRITICO` ou `ZERADO`, **então** o sistema envia um e-mail com o código, a descrição, o saldo, o mínimo e o link do item.
@@ -336,3 +336,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.3 | 27/09/2026 | Critérios novos com o redesign da interface: prévia do login (RF-02), fornecedor cadastrado na hora da compra (RF-07), aviso de saldo antes de enviar e confirmação da saída (RF-08), critérios do RF-20 (CSV de itens e movimentações, log da exportação), resumo do log e registro da verificação (RF-21), importação bloqueada com erro (RF-25), limites e histórico dos parâmetros (RF-26). Nenhum requisito novo nem removido. |
 | 1.4 | 27/09/2026 | RF-22: leitura do QR dentro do SICEI com a câmera de qualquer celular (critérios 4 a 7). |
 | 1.5 | 27/09/2026 | Critérios novos: RF-03 (próximo código, fabricante e fornecedor cadastrados na hora, aba Itens em Cadastros), RF-13 (pop-up de alertas sem ciente ao entrar), RF-21 (filtro com todas as ações), RF-22 (etiqueta pendente ao mudar de posição). |
+| 1.6 | 27/09/2026 | RF-13, critério 5: o pop-up aparece só no login; depois de VER não volta até o próximo login, e ver os alertas não obriga a dar ciente. |

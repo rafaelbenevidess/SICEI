@@ -42,8 +42,8 @@ export function AvisoDeAlertas({ semCiente }: { semCiente: number }) {
           {tituloDoAvisoDeAlertas(semCiente)}
         </h2>
         <p id="aviso-alertas-texto" className="mt-2 text-sm text-ink-2">
-          Há itens abaixo do ponto de reposição esperando a sua ciência. Veja os alertas antes de
-          continuar.
+          Há itens abaixo do ponto de reposição que ainda não receberam ciente do responsável. Veja
+          os alertas para acompanhar e avisar quem vai atender.
         </p>
         <form action={acaoVerAlertas} className="mt-6">
           <button

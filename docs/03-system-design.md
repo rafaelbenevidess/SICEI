@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.5 (para revisão) |
+| **Versão** | 1.6 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -472,7 +472,7 @@ O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na bar
 
 ### 10.4 Avisos que não podem passar despercebidos
 
-- Pop-up de alertas (RF-13): no login, a Server Action grava o cookie de sessão `sicei_aviso_alertas`. Enquanto ele existir e houver alerta aberto sem ciente, o layout mostra a Gestor e Administrador um diálogo `alertdialog` no centro da tela, sem botão de fechar, com "Existem N alertas sem ciente" e o botão VER. VER apaga o cookie e leva a `/alertas`; abrir `/alertas` por outro caminho também apaga. Como o cookie é apagado dentro de uma Server Action, o Next renderiza o layout de novo e o aviso some. A regra de quando mostrar fica em `lib/avisoDeAlertas.ts`.
+- Pop-up de alertas (RF-13): no login, a Server Action grava o cookie de sessão `sicei_aviso_alertas`. Enquanto ele existir e houver alerta aberto sem ciente, o layout mostra a Gestor e Administrador um diálogo `alertdialog` no centro da tela, sem botão de fechar, com "Existem N alertas sem ciente" e o botão VER. VER apaga o cookie e leva a `/alertas`; abrir `/alertas` por outro caminho também apaga. Como o menu lateral não é recarregado a cada clique (o layout do App Router fica no navegador entre as páginas), o `Shell` também guarda, no estado da tela, que a pessoa já passou por `/alertas` (`avisoJaVisto`); assim o aviso não volta ao navegar pelo menu. O cookie apagado garante o mesmo ao recarregar. Um novo login grava o cookie de novo. A regra de quando mostrar fica em `lib/avisoDeAlertas.ts`.
 - Etiqueta pendente (RN-26): aviso na página do item até a etiqueta ser impressa (seção 5.6).
 - Código interno (RN-01): o cadastro sugere o próximo da sequência (`domain/codigo.ts`) e avisa na hora se o código já existe; o banco continua recusando código repetido.
 
@@ -508,3 +508,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.3 | 27/09/2026 | Redesign da interface (seção 10): tokens com tema claro e escuro, menu lateral, tela de acesso, fluxo do celular pela etiqueta QR e prévias no navegador. Stack corrigida para o que o código usa (Tailwind com componentes próprios, Geist, lucide-react; sem shadcn/ui, Recharts nem pino). Pasta `consultas/` no lugar de `repositories/`. E2E em 360 px e 1366 px. ADRs passam a ser a seção 11. |
 | 1.4 | 27/09/2026 | Leitura do QR dentro do SICEI com a câmera de qualquer celular (seção 10.3, stack, ADR-13). |
 | 1.5 | 27/09/2026 | Coluna `posicao.etiqueta_pendente` e fluxo da impressão (5.6); avisos de alertas, etiqueta e código (10.4); o que o IP do log representa (seção 6). |
+| 1.6 | 27/09/2026 | Seção 10.4: o pop-up de alertas não volta depois de VER, nem pela navegação do menu. |

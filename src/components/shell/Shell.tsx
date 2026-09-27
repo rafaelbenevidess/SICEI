@@ -28,7 +28,7 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { mostrarAvisoDeAlertas } from '@/lib/avisoDeAlertas'
+import { avisoJaVisto, mostrarAvisoDeAlertas } from '@/lib/avisoDeAlertas'
 import type { Tema } from '@/lib/tema'
 import { Avatar, classeBotao } from '../ui'
 import { Marca } from '../Marca'
@@ -81,6 +81,10 @@ export function Shell({
   children,
 }: Props) {
   const caminho = usePathname()
+  // RF-13: o menu não é recarregado a cada clique; por isso a tela guarda que a pessoa já
+  // passou pelos alertas e o aviso só volta no próximo login
+  const [alertasVistos, setAlertasVistos] = useState(false)
+  if (avisoJaVisto(alertasVistos, caminho) !== alertasVistos) setAlertasVistos(true)
   const parametros = useSearchParams()
   const [gaveta, setGaveta] = useState(false)
   const ativo = hrefAtivo(
@@ -278,7 +282,7 @@ export function Shell({
       </nav>
 
       {mostrarAvisoDeAlertas({
-        marcado: alertasSemCiente > 0,
+        marcado: alertasSemCiente > 0 && !alertasVistos,
         podeDarCiente: true,
         semCiente: alertasSemCiente,
         caminho,

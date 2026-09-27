@@ -41,7 +41,14 @@ test('RF-01: primeiro acesso exige troca de senha; senha fraca é recusada', asy
   await expect(aviso).toBeVisible()
   await page.getByRole('button', { name: 'VER' }).click()
   await page.waitForURL('**/alertas')
-  await page.goto('/itens')
+  // ver os alertas não obriga a dar ciente; depois disso o aviso não volta, nem pelo menu
+  await page
+    .getByRole('navigation', { name: 'Atalhos' })
+    .getByRole('link', { name: 'Itens' })
+    .click()
+  await page.waitForURL('**/itens')
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
+  await page.reload()
   await expect(page.getByRole('alertdialog')).toHaveCount(0)
 })
 

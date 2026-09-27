@@ -4,6 +4,11 @@
  */
 export const COOKIE_AVISO_ALERTAS = 'sicei_aviso_alertas'
 
+/** A pessoa já passou pela tela de alertas nesta sessão? Depois disso o aviso não volta. */
+export function avisoJaVisto(jaVisto: boolean, caminho: string): boolean {
+  return jaVisto || caminho === '/alertas' || caminho.startsWith('/alertas/')
+}
+
 export function mostrarAvisoDeAlertas(entrada: {
   /** o login marcou o aviso e a pessoa ainda não foi à tela de alertas */
   marcado: boolean

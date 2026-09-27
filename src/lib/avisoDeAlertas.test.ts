@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mostrarAvisoDeAlertas, tituloDoAvisoDeAlertas } from './avisoDeAlertas'
+import { avisoJaVisto, mostrarAvisoDeAlertas, tituloDoAvisoDeAlertas } from './avisoDeAlertas'
 
 const base = { marcado: true, podeDarCiente: true, semCiente: 3, caminho: '/painel' }
 
@@ -23,5 +23,17 @@ describe('RF-13 · Pop-up de alertas sem ciente depois do login', () => {
   it('título no singular e no plural', () => {
     expect(tituloDoAvisoDeAlertas(1)).toBe('Existe 1 alerta sem ciente')
     expect(tituloDoAvisoDeAlertas(3)).toBe('Existem 3 alertas sem ciente')
+  })
+})
+
+describe('RF-13 · Depois de ver os alertas, o aviso não volta até o próximo login', () => {
+  it('ainda não foi à tela de alertas, está no painel → não visto', () => {
+    expect(avisoJaVisto(false, '/painel')).toBe(false)
+  })
+  it('chegou à tela de alertas → visto', () => {
+    expect(avisoJaVisto(false, '/alertas')).toBe(true)
+  })
+  it('já viu e foi para itens pelo menu → continua visto', () => {
+    expect(avisoJaVisto(true, '/itens')).toBe(true)
   })
 })

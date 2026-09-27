@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="icon" type="image/png" href="assets/sicei-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+<style>
+[data-theme]{--bg:oklch(0.975 0.004 250);--surface:#fff;--surface-2:oklch(0.968 0.005 250);--surface-3:oklch(0.94 0.006 250);--line:oklch(0.918 0.006 250);--line-2:oklch(0.86 0.008 250);--ink:oklch(0.21 0.015 255);--ink-2:oklch(0.42 0.015 255);--ink-3:oklch(0.55 0.012 255);--accent:oklch(0.52 0.17 258);--accent-hover:oklch(0.46 0.17 258);--accent-soft:oklch(0.95 0.03 258);--accent-ink:oklch(0.43 0.15 258);--on-accent:#fff;--ok:oklch(0.62 0.14 155);--ok-soft:oklch(0.95 0.04 155);--ok-ink:oklch(0.42 0.1 155);--warn:oklch(0.76 0.15 75);--warn-soft:oklch(0.96 0.05 85);--warn-ink:oklch(0.47 0.11 60);--crit:oklch(0.58 0.2 27);--crit-soft:oklch(0.955 0.03 25);--crit-ink:oklch(0.48 0.17 27);--zero:oklch(0.25 0.015 255);--zero-bg:oklch(0.25 0.015 255);--zero-ink:#fff;--shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.03);--pop:0 12px 32px rgba(16,24,40,.12),0 2px 6px rgba(16,24,40,.06)}
+[data-theme="escuro"]{--bg:oklch(0.165 0.01 255);--surface:oklch(0.205 0.012 255);--surface-2:oklch(0.235 0.012 255);--surface-3:oklch(0.27 0.012 255);--line:oklch(0.285 0.012 255);--line-2:oklch(0.35 0.012 255);--ink:oklch(0.95 0.005 255);--ink-2:oklch(0.79 0.01 255);--ink-3:oklch(0.65 0.01 255);--accent:oklch(0.7 0.14 258);--accent-hover:oklch(0.76 0.13 258);--accent-soft:oklch(0.3 0.06 258);--accent-ink:oklch(0.82 0.1 258);--on-accent:oklch(0.17 0.02 258);--ok:oklch(0.72 0.14 155);--ok-soft:oklch(0.3 0.05 155);--ok-ink:oklch(0.86 0.1 155);--warn:oklch(0.8 0.14 80);--warn-soft:oklch(0.32 0.06 75);--warn-ink:oklch(0.88 0.11 85);--crit:oklch(0.68 0.18 27);--crit-soft:oklch(0.32 0.08 27);--crit-ink:oklch(0.87 0.09 27);--zero:oklch(0.92 0.005 255);--zero-bg:oklch(0.92 0.005 255);--zero-ink:oklch(0.18 0.01 255);--shadow:0 1px 2px rgba(0,0,0,.3);--pop:0 12px 32px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{color:var(--accent);text-decoration:underline}
+input,select,button,textarea{font-family:inherit}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg);color:var(--ink);font-family:Geist,system-ui,sans-serif;font-size:14px;line-height:1.45">
+
+<sc-if value="{{ shell }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh">
+
+<aside style="position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:20px;background:var(--surface);border-right:1px solid var(--line);padding:20px 14px 16px">
+  <div style="display:flex;align-items:center;gap:10px;padding:0 8px">
+    <img src="assets/sicei-icon.png" alt="SICEI" style="width:32px;height:32px;border-radius:8px;display:block;flex:none">
+    <div style="display:flex;flex-direction:column;line-height:1.2">
+      <span style="padding:2px 0 4px"><span role="img" aria-label="SICEI" style="display:block;height:14px;width:51px;background:url({{ wordmark }}) left center/contain no-repeat"></span></span>
+      <span style="font-size:12px;color:var(--ink-3)">DDA Metalúrgica</span>
+    </div>
+  </div>
+  <nav style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:18px">
+    <sc-for list="{{ nav }}" as="g" hint-placeholder-count="4">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="padding:0 10px 6px;font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)">{{ g.titulo }}</span>
+        <sc-for list="{{ g.itens }}" as="n" hint-placeholder-count="3">
+          <button onClick="{{ n.ir }}" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:0;border-radius:8px;background:{{ n.bg }};color:{{ n.fg }};font-size:14px;font-weight:{{ n.peso }};cursor:pointer;text-align:left" style-hover="background:var(--surface-2)">
+            <i class="{{ n.icone }}" style="font-size:17px;width:18px;color:{{ n.ic }}"></i>
+            <span style="flex:1">{{ n.rotulo }}</span>
+            <sc-if value="{{ n.temBadge }}" hint-placeholder-val="{{ false }}">
+              <span style="min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:var(--crit-soft);color:var(--crit-ink);font-size:12px;font-weight:600;display:grid;place-items:center">{{ n.badge }}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+  </nav>
+  <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 6px">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:600;font-size:13px">MC</div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-weight:500">Marina Costa</span>
+        <span style="font-size:12px;color:var(--ink-3)">Gestor · Compras</span>
+      </div>
+      <button onClick="{{ alternarTema }}" title="Alternar tema" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;display:grid;place-items:center" style-hover="background:var(--surface-2)"><i class="{{ iconeTema }}" style="font-size:16px"></i></button>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 6px">
+      <button onClick="{{ irSenha }}" style="flex:1;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:var(--surface-2)"><i class="icon-key-round" style="font-size:14px"></i>Senha</button>
+      <button onClick="{{ irLogin }}" style="flex:1;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:var(--surface-2)"><i class="icon-log-out" style="font-size:14px"></i>Sair</button>
+    </div>
+  </div>
+</aside>
+
+<div style="min-width:0;display:flex;flex-direction:column">
+  <header style="position:sticky;top:0;z-index:20;height:64px;display:flex;align-items:center;gap:16px;padding:0 40px;background:color-mix(in oklch, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)">
+    <div style="display:{{ cols.trilha }};flex:none;white-space:nowrap;align-items:center;gap:8px;font-size:13px;color:var(--ink-3)">
+      <span>{{ trilha.grupo }}</span><i class="icon-chevron-right" style="font-size:14px"></i><span style="color:var(--ink);font-weight:500">{{ trilha.tela }}</span>
+    </div>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:1;min-width:0;max-width:400px;height:38px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-3)">
+      <i class="icon-search" style="font-size:16px"></i>
+      <input placeholder="Buscar código, ISO, classe ou posição" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:14px">
+      <span style="font-family:'Geist Mono',monospace;font-size:11px;padding:2px 6px;border:1px solid var(--line);border-radius:5px">/</span>
+    </label>
+    <button onClick="{{ irAlertas }}" style="flex:none;white-space:nowrap;height:38px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:13px;font-weight:500" style-hover="background:var(--surface-2)">
+      <i class="icon-bell" style="font-size:16px;color:var(--crit)"></i>{{ totalAlertas }} alertas
+    </button>
+    <button onClick="{{ irSaida }}" style="flex:none;white-space:nowrap;height:38px;display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer;font-size:14px;font-weight:500" style-hover="background:var(--accent-hover)">
+      <i class="icon-arrow-up-from-line" style="font-size:16px"></i>Registrar saída
+    </button>
+  </header>
+
+  <main style="flex:1;padding:32px 40px 56px;width:100%;max-width:1400px;display:flex;flex-direction:column;gap:24px">
+
+<!-- PAINEL -->
+<sc-if value="{{ s.painel }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:13px;color:var(--ink-3)">Sábado, 27 de setembro de 2026 · atualizado às 15:42</span>
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Painel</h1>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onClick="{{ irEntrada }}" style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-arrow-down-to-line" style="font-size:16px"></i>Registrar entrada</button>
+    </div>
+  </div>
+
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+    <div style="display:grid;grid-template-columns:{{ cols.kpi }}">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+        <button onClick="{{ k.ir }}" style="position:relative;text-align:left;border:0;border-right:1px solid var(--line);background:transparent;color:inherit;padding:22px 24px 28px;cursor:pointer;display:flex;flex-direction:column;gap:14px" style-hover="background:var(--surface-2)">
+          <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-2)"><span style="width:8px;height:8px;border-radius:2px;background:{{ k.cor }}"></span>{{ k.rotulo }}</span>
+          <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:40px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ k.n }}</span><span style="color:var(--ink-3);font-size:13px">itens</span></span>
+          <span style="font-size:13px;color:var(--ink-3)">{{ k.dica }}</span>
+          <span style="position:absolute;left:0;right:0;bottom:0;height:5px;background:{{ k.cor }}"></span>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="display:grid;grid-template-columns:{{ cols.p1 }};gap:24px">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h2 style="margin:0;font-size:16px;font-weight:600">Consumo da produção em setembro</h2>
+          <span style="font-size:13px;color:var(--ink-3)">Saídas do tipo consumo, sem estornos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+          <span style="font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1.1">{{ consumo.total }} <span style="font-size:14px;font-weight:400;color:var(--ink-3)">un.</span></span>
+          <span style="font-size:13px;color:var(--ink-2)"><span style="color:var(--ink);font-weight:600">{{ consumo.variacao }}</span> vs. agosto ({{ consumo.anterior }})</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:5px;height:168px;padding-top:8px;border-bottom:1px solid var(--line)">
+        <sc-for list="{{ consumo.dias }}" as="d" hint-placeholder-count="27">
+          <div title="{{ d.t }}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+            <div style="height:{{ d.h }};background:{{ d.c }};border-radius:3px 3px 0 0;min-height:2px"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:11px;color:var(--ink-3);margin-top:-12px">
+        <span>01/09</span><span>08/09</span><span>15/09</span><span>22/09</span><span>27/09</span>
+      </div>
+    </section>
+
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 12px">
+        <h2 style="margin:0;font-size:16px;font-weight:600">Alertas abertos</h2>
+        <button onClick="{{ irAlertas }}" style="border:0;background:none;color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer">Ver todos</button>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ alertasTop }}" as="a" hint-placeholder-count="6">
+          <button onClick="{{ a.abrir }}" style="display:grid;grid-template-columns:78px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 24px;border:0;border-top:1px solid var(--line);background:transparent;color:inherit;text-align:left;cursor:pointer" style-hover="background:var(--surface-2)">
+            <span style="justify-self:start;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:{{ a.sb }};color:{{ a.sf }};font-size:12px;font-weight:600">{{ a.st }}</span>
+            <span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.iso }} · {{ a.classe }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">{{ a.id }} · {{ a.pos }}</span></span>
+            <span style="text-align:right;font-size:13px;color:var(--ink-2)"><strong style="color:var(--ink);font-size:15px">{{ a.saldo }}</strong> / mín. {{ a.min }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ cols.p2 }};gap:24px">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:16px">
+      <h2 style="margin:0;font-size:16px;font-weight:600">Mais consumidos no mês</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ topConsumo }}" as="t" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:72px minmax(0,1fr) 36px;align-items:center;gap:12px">
+            <span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-2)">{{ t.id }}</span>
+            <div style="height:18px;background:var(--surface-2);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ t.w }};background:var(--accent);opacity:{{ t.op }};border-radius:4px"></div></div>
+            <span style="text-align:right;font-weight:600;font-size:13px">{{ t.total }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 14px">
+        <h2 style="margin:0;font-size:16px;font-weight:600">Últimas movimentações</h2>
+        <button onClick="{{ irMovs }}" style="border:0;background:none;color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer">Histórico completo</button>
+      </div>
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 24px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Quando</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Item</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Tipo</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Qtd.</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 24px 10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Usuário</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ ultimas }}" as="m" hint-placeholder-count="6">
+            <tr style="color:{{ m.cor }}">
+              <td style="padding:12px 24px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13px;color:var(--ink-2)">{{ m.quando }}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px">{{ m.item }}</td>
+              <td style="padding:12px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px"><i class="{{ m.icone }}" style="font-size:14px;color:{{ m.ic }}"></i>{{ m.tipo }}</span></td>
+              <td style="padding:12px;border-bottom:1px solid var(--line);text-align:right;font-weight:600;color:{{ m.qc }}">{{ m.qtd }}</td>
+              <td style="padding:12px 24px 12px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-2)">{{ m.usuario }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</sc-if>
+
+<!-- ITENS -->
+<sc-if value="{{ s.itens }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Itens</h1>
+      <span style="font-size:14px;color:var(--ink-2)">Saldo em tempo real de cada pastilha, com status e posição no almoxarifado.</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-download" style="font-size:16px"></i>Exportar CSV</button>
+      <button style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-plus" style="font-size:16px"></i>Novo item</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <label style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px;max-width:420px;height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink-3)">
+      <i class="icon-search" style="font-size:16px"></i>
+      <input value="{{ busca }}" onInput="{{ setBusca }}" placeholder="Código, ISO, classe ou posição" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:14px">
+    </label>
+    <div style="display:flex;padding:3px;gap:2px;background:var(--surface-3);border-radius:9px">
+      <sc-for list="{{ filtros }}" as="f" hint-placeholder-count="4">
+        <button onClick="{{ f.ir }}" style="height:34px;padding:0 12px;border:0;border-radius:7px;background:{{ f.bg }};box-shadow:{{ f.sh }};color:{{ f.fg }};font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">{{ f.rotulo }}<span style="font-size:12px;color:var(--ink-3)">{{ f.n }}</span></button>
+      </sc-for>
+    </div>
+    <select style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px">
+      <option>Todas as aplicações</option><option>Torneamento</option><option>Fresamento</option><option>Furação</option><option>Rosqueamento</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent)">Mostrar inativos</label>
+  </div>
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+    <table style="width:100%;min-width:680px;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">Código</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Pastilha</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saldo</th>
+        <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Mínimo</th>
+        <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Reposição</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Status</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Posição</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ itensFiltrados }}" as="it" hint-placeholder-count="10">
+          <tr onClick="{{ it.abrir }}" style="cursor:pointer" style-hover="background:var(--surface-2)">
+            <td style="padding:16px 24px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent-ink);white-space:nowrap">{{ it.id }}</td>
+            <td style="padding:16px;border-bottom:1px solid var(--line)"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:500;white-space:nowrap">{{ it.iso }} · {{ it.classe }}</span><span style="font-size:13px;color:var(--ink-3)">{{ it.fab }} · {{ it.apl }}</span></div></td>
+            <td style="padding:16px;border-bottom:1px solid var(--line)">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:34px;text-align:right;font-size:16px;font-weight:600">{{ it.saldo }}</span>
+                <div style="position:relative;width:120px;height:6px;border-radius:3px;background:var(--surface-3)">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:{{ it.gFill }};background:{{ it.cor }};border-radius:3px"></div>
+                  <div style="position:absolute;top:-3px;bottom:-3px;left:{{ it.gMin }};width:2px;background:var(--ink-3);border-radius:1px"></div>
+                  <div style="position:absolute;top:-3px;bottom:-3px;left:{{ it.gRep }};width:2px;background:var(--line-2);border-radius:1px"></div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-2)">{{ it.min }}</td>
+            <td style="padding:16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-2)">{{ it.rep }}</td>
+            <td style="padding:16px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ it.sb }};color:{{ it.sf }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ it.st }}</span></td>
+            <td style="padding:16px 24px 16px 16px;border-bottom:1px solid var(--line)"><span style="font-family:'Geist Mono',monospace;font-size:12px;white-space:nowrap;padding:3px 7px;border:1px solid var(--line);border-radius:5px;color:var(--ink-2);background:var(--surface-2)">{{ it.pos }}</span></td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 24px;font-size:13px;color:var(--ink-3)">
+      <span>{{ contagemLista }}</span>
+      <span style="display:flex;align-items:center;gap:14px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:12px;background:var(--ink-3)"></span>mínimo</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:12px;background:var(--line-2)"></span>ponto de reposição</span></span>
+    </div>
+  </section>
+</sc-if>
+
+<!-- DETALHE DO ITEM -->
+<sc-if value="{{ s.item }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onClick="{{ irItens }}" style="align-self:flex-start;border:0;background:none;padding:0;color:var(--ink-3);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-arrow-left" style="font-size:14px"></i>Itens</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-family:'Geist Mono',monospace;font-size:14px;font-weight:500;color:var(--accent-ink);padding:4px 8px;border-radius:6px;background:var(--accent-soft)">{{ sel.id }}</span>
+        <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">{{ sel.iso }} · {{ sel.classe }}</h1>
+      </div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:16px;font-size:14px;color:var(--ink-2)">
+        <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ sel.sb }};color:{{ sel.sf }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ sel.st }}</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><i class="icon-map-pin" style="font-size:15px;color:var(--ink-3)"></i><span style="font-family:'Geist Mono',monospace;font-weight:500;color:var(--ink)">{{ sel.pos }}</span></span>
+        <span>{{ sel.fab }}</span><span>{{ sel.apl }}</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onClick="{{ irEtiquetas }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-qr-code" style="font-size:16px"></i>Etiqueta</button>
+      <button style="height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-pencil" style="font-size:16px"></i>Editar</button>
+      <button onClick="{{ irEntrada }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-arrow-down-to-line" style="font-size:16px"></i>Entrada</button>
+      <button onClick="{{ irSaida }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-arrow-up-from-line" style="font-size:16px"></i>Registrar saída</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ sel.emAlerta }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;background:{{ sel.sb }};color:{{ sel.sf }}">
+      <i class="icon-triangle-alert" style="font-size:20px"></i>
+      <span style="flex:1;font-size:14px">Alerta <strong>{{ sel.st }}</strong> aberto desde 27/09/2026 15:42. Sugestão de compra: <strong>{{ sel.sug }} unidades</strong> ({{ sel.cx }} caixas).</span>
+      <button onClick="{{ irSugestao }}" style="height:34px;padding:0 12px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;font-size:13px;font-weight:500;cursor:pointer">Ver sugestão</button>
+      <button style="height:34px;padding:0 12px;border-radius:8px;border:0;background:var(--surface);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">Marcar ciente</button>
+    </div>
+  </sc-if>
+
+  <div style="display:grid;grid-template-columns:{{ cols.item }};gap:24px">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:13px;color:var(--ink-3)">Saldo disponível</span>
+          <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:52px;font-weight:600;letter-spacing:-0.04em;line-height:1">{{ sel.saldo }}</span><span style="font-size:15px;color:var(--ink-3)">unidades · {{ sel.caixasSaldo }} caixas</span></span>
+        </div>
+        <span style="font-size:13px;color:var(--ink-2);text-align:right">Cobertura estimada<br><strong style="font-size:18px;color:var(--ink)">{{ sel.cobertura }}</strong></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;height:14px;border-radius:7px;background:var(--surface-3)">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:{{ sel.gFill }};background:{{ sel.cor }};border-radius:7px"></div>
+          <div style="position:absolute;top:-5px;bottom:-5px;left:{{ sel.gMin }};width:2px;background:var(--ink-2)"></div>
+          <div style="position:absolute;top:-5px;bottom:-5px;left:{{ sel.gRep }};width:2px;background:var(--ink-3)"></div>
+          <div style="position:absolute;top:-5px;bottom:-5px;left:{{ sel.gAlvo }};width:2px;background:var(--line-2)"></div>
+        </div>
+        <div style="position:relative;height:36px;font-size:12px;color:var(--ink-3)">
+          <span style="position:absolute;left:{{ sel.gMin }};transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><strong style="color:var(--ink);font-size:13px">{{ sel.min }}</strong>mínimo</span>
+          <span style="position:absolute;left:{{ sel.gRep }};transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><strong style="color:var(--ink);font-size:13px">{{ sel.rep }}</strong>reposição</span>
+          <span style="position:absolute;left:{{ sel.gAlvo }};transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><strong style="color:var(--ink);font-size:13px">{{ sel.alvo }}</strong>alvo</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:{{ cols.kpi }};border-top:1px solid var(--line);padding-top:20px;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-3)">Consumo médio (90 dias)</span><span style="font-size:16px;font-weight:600">{{ sel.cdTxt }} / dia</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-3)">Lead time preferencial</span><span style="font-size:16px;font-weight:600">7 dias</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-3)">Estoque máximo</span><span style="font-size:16px;font-weight:600">—</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-3)">Embalagem</span><span style="font-size:16px;font-weight:600">{{ sel.emb }} un. / caixa</span></div>
+      </div>
+    </section>
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:16px">
+      <h2 style="margin:0;font-size:16px;font-weight:600">Especificação</h2>
+      <dl style="margin:0;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">ISO</dt><dd style="margin:0;font-family:'Geist Mono',monospace;font-weight:500">{{ sel.iso }}</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">Classe</dt><dd style="margin:0;font-weight:500">{{ sel.classe }}</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">Cobertura</dt><dd style="margin:0;font-weight:500">{{ sel.cob }}</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">Aplicação</dt><dd style="margin:0;font-weight:500">{{ sel.apl }}</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">Fabricante</dt><dd style="margin:0;font-weight:500">{{ sel.fab }}</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0"><dt style="color:var(--ink-3)">Código interno</dt><dd style="margin:0;display:flex;align-items:center;gap:6px;font-family:'Geist Mono',monospace;font-weight:500"><i class="icon-lock" style="font-size:13px;color:var(--ink-3)"></i>{{ sel.id }}</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <h2 style="margin:0;font-size:16px;font-weight:600">Fornecedores</h2>
+        <span style="font-size:13px;color:var(--ink-3)">Do menor para o maior último preço. Sem compras aparecem no fim.</span>
+      </div>
+      <button style="height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px" style-hover="background:var(--surface-2)"><i class="icon-link" style="font-size:14px"></i>Vincular fornecedor</button>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 1fr 1fr 1fr 40px;padding:10px 24px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;font-weight:500;color:var(--ink-3)">
+      <span>Fornecedor</span><span style="text-align:right">Último preço</span><span style="text-align:right">Última compra</span><span style="text-align:right">Lead time</span><span></span>
+    </div>
+    <sc-for list="{{ fornecedores }}" as="f" hint-placeholder-count="3">
+      <div style="border-bottom:1px solid var(--line)">
+        <button onClick="{{ f.alternar }}" style="width:100%;display:grid;grid-template-columns:minmax(0,1.6fr) 1fr 1fr 1fr 40px;align-items:center;padding:16px 24px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;font-size:14px" style-hover="background:var(--surface-2)">
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:center;gap:8px;font-weight:500">{{ f.nome }}<sc-if value="{{ f.pref }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent-ink)">Preferencial</span></sc-if></span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">cód. {{ f.cod }}</span></span>
+          <span style="text-align:right;font-weight:600;font-size:15px;color:{{ f.precoCor }}">{{ f.preco }}</span>
+          <span style="text-align:right;color:var(--ink-2)">{{ f.data }}</span>
+          <span style="text-align:right;color:var(--ink-2)">{{ f.lt }} dias</span>
+          <i class="{{ f.chev }}" style="justify-self:end;font-size:16px;color:var(--ink-3)"></i>
+        </button>
+        <sc-if value="{{ f.aberto }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:0 24px 18px">
+            <table style="width:100%;border-collapse:collapse;background:var(--surface-2);border-radius:10px;overflow:hidden">
+              <thead><tr>
+                <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">Data</th>
+                <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">Preço unit.</th>
+                <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">Variação</th>
+                <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">Qtd.</th>
+                <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">NF</th>
+                <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 16px">Lançado por</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ f.hist }}" as="h" hint-placeholder-count="3">
+                  <tr>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line)">{{ h.data }}</td>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right;font-weight:500">{{ h.preco }}</td>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right;color:{{ h.vc }};font-weight:500">{{ h.var }}</td>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right">{{ h.qtd }}</td>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px">{{ h.nf }}</td>
+                    <td style="padding:10px 16px;border-top:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-2)">{{ h.user }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </section>
+</sc-if>
+
+<!-- REGISTRAR ENTRADA / SAÍDA -->
+<sc-if value="{{ s.registrar }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">{{ reg.titulo }}</h1>
+    <span style="font-size:14px;color:var(--ink-2)">{{ reg.desc }}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.reg }};gap:24px;align-items:start">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:28px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:500">Tipo</span>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
+          <sc-for list="{{ reg.tipos }}" as="t" hint-placeholder-count="2">
+            <button onClick="{{ t.ir }}" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:var(--ink);text-align:left;cursor:pointer;box-shadow:{{ t.ring }}">
+              <i class="{{ t.icone }}" style="font-size:18px;color:{{ t.ic }};margin-top:1px"></i>
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600">{{ t.rotulo }}</span><span style="font-size:13px;color:var(--ink-3)">{{ t.sub }}</span></span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:500">Item</span>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line-2);border-radius:10px">
+          <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent-ink);padding:3px 7px;border-radius:5px;background:var(--accent-soft)">{{ sel.id }}</span>
+          <span style="flex:1;display:flex;flex-direction:column"><span style="font-weight:500">{{ sel.iso }} · {{ sel.classe }}</span><span style="font-size:13px;color:var(--ink-3)">{{ sel.fab }} · posição {{ sel.pos }} · saldo {{ sel.saldo }}</span></span>
+          <button onClick="{{ irItens }}" style="border:0;background:none;color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer">Trocar</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:500">Quantidade <span style="color:var(--crit-ink)">*</span></span>
+          <div style="display:flex;gap:8px">
+            <input type="number" value="{{ qtd }}" onInput="{{ setQtd }}" min="1" style="flex:1;min-width:0;width:0;height:44px;padding:0 12px;border:1px solid {{ reg.qBorda }};border-radius:8px;background:var(--surface);color:var(--ink);font-size:16px;font-weight:600;outline:none">
+            <sc-if value="{{ reg.entrada }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;padding:3px;gap:2px;background:var(--surface-3);border-radius:9px">
+                <button onClick="{{ unCx }}" style="height:38px;padding:0 12px;border:0;border-radius:7px;background:{{ reg.cxBg }};color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">Caixas</button>
+                <button onClick="{{ unUn }}" style="height:38px;padding:0 12px;border:0;border-radius:7px;background:{{ reg.unBg }};color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">Unidades</button>
+              </div>
+            </sc-if>
+          </div>
+          <span style="font-size:13px;color:{{ reg.qDicaCor }}">{{ reg.qDica }}</span>
+        </div>
+        <sc-if value="{{ reg.compra }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">Preço unitário <span style="color:var(--crit-ink)">*</span></span>
+            <label style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface)"><span style="color:var(--ink-3)">R$</span><input value="38,90" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:15px"></label>
+            <span style="font-size:13px;color:var(--ink-3)">{{ precoDica }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ reg.consumo }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">Ordem de produção <span style="color:var(--crit-ink)">*</span></span>
+            <input value="2026-0457" style="height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:14px;outline:none">
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ reg.compra }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">Fornecedor <span style="color:var(--crit-ink)">*</span></span>
+            <select value="{{ fornSel }}" onChange="{{ setFornSel }}" style="height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px">
+              <sc-for list="{{ fornOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.t }}</option></sc-for>
+            </select>
+            <span style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:13px;color:var(--ink-3)">Vinculados ao item.</span>
+              <button onClick="{{ abrirNovoForn }}" style="border:0;background:none;padding:0;color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="icon-plus" style="font-size:14px"></i>Fornecedor não está na lista?</button>
+            </span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">Nota fiscal <span style="color:var(--crit-ink)">*</span></span>
+            <input value="12345" style="height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:14px;outline:none">
+          </div>
+        </div>
+        <sc-if value="{{ novoForn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid var(--accent);border-radius:12px;background:color-mix(in oklch, var(--accent-soft) 55%, var(--surface))">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:15px">Cadastrar fornecedor e vincular a {{ sel.id }}</span><span style="font-size:13px;color:var(--ink-2)">Fica salvo nos cadastros e já entra selecionado nesta entrada.</span></span>
+              <button onClick="{{ fecharNovoForn }}" title="Fechar" style="width:32px;height:32px;flex:none;border-radius:8px;border:0;background:transparent;color:var(--ink-3);cursor:pointer;display:grid;place-items:center"><i class="icon-x" style="font-size:16px"></i></button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Razão social<input value="{{ nf.razao }}" onInput="{{ nfRazao }}" placeholder="Ex.: Cortemax Ferramentas Ltda." style="height:42px;padding:0 12px;border:1px solid {{ nfv.razaoBd }};border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">CNPJ<input value="{{ nf.cnpj }}" onInput="{{ nfCnpj }}" placeholder="00.000.000/0000-00" style="height:42px;padding:0 12px;border:1px solid {{ nfv.cnpjBd }};border-radius:8px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:14px;outline:none"><span style="font-size:12px;font-weight:400;color:{{ nfv.cnpjCor }}">{{ nfv.cnpjMsg }}</span></label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Código do item no fornecedor<input value="{{ nf.cod }}" onInput="{{ nfCod }}" placeholder="Opcional" style="height:42px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:14px;outline:none"></label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Lead time<span style="display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface)"><input value="{{ nf.lt }}" onInput="{{ nfLt }}" placeholder="5" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:14px"><span style="font-size:13px;color:var(--ink-3)">dias</span></span></label>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+              <button onClick="{{ fecharNovoForn }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer">Cancelar</button>
+              <button onClick="{{ salvarNovoForn }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:{{ nfv.btnBg }};color:var(--on-accent);font-size:14px;font-weight:600;cursor:{{ nfv.btnCur }};display:flex;align-items:center;gap:8px"><i class="icon-link" style="font-size:15px"></i>Salvar e vincular</button>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+      <sc-if value="{{ reg.pedeDestino }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">Destino <span style="color:var(--crit-ink)">*</span></span>
+            <select style="height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"><option>Torno CNC 03 · máquina</option><option>Torno CNC 01 · máquina</option><option>Centro de usinagem 02 · máquina</option><option>Ferramentaria · setor</option></select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:500">{{ reg.colabRotulo }} <span style="color:var(--crit-ink)">*</span></span>
+            <select style="height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"><option>Carlos Pereira · Usinagem</option><option>Ana Ribeiro · Usinagem</option><option>Diego Martins · Ferramentaria</option></select>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ reg.pedeMotivo }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:500">Motivo <span style="color:var(--crit-ink)">*</span></span>
+          <textarea rows="2" placeholder="{{ reg.motivoPh }}" style="padding:10px 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;resize:vertical;outline:none"></textarea>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ reg.erro }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--crit-soft);color:var(--crit-ink);font-size:14px"><i class="icon-circle-alert" style="font-size:18px"></i>Saída recusada. Saldo disponível: <strong>{{ sel.saldo }}</strong>.</div>
+      </sc-if>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--line);padding-top:20px">
+        <button onClick="{{ voltarItem }}" style="height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer">Cancelar</button>
+        <button onClick="{{ confirmar }}" style="height:44px;padding:0 20px;border-radius:8px;border:0;background:{{ reg.btnBg }};color:var(--on-accent);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-check" style="font-size:16px"></i>{{ reg.btn }}</button>
+      </div>
+    </section>
+
+    <aside style="position:sticky;top:88px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:20px">
+      <h2 style="margin:0;font-size:15px;font-weight:600">Resultado</h2>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:10px;background:var(--surface-2)"><span style="font-size:12px;color:var(--ink-3)">Saldo atual</span><span style="font-size:28px;font-weight:600;letter-spacing:-0.03em">{{ sel.saldo }}</span></div>
+        <i class="icon-arrow-right" style="font-size:18px;color:var(--ink-3)"></i>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:10px;background:var(--surface-2)"><span style="font-size:12px;color:var(--ink-3)">Depois</span><span style="font-size:28px;font-weight:600;letter-spacing:-0.03em;color:{{ reg.depoisCor }}">{{ reg.depois }}</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+        <span style="color:var(--ink-2)">Status</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;background:{{ sel.sb }};color:{{ sel.sf }};font-size:12px;font-weight:600">{{ sel.st }}</span>
+          <i class="icon-arrow-right" style="font-size:14px;color:var(--ink-3)"></i>
+          <span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;background:{{ reg.stDep.sb }};color:{{ reg.stDep.sf }};font-size:12px;font-weight:600">{{ reg.stDep.t }}</span>
+        </span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-2)">
+        <span style="font-weight:500;color:var(--ink)">Fica registrado</span>
+        <span style="display:flex;gap:8px"><i class="icon-user" style="font-size:14px;color:var(--ink-3);margin-top:2px"></i>marina.costa</span>
+        <span style="display:flex;gap:8px"><i class="icon-clock" style="font-size:14px;color:var(--ink-3);margin-top:2px"></i>Data e hora do servidor (America/Sao_Paulo)</span>
+        <span style="display:flex;gap:8px"><i class="icon-monitor-smartphone" style="font-size:14px;color:var(--ink-3);margin-top:2px"></i>IP e dispositivo de origem</span>
+        <span style="display:flex;gap:8px"><i class="icon-undo-2" style="font-size:14px;color:var(--ink-3);margin-top:2px"></i>Depois de gravada, só pode ser estornada</span>
+      </div>
+    </aside>
+  </div>
+</sc-if>
+
+<!-- ALERTAS -->
+<sc-if value="{{ s.alertas }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Alertas</h1>
+      <span style="font-size:14px;color:var(--ink-2)">Um alerta por item. Sobe de nível se piorar e fecha sozinho quando o saldo volta a OK.</span>
+    </div>
+    <div style="display:flex;padding:3px;gap:2px;background:var(--surface-3);border-radius:9px">
+      <button onClick="{{ abaAbertos }}" style="height:34px;padding:0 14px;border:0;border-radius:7px;background:{{ abaAl.aBg }};box-shadow:{{ abaAl.aSh }};color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">Abertos · {{ totalAlertas }}</button>
+      <button onClick="{{ abaFechados }}" style="height:34px;padding:0 14px;border:0;border-radius:7px;background:{{ abaAl.fBg }};box-shadow:{{ abaAl.fSh }};color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">Fechados recentemente</button>
+    </div>
+  </div>
+  <sc-if value="{{ abaAl.abertos }}" hint-placeholder-val="{{ true }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <div style="display:grid;min-width:860px;grid-template-columns:100px minmax(0,1.4fr) 120px 130px 150px minmax(0,1.2fr);gap:16px;padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:12px;font-weight:500;color:var(--ink-3)">
+        <span>Nível</span><span>Item</span><span style="text-align:right">Saldo / mín.</span><span>Posição</span><span>Aberto em</span><span style="text-align:right">Ciente</span>
+      </div>
+      <sc-for list="{{ alertas }}" as="a" hint-placeholder-count="8">
+        <div style="display:grid;min-width:860px;grid-template-columns:100px minmax(0,1.4fr) 120px 130px 150px minmax(0,1.2fr);gap:16px;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line)">
+          <span style="justify-self:start;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ a.sb }};color:{{ a.sf }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ a.st }}</span>
+          <button onClick="{{ a.abrir }}" style="display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0;color:inherit;cursor:pointer;text-align:left;min-width:0"><span style="font-weight:500">{{ a.iso }} · {{ a.classe }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--accent-ink);white-space:nowrap">{{ a.id }}</span></button>
+          <span style="text-align:right"><strong style="font-size:16px">{{ a.saldo }}</strong> <span style="color:var(--ink-3)">/ {{ a.min }}</span></span>
+          <span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-2);white-space:nowrap">{{ a.pos }}</span>
+          <span style="font-size:13px;color:var(--ink-2)">{{ a.desde }}</span>
+          <span style="justify-self:end">
+            <sc-if value="{{ a.ciente }}" hint-placeholder-val="{{ false }}">
+              <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)"><i class="icon-circle-check" style="font-size:15px;color:var(--ok)"></i>{{ a.cienteTxt }}</span>
+            </sc-if>
+            <sc-if value="{{ a.naoCiente }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ a.marcar }}" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer" style-hover="background:var(--surface-2)">Marcar ciente</button>
+            </sc-if>
+          </span>
+        </div>
+      </sc-for>
+    </section>
+  </sc-if>
+  <sc-if value="{{ abaAl.fechados }}" hint-placeholder-val="{{ false }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">Item</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Último nível</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Aberto em</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Fechado em</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Fechado por</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ fechados }}" as="a" hint-placeholder-count="4">
+            <tr>
+              <td style="padding:14px 24px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px">{{ a.id }}</td>
+              <td style="padding:14px 16px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:6px;background:{{ a.sb }};color:{{ a.sf }};font-size:12px;font-weight:600">{{ a.st }}</span></td>
+              <td style="padding:14px 16px;border-bottom:1px solid var(--line);color:var(--ink-2)">{{ a.aberto }}</td>
+              <td style="padding:14px 16px;border-bottom:1px solid var(--line);color:var(--ink-2)">{{ a.fechado }}</td>
+              <td style="padding:14px 24px 14px 16px;border-bottom:1px solid var(--line);color:var(--ink-2)">{{ a.por }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </sc-if>
+</sc-if>
+
+<!-- SUGESTÃO DE COMPRA -->
+<sc-if value="{{ s.sugestao }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Sugestão de compra</h1>
+      <span style="font-size:14px;color:var(--ink-2)">Itens ativos em atenção, críticos ou zerados. O SICEI não emite pedidos: a decisão de comprar é do Gestor.</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-printer" style="font-size:16px"></i>Imprimir</button>
+      <button style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-download" style="font-size:16px"></i>Exportar CSV</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.tres }};gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--ink-3)">Itens a repor</span><span style="font-size:30px;font-weight:600;letter-spacing:-0.03em">{{ sugTot.itens }}</span></div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--ink-3)">Unidades sugeridas</span><span style="font-size:30px;font-weight:600;letter-spacing:-0.03em">{{ sugTot.un }} <span style="font-size:14px;font-weight:400;color:var(--ink-3)">{{ sugTot.cx }} caixas</span></span></div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--ink-3)">Parâmetros</span><span style="font-size:14px;color:var(--ink-2);line-height:1.6">Consumo médio dos últimos <strong style="color:var(--ink)">90 dias</strong>. Sem máximo: alvo = reposição + 30 dias de consumo.</span></div>
+  </div>
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+    <table style="width:100%;min-width:680px;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">Item</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Status</th>
+        <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saldo / reposição</th>
+        <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Consumo / dia</th>
+        <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Sugestão</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Preferencial</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Menor último preço</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ sugestoes }}" as="g" hint-placeholder-count="8">
+          <tr>
+            <td style="padding:16px 24px;border-bottom:1px solid var(--line)"><button onClick="{{ g.abrir }}" style="display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0;color:inherit;cursor:pointer;text-align:left"><span style="font-weight:500;white-space:nowrap">{{ g.iso }} · {{ g.classe }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--accent-ink);white-space:nowrap">{{ g.id }}</span></button></td>
+            <td style="padding:16px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ g.sb }};color:{{ g.sf }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ g.st }}</span></td>
+            <td style="padding:16px;border-bottom:1px solid var(--line);text-align:right"><strong>{{ g.saldo }}</strong> <span style="color:var(--ink-3)">/ {{ g.rep }}</span></td>
+            <td style="padding:16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-2)">{{ g.cdTxt }}</td>
+            <td style="padding:16px;border-bottom:1px solid var(--line);text-align:right"><span style="display:flex;flex-direction:column;align-items:flex-end"><strong style="font-size:16px">{{ g.sug }} un.</strong><span style="font-size:12px;color:var(--ink-3)">{{ g.cx }} caixas de {{ g.emb }}</span></span></td>
+            <td style="padding:16px;border-bottom:1px solid var(--line)"><span style="display:flex;flex-direction:column"><span style="font-weight:500">{{ g.pref }}</span><span style="font-size:12px;color:var(--ink-3)">{{ g.prefPreco }} · {{ g.prefLt }} dias</span></span></td>
+            <td style="padding:16px 24px 16px 16px;border-bottom:1px solid var(--line)"><span style="display:flex;flex-direction:column"><span style="font-weight:500">{{ g.menor }}</span><span style="font-size:12px;color:var(--ok-ink)">{{ g.menorPreco }} · {{ g.menorLt }} dias</span></span></td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </section>
+  <span style="font-size:13px;color:var(--ink-3)">Quantidades em unidades, arredondadas para cima em caixas fechadas. O SICEI não calcula valor de estoque em reais.</span>
+</sc-if>
+
+<!-- MOVIMENTAÇÕES -->
+<sc-if value="{{ s.movs }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Movimentações</h1>
+      <span style="font-size:14px;color:var(--ink-2)">Histórico completo e inalterável. 1.482 registros em setembro.</span>
+    </div>
+    <button style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-download" style="font-size:16px"></i>Exportar CSV</button>
+  </div>
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:{{ cols.filt }};gap:12px;align-items:end">
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Período<input value="01/09/2026 – 27/09/2026" style="height:38px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"></label>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Tipo<select style="height:38px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"><option>Todos</option><option>Compra</option><option>Consumo da produção</option><option>Devolução da produção</option><option>Perda ou quebra</option><option>Ajuste positivo</option><option>Ajuste negativo</option><option>Estorno</option></select></label>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Destino<select style="height:38px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"><option>Todos</option><option>Torno CNC 03</option><option>Centro de usinagem 02</option></select></label>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Item, OP ou colaborador<input placeholder="PT-0012, 2026-0457…" style="height:38px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"></label>
+    <button style="height:38px;padding:0 16px;border-radius:8px;border:0;background:var(--ink);color:var(--bg);font-size:14px;font-weight:500;cursor:pointer">Filtrar</button>
+  </section>
+  <div style="display:grid;grid-template-columns:{{ cols.movs }};gap:24px;align-items:start">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 20px;background:var(--surface-2);border-bottom:1px solid var(--line)">Quando</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Item</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Tipo</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Qtd.</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saldo</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 20px 12px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Destino · OP · colaborador</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ movs }}" as="m" hint-placeholder-count="10">
+            <tr onClick="{{ m.sel }}" style="cursor:pointer;background:{{ m.bg }};color:{{ m.cor }}" style-hover="background:var(--surface-2)">
+              <td style="padding:14px 20px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13px">{{ m.quando }}</td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px">{{ m.item }}</td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><i class="{{ m.icone }}" style="font-size:14px;color:{{ m.ic }}"></i>{{ m.tipo }}</span><sc-if value="{{ m.estornada }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--surface-3);color:var(--ink-2)">estornada</span></sc-if></td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line);text-align:right;font-weight:600;color:{{ m.qc }}">{{ m.qtd }}</td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-size:13px;color:var(--ink-2)">{{ m.saldo }}</td>
+              <td style="padding:14px 20px 14px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)">{{ m.ctx }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+    <aside style="position:sticky;top:88px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 style="margin:0;font-size:15px;font-weight:600">Detalhe</h2>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">{{ movSel.uuid }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><i class="{{ movSel.icone }}" style="font-size:18px;color:{{ movSel.ic }}"></i><span style="font-weight:600;font-size:16px">{{ movSel.tipo }}</span><span style="margin-left:auto;font-size:20px;font-weight:600;color:{{ movSel.qc }}">{{ movSel.qtd }}</span></div>
+      <dl style="margin:0;display:flex;flex-direction:column;font-size:13px">
+        <sc-for list="{{ movSel.campos }}" as="c" hint-placeholder-count="8">
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)"><dt style="color:var(--ink-3)">{{ c.k }}</dt><dd style="margin:0;text-align:right;font-weight:500">{{ c.v }}</dd></div>
+        </sc-for>
+      </dl>
+      <sc-if value="{{ movSel.podeEstornar }}" hint-placeholder-val="{{ true }}">
+        <button style="height:40px;border-radius:8px;border:1px solid var(--crit);background:transparent;color:var(--crit-ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-undo-2" style="font-size:16px"></i>Estornar movimentação</button>
+        <span style="font-size:12px;color:var(--ink-3)">Exige justificativa. Cada movimentação só pode ser estornada uma vez.</span>
+      </sc-if>
+      <sc-if value="{{ movSel.bloqueada }}" hint-placeholder-val="{{ false }}">
+        <span style="display:flex;gap:8px;padding:10px 12px;border-radius:8px;background:var(--surface-2);font-size:13px;color:var(--ink-2)"><i class="icon-lock" style="font-size:14px;margin-top:2px"></i>{{ movSel.motivoBloqueio }}</span>
+      </sc-if>
+    </aside>
+  </div>
+</sc-if>
+
+<!-- AUDITORIA -->
+<sc-if value="{{ s.auditoria }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Log de auditoria</h1>
+    <span style="font-size:14px;color:var(--ink-2)">Somente inclusão, encadeado por hash. Nenhum perfil pode alterar ou apagar registros. 18.402 registros.</span>
+  </div>
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="width:44px;height:44px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center"><i class="icon-shield-check" style="font-size:22px"></i></div>
+      <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:2px">
+        <span style="font-weight:600;font-size:15px">Verificação de integridade e conferência de saldo</span>
+        <span style="font-size:13px;color:var(--ink-2)">Recalcula todos os hashes, confere cada movimentação com o log e cada saldo com a soma das movimentações.</span>
+      </div>
+      <button onClick="{{ verificar }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-refresh-cw" style="font-size:16px"></i>Verificar agora</button>
+    </div>
+    <sc-if value="{{ verificado }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:{{ cols.tres }};gap:12px">
+        <div style="display:flex;gap:10px;padding:14px;border-radius:10px;background:var(--ok-soft);color:var(--ok-ink);font-size:14px"><i class="icon-circle-check" style="font-size:18px"></i><span><strong>Cadeia íntegra.</strong> 18.402 registros conferidos.</span></div>
+        <div style="display:flex;gap:10px;padding:14px;border-radius:10px;background:var(--ok-soft);color:var(--ok-ink);font-size:14px"><i class="icon-circle-check" style="font-size:18px"></i><span>Todas as movimentações batem com o log.</span></div>
+        <div style="display:flex;gap:10px;padding:14px;border-radius:10px;background:var(--ok-soft);color:var(--ok-ink);font-size:14px"><i class="icon-circle-check" style="font-size:18px"></i><span>Nenhuma divergência de saldo nos 58 itens.</span></div>
+      </div>
+      <span style="font-size:12px;color:var(--ink-3)">Conferência registrada no log às 15:44 por marina.costa.</span>
+    </sc-if>
+  </section>
+  <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+    <div style="display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+      <input value="01/09/2026 – 27/09/2026" style="height:36px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;width:200px">
+      <input placeholder="Ação: ESTORNO, LOGIN…" style="height:36px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;width:200px">
+      <input placeholder="Usuário" style="height:36px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;width:160px">
+      <button style="height:36px;padding:0 14px;border-radius:8px;border:0;background:var(--ink);color:var(--bg);font-size:13px;font-weight:500;cursor:pointer">Filtrar</button>
+    </div>
+    <table style="width:100%;min-width:680px;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 20px;background:var(--surface-2);border-bottom:1px solid var(--line)">#</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Quando</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Ação</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Usuário</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Antes → depois</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Origem</th>
+        <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 20px 12px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Hash</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ auditoria }}" as="l" hint-placeholder-count="8">
+          <tr style="vertical-align:top">
+            <td style="padding:14px 20px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">{{ l.seq }}</td>
+            <td style="padding:14px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13px">{{ l.quando }}</td>
+            <td style="padding:14px 12px;border-bottom:1px solid var(--line)"><span style="display:flex;flex-direction:column;gap:2px"><span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;color:{{ l.cor }}">{{ l.acao }}</span><span style="font-size:12px;color:var(--ink-3)">{{ l.ent }}</span></span></td>
+            <td style="padding:14px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px">{{ l.user }}</td>
+            <td style="padding:14px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px"><span style="color:var(--crit-ink);text-decoration:line-through;text-decoration-color:color-mix(in oklch, var(--crit) 50%, transparent)">{{ l.antes }}</span> <span style="color:var(--ink-3)">→</span> <span style="color:var(--ok-ink)">{{ l.depois }}</span></td>
+            <td style="padding:14px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)">{{ l.origem }}</td>
+            <td style="padding:14px 20px 14px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">{{ l.hash }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </section>
+</sc-if>
+
+<!-- USUÁRIOS -->
+<sc-if value="{{ s.usuarios }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Usuários</h1>
+    <span style="font-size:14px;color:var(--ink-2)">Contas geridas só pela empresa. Login e senha gerados pelo sistema; nenhum e-mail.</span>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.users }};gap:24px;align-items:start">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:16px">
+      <h2 style="margin:0;font-size:16px;font-weight:600">Novo usuário</h2>
+      <sc-if value="{{ semCred }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Nome<input value="{{ nNome }}" onInput="{{ setNome }}" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Sobrenome<input value="{{ nSob }}" onInput="{{ setSob }}" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Setor<input value="Almoxarifado" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Perfil
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <sc-for list="{{ perfis }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.ir }}" style="height:38px;border-radius:8px;border:1px solid {{ p.bd }};background:{{ p.bg }};color:{{ p.fg }};font-size:13px;font-weight:500;cursor:pointer">{{ p.rotulo }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:10px;background:var(--surface-2)">
+          <span style="font-size:12px;color:var(--ink-3)">Login que será gerado</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:17px;font-weight:600">{{ loginGerado }}</span>
+          <span style="font-size:12px;color:var(--ink-3)">{{ loginNota }}</span>
+        </div>
+        <button onClick="{{ gerar }}" style="height:44px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-user-plus" style="font-size:16px"></i>Criar usuário</button>
+      </sc-if>
+      <sc-if value="{{ temCred }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:12px;background:var(--accent-soft)">
+          <span style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--accent-ink)"><i class="icon-circle-check" style="font-size:18px"></i>Usuário criado</span>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-2)">Login</span><span style="font-family:'Geist Mono',monospace;font-size:18px;font-weight:600">{{ cred.login }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:var(--ink-2)">Senha provisória</span><span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:600;letter-spacing:.08em">{{ cred.senha }}</span><button style="height:30px;padding:0 10px;border-radius:6px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="icon-copy" style="font-size:13px"></i>Copiar</button></span></div>
+          <span style="display:flex;gap:8px;font-size:13px;color:var(--ink-2)"><i class="icon-eye-off" style="font-size:14px;margin-top:2px"></i>A senha aparece só agora. Repasse ao funcionário: ele cria a própria senha no primeiro acesso.</span>
+        </div>
+        <button onClick="{{ fecharCred }}" style="height:44px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer">Já repassei, concluir</button>
+      </sc-if>
+    </section>
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">Nome</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Login</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Perfil</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Situação</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)">Ações</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ usuarios }}" as="u" hint-placeholder-count="7">
+            <tr style="opacity:{{ u.op }}">
+              <td style="padding:14px 24px;border-bottom:1px solid var(--line)"><span style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);color:var(--ink-2);display:grid;place-items:center;font-size:12px;font-weight:600">{{ u.ini }}</span><span style="display:flex;flex-direction:column"><span style="font-weight:500">{{ u.nome }}</span><span style="font-size:12px;color:var(--ink-3)">{{ u.setor }}</span></span></span></td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px">{{ u.login }}</td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line)">{{ u.perfil }}</td>
+              <td style="padding:14px 12px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ u.sb }};color:{{ u.sf }};font-size:12px;font-weight:600;white-space:nowrap">{{ u.sit }}</span></td>
+              <td style="padding:14px 24px 14px 12px;border-bottom:1px solid var(--line);text-align:right"><span style="display:inline-flex;gap:6px">
+                <sc-for list="{{ u.acoes }}" as="ac" hint-placeholder-count="2"><button style="height:30px;padding:0 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:{{ ac.cor }};font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface-2)">{{ ac.t }}</button></sc-for>
+              </span></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</sc-if>
+
+<!-- ETIQUETAS -->
+<sc-if value="{{ s.etiquetas }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Etiquetas QR</h1>
+      <span style="font-size:14px;color:var(--ink-2)">Uma etiqueta por posição ocupada. O QR aponta para a posição: ler com a câmera abre o item.</span>
+    </div>
+    <button style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-printer" style="font-size:16px"></i>Imprimir {{ etqN }} etiquetas</button>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.etq }};gap:24px;align-items:start">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)">
+        <span style="font-weight:600">Posições ocupadas</span>
+        <button onClick="{{ etqTodas }}" style="border:0;background:none;color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer">{{ etqTodasTxt }}</button>
+      </div>
+      <sc-for list="{{ posicoes }}" as="p" hint-placeholder-count="12">
+        <label style="display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line);cursor:pointer">
+          <input type="checkbox" checked="{{ p.on }}" onChange="{{ p.alt }}" style="width:16px;height:16px;accent-color:var(--accent)">
+          <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;width:100px">{{ p.pos }}</span>
+          <span style="font-size:13px;color:var(--ink-2)">{{ p.id }}</span>
+        </label>
+      </sc-for>
+    </section>
+    <section style="background:var(--surface-3);border:1px solid var(--line);border-radius:14px;padding:32px;display:flex;justify-content:center">
+      <div style="width:100%;max-width:620px;aspect-ratio:210/297;background:#fff;color:#111;box-shadow:var(--pop);padding:5%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:min-content;gap:10px;align-content:start">
+        <sc-for list="{{ etiquetas }}" as="e" hint-placeholder-count="9">
+          <div style="border:1px dashed #c9ced6;border-radius:4px;padding:10px;display:flex;gap:8px;align-items:center">
+            <div role="img" aria-label="QR {{ e.pos }}" style="width:56px;height:56px;flex:none;background:url({{ e.qr }}) center/contain no-repeat"></div>
+            <div style="display:flex;flex-direction:column;min-width:0;gap:1px">
+              <span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:600">{{ e.pos }}</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:10px">{{ e.id }}</span>
+              <span style="font-size:9px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.desc }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+</sc-if>
+
+<!-- RELATÓRIOS -->
+<sc-if value="{{ s.relatorios }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Relatórios</h1>
+      <span style="font-size:14px;color:var(--ink-2)">{{ rel.desc }}</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onClick="{{ exportar }}" style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--surface-2)"><i class="icon-printer" style="font-size:16px"></i>Imprimir / PDF</button>
+      <button onClick="{{ exportar }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-download" style="font-size:16px"></i>Exportar CSV</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:4px;border-bottom:1px solid var(--line)">
+    <sc-for list="{{ rel.abas }}" as="a" hint-placeholder-count="3">
+      <button onClick="{{ a.ir }}" style="height:42px;padding:0 14px;border:0;border-bottom:2px solid {{ a.bd }};margin-bottom:-1px;background:transparent;color:{{ a.fg }};font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="{{ a.icone }}" style="font-size:16px"></i>{{ a.rotulo }}</button>
+    </sc-for>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px">
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">De<input value="01/09/2026" style="height:40px;width:150px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"></label>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Até<input value="27/09/2026" style="height:40px;width:150px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px"></label>
+    <sc-if value="{{ rel.consumo }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)">Agrupar por
+        <div style="display:flex;padding:3px;gap:2px;background:var(--surface-3);border-radius:9px">
+          <sc-for list="{{ rel.grupos }}" as="g" hint-placeholder-count="3">
+            <button onClick="{{ g.ir }}" style="height:34px;padding:0 12px;border:0;border-radius:7px;background:{{ g.bg }};box-shadow:{{ g.sh }};color:{{ g.fg }};font-size:13px;font-weight:500;cursor:pointer">{{ g.rotulo }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <button style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--ink);color:var(--bg);font-size:14px;font-weight:500;cursor:pointer">Gerar</button>
+  </div>
+  <sc-if value="{{ rel.consumo }}" hint-placeholder-val="{{ true }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">{{ rel.col }}</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line);width:40%">Participação</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Consumido</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Média diária</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ rel.linhas }}" as="l" hint-placeholder-count="6">
+            <tr>
+              <td style="padding:14px 24px;border-bottom:1px solid var(--line)"><span style="display:flex;flex-direction:column"><span style="font-weight:500;white-space:nowrap">{{ l.nome }}</span><span style="font-size:12px;color:var(--ink-3);white-space:nowrap">{{ l.sub }}</span></span></td>
+              <td style="padding:14px 16px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:var(--surface-3);overflow:hidden"><div style="height:100%;width:{{ l.w }};background:var(--accent);border-radius:4px"></div></div><span style="width:44px;text-align:right;font-size:12px;color:var(--ink-3)">{{ l.pct }}</span></div></td>
+              <td style="padding:14px 16px;border-bottom:1px solid var(--line);text-align:right;font-weight:600">{{ l.total }} un.</td>
+              <td style="padding:14px 24px 14px 16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-2)">{{ l.media }} / dia</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:space-between;padding:14px 24px;font-size:13px;color:var(--ink-2)"><span>Saídas do tipo consumo da produção, sem estornos. 27 dias no período.</span><strong style="color:var(--ink)">{{ rel.total }}</strong></div>
+    </section>
+  </sc-if>
+  <sc-if value="{{ rel.movimentacao }}" hint-placeholder-val="{{ false }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+      <table style="width:100%;min-width:680px;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px;background:var(--surface-2);border-bottom:1px solid var(--line)">Item</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saldo inicial</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Entradas</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saídas</th>
+          <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Saldo final</th>
+          <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 24px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Confere com o saldo atual</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ relMov }}" as="r" hint-placeholder-count="12">
+            <tr>
+              <td style="padding:13px 24px;border-bottom:1px solid var(--line)"><span style="display:flex;gap:10px;align-items:baseline"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:var(--accent-ink);white-space:nowrap">{{ r.id }}</span><span style="color:var(--ink-2);white-space:nowrap">{{ r.iso }} · {{ r.classe }}</span></span></td>
+              <td style="padding:13px 16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-2)">{{ r.ini }}</td>
+              <td style="padding:13px 16px;border-bottom:1px solid var(--line);text-align:right;color:var(--ok-ink);font-weight:500">+{{ r.ent }}</td>
+              <td style="padding:13px 16px;border-bottom:1px solid var(--line);text-align:right;font-weight:500">−{{ r.sai }}</td>
+              <td style="padding:13px 16px;border-bottom:1px solid var(--line);text-align:right;font-weight:600">{{ r.saldo }}</td>
+              <td style="padding:13px 24px 13px 16px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ok-ink)"><i class="icon-circle-check" style="font-size:15px"></i>Sim</span></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </sc-if>
+  <span style="font-size:13px;color:var(--ink-3)">Quantidades em unidades. O SICEI não calcula valor de estoque em reais.</span>
+</sc-if>
+
+<!-- CADASTROS -->
+<sc-if value="{{ s.cadastros }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Cadastros</h1>
+      <span style="font-size:14px;color:var(--ink-2)">{{ cad.desc }}</span>
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line)">
+    <sc-for list="{{ cadAbas }}" as="a" hint-placeholder-count="5">
+      <button onClick="{{ a.ir }}" style="flex:none;height:42px;padding:0 14px;border:0;border-bottom:2px solid {{ a.bd }};margin-bottom:-1px;background:transparent;color:{{ a.fg }};font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap"><i class="{{ a.icone }}" style="font-size:16px"></i>{{ a.rotulo }}<span style="font-size:12px;color:var(--ink-3)">{{ a.n }}</span></button>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.cad }};gap:24px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+      <sc-if value="{{ cad.mapa }}" hint-placeholder-val="{{ false }}">
+        <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <h2 style="margin:0;font-size:16px;font-weight:600">Mapa do almoxarifado</h2>
+            <span style="display:flex;gap:14px;font-size:12px;color:var(--ink-3)"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--accent-soft);border:1px solid var(--accent)"></span>ocupada</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;border:1px dashed var(--line-2)"></span>livre</span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+            <sc-for list="{{ mapa }}" as="ar" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)">
+                <span style="display:flex;justify-content:space-between;font-size:13px"><strong style="font-family:'Geist Mono',monospace">{{ ar.nome }}</strong><span style="color:var(--ink-3)">{{ ar.ocup }}</span></span>
+                <sc-for list="{{ ar.gavetas }}" as="gv" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:28px repeat(6,minmax(0,1fr));gap:4px;align-items:center">
+                    <span style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--ink-3)">{{ gv.nome }}</span>
+                    <sc-for list="{{ gv.comps }}" as="c" hint-placeholder-count="6">
+                      <button onClick="{{ c.ir }}" title="{{ c.tip }}" style="height:26px;border-radius:4px;border:1px {{ c.bs }} {{ c.bd }};background:{{ c.bg }};color:var(--accent-ink);font-family:'Geist Mono',monospace;font-size:9px;cursor:{{ c.cur }};padding:0">{{ c.txt }}</button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+      <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto">
+        <table style="width:100%;min-width:640px;border-collapse:collapse">
+          <thead><tr>
+            <sc-for list="{{ cad.cols }}" as="h" hint-placeholder-count="4">
+              <th style="text-align:{{ h.al }};font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap">{{ h.t }}</th>
+            </sc-for>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Situação</th>
+            <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:12px 20px 12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)">Ações</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ cad.rows }}" as="r" hint-placeholder-count="6">
+              <tr style="opacity:{{ r.op }}">
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
+                  <td style="padding:14px 16px;border-bottom:1px solid var(--line);text-align:{{ c.al }};font-family:{{ c.ff }};font-size:{{ c.fs }};color:{{ c.fg }};font-weight:{{ c.fw }};white-space:nowrap">{{ c.v }}</td>
+                </sc-for>
+                <td style="padding:14px 16px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:6px;background:{{ r.sb }};color:{{ r.sf }};font-size:12px;font-weight:600">{{ r.sit }}</span></td>
+                <td style="padding:14px 20px 14px 16px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap">
+                  <span style="display:inline-flex;gap:6px">
+                    <button style="height:30px;padding:0 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12px;font-weight:500;cursor:pointer" style-hover="background:var(--surface-2)">Editar</button>
+                    <button onClick="{{ r.alt }}" style="height:30px;padding:0 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:{{ r.acCor }};font-size:12px;font-weight:500;cursor:pointer" style-hover="background:var(--surface-2)">{{ r.ac }}</button>
+                  </span>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </section>
+    </div>
+    <aside style="position:sticky;top:88px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:14px">
+      <h2 style="margin:0;font-size:16px;font-weight:600">{{ cad.novo }}</h2>
+      <sc-for list="{{ cad.campos }}" as="f" hint-placeholder-count="3">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">
+          <span>{{ f.t }} <span style="color:var(--crit-ink)">{{ f.req }}</span></span>
+          <input placeholder="{{ f.ph }}" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;outline:none;font-family:{{ f.ff }}" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)">
+          <span style="font-size:12px;font-weight:400;color:var(--ink-3)">{{ f.ajuda }}</span>
+        </label>
+      </sc-for>
+      <button onClick="{{ salvarCad }}" style="height:42px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:var(--accent-hover)"><i class="icon-plus" style="font-size:16px"></i>{{ cad.btn }}</button>
+      <span style="display:flex;gap:8px;font-size:12px;color:var(--ink-3);line-height:1.5"><i class="icon-info" style="font-size:14px;margin-top:1px"></i>Cadastro que já aparece em alguma movimentação não é excluído, só inativado.</span>
+    </aside>
+  </div>
+</sc-if>
+
+<!-- PARÂMETROS -->
+<sc-if value="{{ s.parametros }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Parâmetros do sistema</h1>
+    <span style="font-size:14px;color:var(--ink-2)">Valem para todos os itens e usuários. Toda mudança vai para o log de auditoria.</span>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.reg }};gap:24px;align-items:start">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column">
+      <sc-for list="{{ params }}" as="p" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:24px;align-items:center;padding:24px 28px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;gap:14px">
+            <div style="width:40px;height:40px;flex:none;border-radius:10px;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center"><i class="{{ p.icone }}" style="font-size:19px"></i></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:600;font-size:15px">{{ p.t }}</span><span style="font-size:13px;color:var(--ink-2);line-height:1.5">{{ p.desc }}</span></div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface)">
+            <input value="{{ p.v }}" onInput="{{ p.set }}" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:15px;font-weight:500;font-family:{{ p.ff }}">
+            <span style="font-size:13px;color:var(--ink-3)">{{ p.un }}</span>
+          </label>
+        </div>
+      </sc-for>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 28px;flex-wrap:wrap">
+        <span style="font-size:13px;color:{{ paramInfo.cor }}">{{ paramInfo.t }}</span>
+        <button onClick="{{ salvarParams }}" style="height:42px;padding:0 18px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--accent-hover)">Salvar parâmetros</button>
+      </div>
+    </section>
+    <aside style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:14px">
+      <h2 style="margin:0;font-size:15px;font-weight:600">Últimas alterações</h2>
+      <sc-for list="{{ paramHist }}" as="h" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:4px;padding-bottom:12px;border-bottom:1px solid var(--line)">
+          <span style="font-size:13px;font-weight:500">{{ h.t }}</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:12px"><span style="color:var(--crit-ink);text-decoration:line-through">{{ h.a }}</span> → <span style="color:var(--ok-ink)">{{ h.b }}</span></span>
+          <span style="font-size:12px;color:var(--ink-3)">{{ h.quem }}</span>
+        </div>
+      </sc-for>
+    </aside>
+  </div>
+</sc-if>
+
+<!-- IMPORTAÇÃO -->
+<sc-if value="{{ s.importacao }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Importação da planilha</h1>
+    <span style="font-size:14px;color:var(--ink-2)">Carga inicial de itens e saldos. O saldo entra como ajuste “saldo inicial da implantação”. Nada é gravado antes da prévia.</span>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ cols.tres }};gap:12px">
+    <sc-for list="{{ imp.passos }}" as="p" hint-placeholder-count="3">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1px solid {{ p.bd }};background:{{ p.bg }}">
+        <span style="width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;background:{{ p.nb }};color:{{ p.nf }}">{{ p.n }}</span>
+        <span style="display:flex;flex-direction:column"><span style="font-weight:600;font-size:14px">{{ p.t }}</span><span style="font-size:12px;color:var(--ink-3)">{{ p.sub }}</span></span>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{ imp.vazio }}" hint-placeholder-val="{{ true }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 18px;border-radius:10px;background:var(--surface-2)">
+        <span style="display:flex;gap:12px;align-items:center"><i class="icon-file-spreadsheet" style="font-size:22px;color:var(--ok)"></i><span style="display:flex;flex-direction:column"><span style="font-weight:500">modelo-importacao-sicei.csv</span><span style="font-size:13px;color:var(--ink-3)">Separador ponto e vírgula. O fornecedor precisa estar cadastrado; o fabricante é criado se não existir.</span></span></span>
+        <button style="height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-download" style="font-size:14px"></i>Baixar modelo</button>
+      </div>
+      <button onClick="{{ impEnviar }}" style="min-height:220px;border:2px dashed var(--line-2);border-radius:14px;background:transparent;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px" style-hover="border-color:var(--accent);background:var(--accent-soft)">
+        <i class="icon-upload" style="font-size:28px;color:var(--accent)"></i>
+        <span style="font-size:15px;font-weight:600">Arraste o CSV aqui ou clique para escolher</span>
+        <span style="font-size:13px;color:var(--ink-3)">Só .csv · a prévia aparece antes de gravar qualquer coisa</span>
+      </button>
+    </section>
+  </sc-if>
+  <sc-if value="{{ imp.previa }}" hint-placeholder-val="{{ false }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 24px;border-bottom:1px solid var(--line)">
+        <span style="display:flex;gap:12px;align-items:center"><i class="icon-file-spreadsheet" style="font-size:22px;color:var(--ok)"></i><span style="display:flex;flex-direction:column"><span style="font-weight:500">{{ imp.arquivo }}</span><span style="font-size:13px;color:var(--ink-2)">{{ imp.total }} linhas: <strong style="color:var(--ok-ink)">{{ imp.validas }} válidas</strong>, <strong style="color:{{ imp.errCor }}">{{ imp.nErros }} com erro</strong></span></span></span>
+        <span style="display:flex;gap:8px">
+          <button onClick="{{ impCorrigir }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-refresh-cw" style="font-size:15px"></i>{{ imp.reenviar }}</button>
+          <button onClick="{{ impGravar }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:{{ imp.btnBg }};color:var(--on-accent);font-size:14px;font-weight:600;cursor:{{ imp.btnCur }}">Importar {{ imp.validas }} itens</button>
+        </span>
+      </div>
+      <sc-if value="{{ imp.temErros }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;flex-direction:column;gap:6px;margin:16px 24px 0;padding:14px 16px;border-radius:10px;background:var(--crit-soft);color:var(--crit-ink);font-size:14px">
+          <strong>Corrija as linhas abaixo e envie de novo. Enquanto houver erro, nada é gravado.</strong>
+          <sc-for list="{{ imp.erros }}" as="e" hint-placeholder-count="2"><span>Linha {{ e.l }}: {{ e.t }}</span></sc-for>
+        </div>
+      </sc-if>
+      <div style="overflow-x:auto;padding:16px 0 0">
+        <table style="width:100%;min-width:760px;border-collapse:collapse">
+          <thead><tr>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 24px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Linha</th>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Código</th>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">ISO · classe</th>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Fornecedor</th>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Posição</th>
+            <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Mínimo</th>
+            <th style="text-align:right;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Saldo inicial</th>
+            <th style="text-align:left;font-size:12px;font-weight:500;color:var(--ink-3);padding:10px 24px 10px 12px;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">Resultado</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ imp.linhas }}" as="l" hint-placeholder-count="8">
+              <tr style="background:{{ l.bg }}">
+                <td style="padding:11px 24px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">{{ l.n }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:13px">{{ l.id }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap">{{ l.iso }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);color:var(--ink-2)">{{ l.forn }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);font-family:'Geist Mono',monospace;font-size:12px">{{ l.pos }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);text-align:right">{{ l.min }}</td>
+                <td style="padding:11px 12px;border-bottom:1px solid var(--line);text-align:right;font-weight:600">{{ l.saldo }}</td>
+                <td style="padding:11px 24px 11px 12px;border-bottom:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:{{ l.cor }};white-space:nowrap"><i class="{{ l.icone }}" style="font-size:15px"></i>{{ l.res }}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:14px 24px;font-size:13px;color:var(--ink-3)">Mostrando 8 de {{ imp.total }} linhas. A gravação é tudo ou nada: se uma linha falhar, nenhuma é gravada.</div>
+    </section>
+  </sc-if>
+  <sc-if value="{{ imp.ok }}" hint-placeholder-val="{{ false }}">
+    <section style="background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--ok-soft);color:var(--ok-ink);display:grid;place-items:center"><i class="icon-check" style="font-size:28px"></i></div>
+      <span style="font-size:20px;font-weight:600">42 itens importados</span>
+      <span style="max-width:520px;color:var(--ink-2);line-height:1.55">Cada saldo virou um ajuste positivo com a justificativa “saldo inicial da implantação”. A importação ficou registrada no log de auditoria.</span>
+      <span style="display:flex;gap:8px;margin-top:6px">
+        <button onClick="{{ impReiniciar }}" style="height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer">Nova importação</button>
+        <button onClick="{{ irItens }}" style="height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:600;cursor:pointer">Ver itens</button>
+      </span>
+    </section>
+  </sc-if>
+</sc-if>
+
+  </main>
+  <footer style="border-top:1px solid var(--line);padding:16px 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--ink-3)">
+    <span>SICEI © 2026 Benevides Soluções Industriais. Todos os direitos reservados.</span>
+    <span>Licenciado para DDA Metalúrgica · <a href="mailto:comercial@sicei.exemplo.com.br">comercial@sicei.exemplo.com.br</a></span>
+  </footer>
+</div>
+</div>
+</sc-if>
+
+<!-- LOGIN / TROCA DE SENHA -->
+<sc-if value="{{ acesso }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:grid;grid-template-columns:{{ cols.login }}">
+  <div style="display:flex;flex-direction:column;padding:40px 56px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="assets/sicei-icon.png" alt="SICEI" style="width:32px;height:32px;border-radius:8px;display:block;flex:none">
+      <span role="img" aria-label="SICEI" style="display:block;height:15px;width:54px;background:url({{ wordmark }}) left center/contain no-repeat"></span>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <sc-if value="{{ s.login }}" hint-placeholder-val="{{ true }}">
+        <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.025em">Entrar</h1>
+            <span style="color:var(--ink-2)">Use o login que o Administrador entregou para você.</span>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Login<input placeholder="nome.sobrenome" value="marina.costa" style="height:46px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:15px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)"></label>
+          <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Senha
+            <span style="display:flex;align-items:center;height:46px;padding:0 6px 0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface)"><input type="password" value="••••••••••••" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-size:15px"><button style="width:34px;height:34px;border:0;background:none;color:var(--ink-3);cursor:pointer"><i class="icon-eye" style="font-size:17px"></i></button></span>
+          </label>
+          <button onClick="{{ entrar }}" style="height:48px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:600;cursor:pointer" style-hover="background:var(--accent-hover)">Entrar</button>
+          <span style="font-size:13px;color:var(--ink-3);line-height:1.55">Não tem acesso ou esqueceu a senha? Procure o Administrador do sistema. O SICEI não usa e-mail para login.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ s.senha }}" hint-placeholder-val="{{ false }}">
+        <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="align-self:flex-start;font-size:12px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--warn-soft);color:var(--warn-ink)">Primeiro acesso</span>
+            <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.025em">Crie a sua senha</h1>
+            <span style="color:var(--ink-2)">Você só acessa o sistema depois de trocar a senha provisória. Nem o Administrador conhece a senha que você criar.</span>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Senha provisória<input type="password" value="••••••••••••" style="height:46px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);font-size:15px;outline:none"></label>
+          <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Nova senha<input type="text" value="{{ nova }}" onInput="{{ setNova }}" style="height:46px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:15px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)"></label>
+          <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Repita a nova senha<input type="text" value="{{ conf }}" onInput="{{ setConf }}" style="height:46px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:15px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)"></label>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+            <sc-for list="{{ regrasSenha }}" as="r" hint-placeholder-count="4">
+              <span style="display:flex;align-items:center;gap:8px;color:{{ r.cor }}"><i class="{{ r.icone }}" style="font-size:15px"></i>{{ r.t }}</span>
+            </sc-for>
+          </div>
+          <button onClick="{{ entrar }}" style="height:48px;border-radius:10px;border:0;background:{{ senhaBtnBg }};color:var(--on-accent);font-size:15px;font-weight:600;cursor:pointer">Salvar e continuar</button>
+        </div>
+      </sc-if>
+    </div>
+    <span style="font-size:12px;color:var(--ink-3)">SICEI © 2026 Benevides Soluções Industriais · Licenciado para DDA Metalúrgica</span>
+  </div>
+  <div style="position:relative;overflow:hidden;background:oklch(0.2 0.02 258);color:#fff;display:flex;flex-direction:column;padding:56px;background-image:linear-gradient(oklch(1 0 0 / 0.06) 1px, transparent 1px),linear-gradient(90deg, oklch(1 0 0 / 0.06) 1px, transparent 1px);background-size:56px 40px">
+    <img src="assets/sicei-logo-escuro-2.png" alt="SICEI" style="height:56px;width:auto;align-self:flex-start">
+    <div style="margin-top:auto;padding-top:48px;display:flex;flex-direction:column;gap:14px;max-width:460px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.8 0.08 258)">A01-G03-C04 · PT-0012</span>
+      <span style="font-size:34px;font-weight:600;letter-spacing:-0.025em;line-height:1.15">Sistema Inteligente de Controle de Estoques Industriais</span>
+      <span style="font-size:15px;color:oklch(0.85 0.01 258);line-height:1.55">Cada entrada e saída registrada na hora, saldo sempre atualizado e aviso antes de a pastilha acabar.</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ temToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:14px;box-shadow:var(--pop)"><i class="icon-info" style="font-size:16px"></i>{{ toast }}</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;escuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'escuro'&quot;},&quot;tela&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;painel&quot;,&quot;itens&quot;,&quot;item&quot;,&quot;registrar&quot;,&quot;alertas&quot;,&quot;sugestao&quot;,&quot;movs&quot;,&quot;relatorios&quot;,&quot;cadastros&quot;,&quot;etiquetas&quot;,&quot;usuarios&quot;,&quot;auditoria&quot;,&quot;parametros&quot;,&quot;importacao&quot;,&quot;login&quot;,&quot;senha&quot;],&quot;default&quot;:&quot;painel&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ITENS = [
+  {id:'PT-0012',iso:'CNMG 120408',classe:'P25',cob:'CVD · TiCN + Al₂O₃',fab:'Sandvik',apl:'Torneamento',saldo:35,min:20,rep:41,cd:3,emb:10,pos:'A01-G03-C04'},
+  {id:'PT-0018',iso:'WNMG 080408',classe:'M15',cob:'PVD · TiAlN',fab:'Iscar',apl:'Torneamento',saldo:0,min:15,rep:32,cd:2.1,emb:10,pos:'A01-G02-C01'},
+  {id:'PT-0024',iso:'DCMT 11T304',classe:'P15',cob:'CVD · TiCN',fab:'Kennametal',apl:'Torneamento',saldo:8,min:12,rep:26,cd:1.4,emb:10,pos:'A01-G04-C02'},
+  {id:'PT-0033',iso:'APMT 1604PDER',classe:'P30',cob:'PVD · TiAlN',fab:'Mitsubishi',apl:'Fresamento',saldo:64,min:20,rep:38,cd:1.8,emb:10,pos:'A02-G01-C03'},
+  {id:'PT-0037',iso:'SEKT 1204AFSN',classe:'K20',cob:'CVD · Al₂O₃',fab:'Sandvik',apl:'Fresamento',saldo:11,min:10,rep:22,cd:0.8,emb:10,pos:'A02-G01-C05'},
+  {id:'PT-0041',iso:'TNMG 160404',classe:'M25',cob:'CVD · TiCN',fab:'Iscar',apl:'Torneamento',saldo:3,min:10,rep:19,cd:1.2,emb:10,pos:'A01-G05-C01'},
+  {id:'PT-0045',iso:'SPMG 060204',classe:'P40',cob:'PVD · TiN',fab:'Kennametal',apl:'Furação',saldo:0,min:8,rep:14,cd:0.6,emb:10,pos:'A03-G01-C02'},
+  {id:'PT-0052',iso:'16ER 1.5 ISO',classe:'P20',cob:'PVD · TiAlN',fab:'Walter',apl:'Rosqueamento',saldo:42,min:10,rep:18,cd:0.5,emb:5,pos:'A03-G02-C01'},
+  {id:'PT-0058',iso:'VBMT 160404',classe:'P10',cob:'CVD · TiCN',fab:'Mitsubishi',apl:'Torneamento',saldo:27,min:15,rep:29,cd:1.0,emb:10,pos:'A01-G03-C06'},
+  {id:'PT-0063',iso:'RCKT 1204MO',classe:'K15',cob:'CVD · Al₂O₃',fab:'Walter',apl:'Fresamento',saldo:88,min:20,rep:35,cd:1.1,emb:10,pos:'A02-G02-C02'},
+  {id:'PT-0070',iso:'CCMT 09T308',classe:'P25',cob:'CVD · TiCN',fab:'Sandvik',apl:'Torneamento',saldo:52,min:15,rep:30,cd:1.9,emb:10,pos:'A01-G01-C03'},
+  {id:'PT-0074',iso:'XOMX 120408',classe:'M40',cob:'PVD · TiAlN',fab:'Walter',apl:'Fresamento',saldo:18,min:12,rep:25,cd:0.9,emb:10,pos:'A02-G03-C01'},
+];
+const ST = {
+  OK:{t:'OK',sb:'var(--ok-soft)',sf:'var(--ok-ink)',cor:'var(--ok)'},
+  ATENCAO:{t:'Atenção',sb:'var(--warn-soft)',sf:'var(--warn-ink)',cor:'var(--warn)'},
+  CRITICO:{t:'Crítico',sb:'var(--crit-soft)',sf:'var(--crit-ink)',cor:'var(--crit)'},
+  ZERADO:{t:'Zerado',sb:'var(--zero-bg)',sf:'var(--zero-ink)',cor:'var(--zero)'},
+};
+const status = (s,min,rep) => s===0?'ZERADO':s<=min?'CRITICO':s<=rep?'ATENCAO':'OK';
+const fmt = n => n.toLocaleString('pt-BR');
+const dec = n => n.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const brl = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const FORN = ['Ferramentas Sul','Usinatec Distribuidora','Metalcorte Comercial','Cortemax Ferramentas'];
+const RANK = {ZERADO:0,CRITICO:1,ATENCAO:2,OK:3};
+
+function enrich(i){
+  const k = status(i.saldo,i.min,i.rep), st = ST[k];
+  const alvo = Math.ceil(i.rep + i.cd*30);
+  const sug = k==='OK'?0:Math.ceil((alvo-i.saldo)/i.emb)*i.emb;
+  const esc = Math.max(alvo, i.saldo)*1.08;
+  const p = v => Math.min(100, v/esc*100).toFixed(1)+'%';
+  return {...i,k,st:st.t,sb:st.sb,sf:st.sf,cor:st.cor,alvo,sug,cx:sug/i.emb,
+    gFill:p(i.saldo),gMin:p(i.min),gRep:p(i.rep),gAlvo:p(alvo),emAlerta:k!=='OK',
+    cdTxt:dec(i.cd),caixasSaldo:dec(i.saldo/i.emb).replace(',0',''),
+    cobertura: i.cd>0 ? (i.saldo===0?'Sem saldo':'~'+Math.floor(i.saldo/i.cd)+' dias') : '—'};
+}
+const DADOS = ITENS.map(enrich);
+
+const MOVS = [
+  {q:'27/09 15:42',item:'PT-0012',tipo:'CONSUMO',n:4,a:39,b:35,ctx:'Torno CNC 03 · OP 2026-0457 · Carlos Pereira',u:'lucas.almeida',ip:'10.0.4.21',dev:'Celular · Chrome Android'},
+  {q:'27/09 14:10',item:'PT-0033',tipo:'COMPRA',n:30,a:34,b:64,ctx:'Ferramentas Sul · NF 12345 · R$ 52,40',u:'lucas.almeida',ip:'10.0.4.21',dev:'Computador · Edge'},
+  {q:'27/09 11:25',item:'PT-0041',tipo:'CONSUMO',n:6,a:9,b:3,ctx:'Centro de usinagem 02 · OP 2026-0455 · Ana Ribeiro',u:'lucas.almeida',ip:'10.0.4.33',dev:'Celular · Safari iOS'},
+  {q:'27/09 10:02',item:'PT-0024',tipo:'PERDA',n:1,a:9,b:8,ctx:'Quebra no manuseio',u:'lucas.almeida',ip:'10.0.4.21',dev:'Celular · Chrome Android'},
+  {q:'26/09 17:48',item:'PT-0058',tipo:'ESTORNO',n:4,a:23,b:27,ctx:'Estorna a saída de 26/09 17:30 · lançada no item errado',u:'marina.costa',ip:'10.0.2.10',dev:'Computador · Chrome'},
+  {q:'26/09 17:30',item:'PT-0058',tipo:'CONSUMO',n:4,a:27,b:23,ctx:'Torno CNC 01 · OP 2026-0450 · Diego Martins',u:'lucas.almeida',ip:'10.0.4.21',dev:'Celular · Chrome Android',estornada:true},
+  {q:'26/09 16:05',item:'PT-0018',tipo:'CONSUMO',n:5,a:5,b:0,ctx:'Torno CNC 01 · OP 2026-0449 · Carlos Pereira',u:'lucas.almeida',ip:'10.0.4.21',dev:'Celular · Chrome Android'},
+  {q:'26/09 09:14',item:'PT-0070',tipo:'DEVOLUCAO',n:2,a:50,b:52,ctx:'Torno CNC 03 · Carlos Pereira · OP encerrada',u:'lucas.almeida',ip:'10.0.4.21',dev:'Computador · Edge'},
+  {q:'25/09 15:20',item:'PT-0063',tipo:'AJUSTE_POS',n:3,a:85,b:88,ctx:'Inventário: contagem 88, sistema 85',u:'marina.costa',ip:'10.0.2.10',dev:'Computador · Chrome'},
+  {q:'25/09 08:40',item:'PT-0012',tipo:'COMPRA',n:30,a:17,b:47,ctx:'Ferramentas Sul · NF 12298 · R$ 38,90',u:'lucas.almeida',ip:'10.0.4.21',dev:'Computador · Edge'},
+];
+const TIPO = {
+  CONSUMO:{t:'Consumo da produção',s:-1,i:'icon-arrow-up-from-line'},
+  PERDA:{t:'Perda ou quebra',s:-1,i:'icon-circle-x'},
+  COMPRA:{t:'Compra',s:1,i:'icon-arrow-down-to-line'},
+  DEVOLUCAO:{t:'Devolução da produção',s:1,i:'icon-corner-down-left'},
+  AJUSTE_POS:{t:'Ajuste positivo',s:1,i:'icon-scale'},
+  ESTORNO:{t:'Estorno',s:1,i:'icon-undo-2'},
+};
+const AUD = [
+  {seq:'18402',q:'27/09/2026 15:44',acao:'CONFERENCIA_EXECUTADA',ent:'sistema',user:'marina.costa',antes:'—',depois:'{integra:true, divergencias:0}',origem:'10.0.2.10 · Chrome',hash:'4be1…09c7'},
+  {seq:'18401',q:'27/09/2026 15:42',acao:'MOVIMENTACAO_CRIADA',ent:'movimentacao 0192a4f1…',user:'lucas.almeida',antes:'saldo: 39',depois:'saldo: 35',origem:'10.0.4.21 · Android',hash:'9f3a…c21e'},
+  {seq:'18400',q:'27/09/2026 15:42',acao:'ALERTA_ABERTO',ent:'alerta PT-0012',user:'lucas.almeida',antes:'—',depois:'nivel: ATENCAO',origem:'10.0.4.21 · Android',hash:'77d0…a5b3'},
+  {seq:'18399',q:'27/09/2026 14:31',acao:'ITEM_ALTERADO',ent:'item PT-0024',user:'marina.costa',antes:'estoque_minimo: 10',depois:'estoque_minimo: 12',origem:'10.0.2.10 · Chrome',hash:'c1e8…3f40'},
+  {seq:'18398',q:'27/09/2026 13:05',acao:'ETIQUETA_IMPRESSA',ent:'posicao A02-G01-C03',user:'lucas.almeida',antes:'—',depois:'1 etiqueta',origem:'10.0.4.21 · Edge',hash:'02ab…e871'},
+  {seq:'18397',q:'27/09/2026 09:12',acao:'USUARIO_CRIADO',ent:'usuario joao.silva',user:'roberto.nunes',antes:'—',depois:'perfil: ALMOXARIFE',origem:'10.0.1.5 · Firefox',hash:'b93c…1d26'},
+  {seq:'18396',q:'27/09/2026 08:03',acao:'LOGIN_FALHOU',ent:'login paulo.mendes',user:'—',antes:'falhas: 4',depois:'falhas: 5 · BLOQUEADO',origem:'10.0.4.40 · Android',hash:'e5f2…7a90'},
+  {seq:'18395',q:'27/09/2026 07:58',acao:'LOGIN',ent:'sessao',user:'lucas.almeida',antes:'—',depois:'sessão aberta',origem:'10.0.4.21 · Android',hash:'6a4d…b0f5'},
+];
+const USERS = [
+  {nome:'Marina Costa',setor:'Compras',login:'marina.costa',perfil:'Gestor',sit:'ATIVO',eu:true},
+  {nome:'Roberto Nunes',setor:'TI',login:'roberto.nunes',perfil:'Administrador',sit:'ATIVO'},
+  {nome:'Lucas Almeida',setor:'Almoxarifado',login:'lucas.almeida',perfil:'Almoxarife',sit:'ATIVO'},
+  {nome:'João da Silva',setor:'Almoxarifado',login:'joao.silva',perfil:'Almoxarife',sit:'TROCA'},
+  {nome:'Paulo Mendes',setor:'Almoxarifado',login:'paulo.mendes',perfil:'Almoxarife',sit:'BLOQ'},
+  {nome:'Ana Ribeiro',setor:'Produção',login:'ana.ribeiro',perfil:'Consulta',sit:'ATIVO'},
+  {nome:'Carla Souza',setor:'PCP',login:'carla.souza',perfil:'Consulta',sit:'INATIVO'},
+];
+const TELAS = {painel:['Operação','Painel'],itens:['Operação','Itens'],item:['Itens','Detalhe do item'],registrar:['Registrar','Movimentação'],alertas:['Operação','Alertas'],sugestao:['Operação','Sugestão de compra'],movs:['Operação','Movimentações'],auditoria:['Administração','Auditoria'],usuarios:['Administração','Usuários'],etiquetas:['Gestão','Etiquetas QR'],relatorios:['Gestão','Relatórios'],cadastros:['Gestão','Cadastros'],parametros:['Administração','Parâmetros'],importacao:['Administração','Importação']};
+const CAD = {
+  fabricantes:{r:'Fabricantes',i:'icon-factory',desc:'Quem produz as pastilhas. O nome não se repete, sem diferenciar maiúsculas.',novo:'Novo fabricante',btn:'Cadastrar fabricante',
+    cols:[['Nome'],['Itens','right']],campos:[['Nome','*','Sandvik','Único, sem diferenciar maiúsculas']],
+    rows:[['Sandvik',3],['Iscar',2],['Kennametal',2],['Mitsubishi',2],['Walter',3],['Taegutec',0,false]]},
+  fornecedores:{r:'Fornecedores',i:'icon-truck',desc:'Quem vende para a DDA. CNPJ válido e único, inclusive no formato alfanumérico.',novo:'Novo fornecedor',btn:'Cadastrar fornecedor',
+    cols:[['Razão social'],['CNPJ',null,1],['Contato'],['Itens','right']],campos:[['Razão social','*','',''],['Nome fantasia','','',''],['CNPJ','*','00.000.000/0000-00','Numérico ou alfanumérico',1],['Telefone','','(47) 0000-0000',''],['Contato','','','']],
+    rows:[['Ferramentas Sul Ltda.','12.345.678/0001-90','Rita · (47) 3333-1020',12],['Usinatec Distribuidora S.A.','23.456.789/0001-01','Márcio · (47) 3422-8800',9],['Metalcorte Comercial Ltda.','34.567.890/0001-12','Juliana · (48) 3025-4411',6],['Cortemax Ferramentas Eireli','45.678.901/0001-23','Sérgio · (41) 3011-7700',4,false]]},
+  destinos:{r:'Destinos',i:'icon-map-pin',desc:'Máquinas, setores e centros de custo que recebem as pastilhas nas saídas.',novo:'Novo destino',btn:'Cadastrar destino',
+    cols:[['Código',null,1],['Nome'],['Tipo']],campos:[['Tipo','*','Máquina, setor ou centro de custo',''],['Código','*','TCNC-03','Único',1],['Nome','*','Torno CNC 03','']],
+    rows:[['TCNC-01','Torno CNC 01','Máquina'],['TCNC-03','Torno CNC 03','Máquina'],['CU-01','Centro de usinagem 01','Máquina'],['CU-02','Centro de usinagem 02','Máquina'],['FERR','Ferramentaria','Setor'],['CC-410','Manutenção','Centro de custo'],['TC-02','Torno convencional 02','Máquina',false]]},
+  colaboradores:{r:'Colaboradores',i:'icon-hard-hat',desc:'Quem retira e devolve pastilhas no balcão. Não precisa de login.',novo:'Novo colaborador',btn:'Cadastrar colaborador',
+    cols:[['Nome'],['Matrícula',null,1],['Setor']],campos:[['Nome','*','',''],['Matrícula','','','Opcional, única',1],['Setor','*','Usinagem','']],
+    rows:[['Carlos Pereira','1042','Usinagem'],['Ana Ribeiro','1057','Usinagem'],['Diego Martins','1063','Ferramentaria'],['Fernanda Lima','1071','Usinagem'],['Rafael Teixeira','—','Manutenção'],['Jorge Almeida','0988','Usinagem',false]]},
+  posicoes:{r:'Posições',i:'icon-grid-3x3',desc:'Endereço de cada compartimento: armário, gaveta e compartimento. Um item por posição.',novo:'Nova posição',btn:'Criar posição',
+    cols:[['Código',null,1],['Item',null,1],['Descrição']],campos:[['Armário','*','1','1 a 99'],['Gaveta','*','3','1 a 99'],['Compartimento','*','4','Gera o código A01-G03-C04',1]]},
+};
+const DIAS = [41,55,48,0,0,62,57,49,58,44,0,0,51,66,59,47,53,0,0,60,52,64,55,49,0,0,46];
+const ALFA = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+
+function cnpjValido(v){
+  const d = v.replace(/\D/g,''); if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = n => { let s = 0, p = n - 7; for (let i = 0; i < n; i++) { s += +d[i] * p--; if (p < 2) p = 9; } const r = s % 11; return r < 2 ? 0 : 11 - r; };
+  return calc(12) === +d[12] && calc(13) === +d[13];
+}
+function fmtCnpj(v){ const d = v.replace(/\D/g,'').slice(0,14); return d.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2'); }
+function gerarLogin(nome, sob, existentes){
+  const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  const part = ['de','da','do','dos','das','e'];
+  const n = norm(nome).split(/\s+/).filter(Boolean)[0] || '';
+  const ss = norm(sob).split(/\s+/).filter(w => w && !part.includes(w));
+  const s = ss[ss.length-1] || '';
+  if (!n || !s) return {login:'—', nota:'Preencha nome e sobrenome.'};
+  const base = `${n}.${s}`.replace(/[^a-z.]/g,'');
+  if (!existentes.includes(base)) return {login:base, nota:'Sem acentos, sem partículas, último sobrenome.'};
+  let k = 2; while (existentes.includes(base+k)) k++;
+  return {login:base+k, nota:`${base} já existe ou existiu: recebe o próximo número livre.`};
+}
+
+class Component extends DCLogic {
+  componentDidMount(){ this._r = () => this.setState({w:window.innerWidth}); window.addEventListener('resize', this._r); }
+  componentWillUnmount(){ window.removeEventListener('resize', this._r); }
+  state = {
+    w: window.innerWidth, tela: this.props.tela ?? 'painel', tema: null, sel: 'PT-0012',
+    filtro: 'TODOS', busca: '', fornAberto: 0,
+    modo: 'saida', tipoE: 'COMPRA', tipoS: 'CONSUMO', qtd: 4, un: 'cx',
+    aba: 'abertos', ciente: {'PT-0024': '27/09 09:10'},
+    movSel: 0, verificado: false,
+    nNome: 'Maria Aparecida', nSob: 'de Souza', perfil: 'Almoxarife', cred: null,
+    relAba:'consumo', relGrupo:'item', cadAba:'fornecedores', cadInat:{}, par:{janela:'90',sessao:'30',email:'estoque@ddametalurgica.com.br'}, parSalvo:true, imp:'vazio', impCorr:false,
+    fornExtra: [], fornSel: 'Ferramentas Sul', novoForn: false, nf: {razao:'', cnpj:'', cod:'', lt:''},
+    etq: {}, nova: 'fresa-torno-2026', conf: 'fresa-torno-2026', toast: '',
+  };
+  componentDidUpdate(pp){ if (pp.tela !== this.props.tela && this.props.tela) this.setState({tela:this.props.tela}); }
+  ir = (tela, extra={}) => { this.setState({tela, ...extra}); window.scrollTo(0,0); };
+  avisar = t => { this.setState({toast:t}); clearTimeout(this._t); this._t = setTimeout(() => this.setState({toast:''}), 2200); };
+
+  renderVals() {
+    const S = this.state;
+    const theme = S.tema ?? this.props.tema ?? 'claro';
+    const tela = S.tela;
+    const acesso = tela === 'login' || tela === 'senha';
+    const sel = DADOS.find(d => d.id === S.sel) || DADOS[0];
+    const cont = k => DADOS.filter(d => d.k === k).length;
+    const emAlerta = DADOS.filter(d => d.emAlerta).sort((a,b) => RANK[a.k]-RANK[b.k] || a.saldo-b.saldo);
+    const abrir = id => () => this.ir('item', {sel:id, fornAberto:0});
+
+    const navDef = [
+      {titulo:'Operação', itens:[
+        {k:'painel',r:'Painel',i:'icon-layout-dashboard'},{k:'itens',r:'Itens',i:'icon-package'},
+        {k:'movs',r:'Movimentações',i:'icon-arrow-left-right'},{k:'alertas',r:'Alertas',i:'icon-bell',b:emAlerta.length},
+        {k:'sugestao',r:'Sugestão de compra',i:'icon-shopping-cart'}]},
+      {titulo:'Registrar', itens:[
+        {k:'entrada',r:'Entrada',i:'icon-arrow-down-to-line'},{k:'saida',r:'Saída',i:'icon-arrow-up-from-line'}]},
+      {titulo:'Gestão', itens:[
+        {k:'relatorios',r:'Relatórios',i:'icon-file-chart-column'},{k:'cadastros',r:'Cadastros',i:'icon-folder-open'},
+        {k:'etiquetas',r:'Etiquetas QR',i:'icon-qr-code'}]},
+      {titulo:'Administração', itens:[
+        {k:'usuarios',r:'Usuários',i:'icon-users'},{k:'auditoria',r:'Auditoria',i:'icon-shield-check'},
+        {k:'parametros',r:'Parâmetros',i:'icon-sliders-horizontal'},{k:'importacao',r:'Importação',i:'icon-upload'}]},
+    ];
+    const ativo = k => k===tela || (k==='itens'&&tela==='item') || (tela==='registrar'&&k===(S.modo==='entrada'?'entrada':'saida'));
+    const nav = navDef.map(g => ({titulo:g.titulo, itens:g.itens.map(n => {
+      const on = ativo(n.k);
+      return {rotulo:n.r, icone:n.i, badge:n.b, temBadge:!!n.b,
+        bg:on?'var(--surface-3)':'transparent', fg:on?'var(--ink)':'var(--ink-2)', ic:on?'var(--accent)':'var(--ink-3)', peso:on?600:500,
+        ir:()=>{
+          if (n.k==='entrada'||n.k==='saida') return this.ir('registrar',{modo:n.k});
+          if (TELAS[n.k]) return this.ir(n.k);
+          this.avisar(`${n.r}: tela fora desta rodada de design`);
+        }};
+    })}));
+
+    const kpis = ['ZERADO','CRITICO','ATENCAO','OK'].map(k => ({
+      rotulo:ST[k].t, n:cont(k), cor:ST[k].cor, pct:(cont(k)/DADOS.length*100)+'%',
+      dica:{ZERADO:'Sem saldo na prateleira',CRITICO:'No mínimo ou abaixo',ATENCAO:'Já é hora de comprar',OK:'Acima do ponto de reposição'}[k],
+      ir:()=>this.ir('itens',{filtro:k==='OK'?'OK':k==='ATENCAO'?'ALERTA':'CRITICOS'})}));
+    const totalMes = DIAS.reduce((a,b)=>a+b,0), mx = Math.max(...DIAS);
+    const consumo = {total:fmt(totalMes), anterior:fmt(1189), variacao:(totalMes>=1189?'+':'−')+Math.abs(Math.round((totalMes-1189)/1189*100))+'%',
+      dias:DIAS.map((v,i)=>({h:(v/mx*100)+'%', c:i===DIAS.length-1?'var(--accent)':'color-mix(in oklch, var(--accent) 38%, var(--surface-3))', t:`${String(i+1).padStart(2,'0')}/09 · ${v} un.`}))};
+    const top = [['PT-0012',96],['PT-0018',64],['PT-0070',58],['PT-0024',42],['PT-0041',37],['PT-0063',31],['PT-0058',30],['PT-0074',27],['PT-0033',26],['PT-0052',18]];
+    const topConsumo = top.map(([id,t],i)=>({id,total:t,w:(t/96*100)+'%',op:1-i*0.06}));
+    const mv = (m,i) => { const T = TIPO[m.tipo];
+      return {quando:m.q,item:m.item,tipo:T.t,icone:T.i,ic:T.s>0?'var(--ok)':'var(--ink-3)',
+        qtd:(T.s>0?'+':'−')+m.n, qc:m.estornada?'var(--ink-3)':T.s>0?'var(--ok-ink)':'var(--ink)',
+        cor:m.estornada?'var(--ink-3)':'var(--ink)', usuario:m.u, saldo:`${m.a} → ${m.b}`, ctx:m.ctx, estornada:!!m.estornada,
+        bg:i===S.movSel?'var(--accent-soft)':'transparent', sel:()=>this.setState({movSel:i})}; };
+    const movs = MOVS.map(mv);
+    const ms = MOVS[S.movSel], msv = movs[S.movSel];
+    const movSel = {...msv, uuid:'0192a4f1-'+(7000+S.movSel*137), campos:[
+      {k:'Item',v:ms.item},{k:'Saldo',v:`${ms.a} → ${ms.b}`},{k:'Contexto',v:ms.ctx},{k:'Registrado por',v:ms.u},
+      {k:'Data e hora (servidor)',v:ms.q+'/2026'},{k:'IP',v:ms.ip},{k:'Dispositivo',v:ms.dev}],
+      podeEstornar:!ms.estornada && ms.tipo!=='ESTORNO', bloqueada:!!ms.estornada || ms.tipo==='ESTORNO',
+      motivoBloqueio: ms.tipo==='ESTORNO'?'Um estorno não pode ser estornado.':'Já estornada em 26/09 17:48 por marina.costa.'};
+
+    const q = S.busca.trim().toLowerCase();
+    const filtroFn = {TODOS:()=>true,ALERTA:d=>d.emAlerta,CRITICOS:d=>d.k==='CRITICO'||d.k==='ZERADO',OK:d=>d.k==='OK'}[S.filtro];
+    const itensFiltrados = DADOS.filter(filtroFn).filter(d => !q || [d.id,d.iso,d.classe,d.pos].join(' ').toLowerCase().includes(q)).map(d => ({...d, abrir:abrir(d.id)}));
+    const filtros = [['TODOS','Todos',DADOS.length],['ALERTA','Em alerta',emAlerta.length],['CRITICOS','Críticos e zerados',cont('CRITICO')+cont('ZERADO')],['OK','OK',cont('OK')]].map(([k,r,n]) => ({
+      rotulo:r,n,bg:S.filtro===k?'var(--surface)':'transparent',sh:S.filtro===k?'var(--shadow)':'none',fg:S.filtro===k?'var(--ink)':'var(--ink-2)',ir:()=>this.setState({filtro:k})}));
+
+    const fornecedores = [
+      {nome:'Ferramentas Sul',cod:'FS-88213',p:38.90,data:'02/09/2026',lt:7,pref:true,hist:[['02/09/2026',38.90,4.0,30,'12298','lucas.almeida'],['10/07/2026',37.40,1.1,40,'11875','lucas.almeida'],['03/05/2026',37.00,null,30,'11302','marina.costa']]},
+      {nome:'Usinatec Distribuidora',cod:'UT-CN1204-25',p:41.20,data:'15/08/2026',lt:3,hist:[['15/08/2026',41.20,2.5,20,'4471','lucas.almeida'],['20/06/2026',40.20,null,20,'4210','lucas.almeida']]},
+      {nome:'Metalcorte Comercial',cod:'MC-0412',p:null,data:'—',lt:10,hist:[]},
+    ].map((f,i) => ({...f, preco:f.p===null?'sem compras':brl(f.p), precoCor:f.p===null?'var(--ink-3)':i===0?'var(--ok-ink)':'var(--ink)',
+      aberto:S.fornAberto===i && f.hist.length>0, chev:S.fornAberto===i?'icon-chevron-up':'icon-chevron-down',
+      alternar:()=>this.setState({fornAberto:S.fornAberto===i?-1:i}),
+      hist:f.hist.map(h=>({data:h[0],preco:brl(h[1]),var:h[2]===null?'—':'+'+dec(h[2])+'%',vc:h[2]===null?'var(--ink-3)':'var(--crit-ink)',qtd:h[3],nf:h[4],user:h[5]}))}));
+
+    const entrada = S.modo==='entrada';
+    const tipo = entrada ? S.tipoE : S.tipoS;
+    const qn = Math.max(0, parseInt(S.qtd,10)||0);
+    const unidades = entrada && S.un==='cx' ? qn*sel.emb : qn;
+    const depois = entrada ? sel.saldo+unidades : sel.saldo-unidades;
+    const erro = !entrada && unidades > sel.saldo;
+    const kDep = erro ? sel.k : status(Math.max(0,depois), sel.min, sel.rep);
+    const tiposDef = entrada
+      ? [['COMPRA','Compra','Com fornecedor, preço e NF','icon-truck'],['DEVOLUCAO','Devolução da produção','Pastilha nova que voltou','icon-corner-down-left']]
+      : [['CONSUMO','Consumo da produção','Destino, OP e quem retirou','icon-factory'],['PERDA','Perda ou quebra','Com motivo obrigatório','icon-circle-x']];
+    const reg = {
+      titulo: entrada?'Registrar entrada':'Registrar saída',
+      desc: entrada?'Compra ou devolução da produção. O saldo sobe na hora e o preço entra no histórico do fornecedor.':'Consumo da produção ou perda. O saldo nunca fica negativo, nem com duas saídas ao mesmo tempo.',
+      entrada, compra:entrada&&tipo==='COMPRA', consumo:!entrada&&tipo==='CONSUMO',
+      pedeDestino:(!entrada&&tipo==='CONSUMO')||(entrada&&tipo==='DEVOLUCAO'),
+      pedeMotivo:(entrada&&tipo==='DEVOLUCAO')||(!entrada&&tipo==='PERDA'),
+      motivoPh: tipo==='PERDA'?'Quebra no manuseio, defeito de fábrica, extravio…':'Por que a pastilha voltou?',
+      colabRotulo: entrada?'Colaborador que devolveu':'Colaborador que retirou',
+      cxBg:S.un==='cx'?'var(--surface)':'transparent', unBg:S.un==='un'?'var(--surface)':'transparent',
+      qDica: erro ? `Maior que o saldo disponível (${sel.saldo}).` : entrada&&S.un==='cx' ? `${qn} caixas × ${sel.emb} = ${unidades} unidades` : `${unidades} unidades`,
+      qDicaCor: erro?'var(--crit-ink)':'var(--ink-3)', qBorda: erro?'var(--crit)':'var(--line-2)', erro,
+      depois: erro ? '—' : depois, depoisCor: erro?'var(--crit-ink)':'var(--ink)',
+      stDep: erro ? {t:'Recusada',sb:'var(--crit-soft)',sf:'var(--crit-ink)'} : ST[kDep],
+      btn: entrada?`Confirmar entrada de ${unidades} un.`:`Confirmar saída de ${unidades} un.`,
+      btnBg: erro?'var(--line-2)':'var(--accent)',
+      tipos: tiposDef.map(([k,r,s,i]) => { const on = tipo===k; return {rotulo:r,sub:s,icone:i,
+        bd:on?'var(--accent)':'var(--line-2)', bg:on?'var(--accent-soft)':'var(--surface)', ring:on?'0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent)':'none', ic:on?'var(--accent-ink)':'var(--ink-3)',
+        ir:()=>this.setState(entrada?{tipoE:k}:{tipoS:k})}; }),
+    };
+
+    const alertas = emAlerta.map(d => ({...d, abrir:abrir(d.id), desde:d.id==='PT-0012'?'27/09 15:42':d.k==='ZERADO'?'24/09 16:05':'21/09 11:25',
+      ciente:!!S.ciente[d.id], naoCiente:!S.ciente[d.id], cienteTxt:`marina.costa · ${S.ciente[d.id]}`,
+      marcar:()=>this.setState({ciente:{...S.ciente,[d.id]:'27/09 15:50'}})}));
+    const fechados = [['PT-0033','ATENCAO','19/09 10:12','27/09 14:10','Compra · NF 12345'],['PT-0063','CRITICO','08/09 15:30','12/09 09:02','Compra · NF 12011'],['PT-0070','ATENCAO','02/09 08:44','05/09 13:20','Compra · NF 11960'],['PT-0052','ATENCAO','28/08 11:05','01/09 10:15','Ajuste por inventário']]
+      .map(([id,k,a,f,p]) => ({id,st:ST[k].t,sb:ST[k].sb,sf:ST[k].sf,aberto:a,fechado:f,por:p}));
+
+    const sugestoes = emAlerta.map((d,i) => { const pf = FORN[i%2], mn = FORN[(i%2)+1]; const base = 30+i*3.1;
+      return {...d, abrir:abrir(d.id), pref:pf, prefPreco:brl(base+2.3), prefLt:7, menor:mn, menorPreco:brl(base), menorLt:3+i%4}; });
+    const sugUn = sugestoes.reduce((a,g)=>a+g.sug,0);
+    const sugTot = {itens:sugestoes.length, un:fmt(sugUn), cx:fmt(sugestoes.reduce((a,g)=>a+g.cx,0))};
+
+    const auditoria = AUD.map(l => ({...l, quando:l.q, cor:l.acao.includes('FALHOU')?'var(--crit-ink)':l.acao.startsWith('MOV')?'var(--accent-ink)':'var(--ink)'}));
+
+    const existentes = USERS.map(u=>u.login).concat(['maria.souza']);
+    const lg = gerarLogin(S.nNome, S.nSob, existentes);
+    const SIT = {ATIVO:['Ativo','var(--ok-soft)','var(--ok-ink)'],TROCA:['Aguardando troca de senha','var(--warn-soft)','var(--warn-ink)'],BLOQ:['Bloqueado em 27/09 08:03','var(--crit-soft)','var(--crit-ink)'],INATIVO:['Inativo','var(--surface-3)','var(--ink-2)']};
+    const usuarios = USERS.map(u => ({...u, ini:u.nome.split(' ').map(p=>p[0]).filter(c=>c===c.toUpperCase()).slice(0,2).join(''),
+      sit:SIT[u.sit][0], sb:SIT[u.sit][1], sf:SIT[u.sit][2], op:u.sit==='INATIVO'?0.6:1,
+      acoes: u.eu ? [{t:'Você',cor:'var(--ink-3)'}] : u.sit==='BLOQ' ? [{t:'Desbloquear',cor:'var(--accent-ink)'},{t:'Inativar',cor:'var(--crit-ink)'}]
+        : u.sit==='INATIVO' ? [{t:'Reativar',cor:'var(--accent-ink)'}] : [{t:'Redefinir senha',cor:'var(--ink)'},{t:'Inativar',cor:'var(--crit-ink)'}]}));
+    const perfis = ['Administrador','Gestor','Almoxarife','Consulta'].map(p => ({rotulo:p, bd:S.perfil===p?'var(--accent)':'var(--line-2)', bg:S.perfil===p?'var(--accent-soft)':'var(--surface)', fg:S.perfil===p?'var(--accent-ink)':'var(--ink)', ir:()=>this.setState({perfil:p})}));
+
+    const etqOn = id => S.etq[id] !== false;
+    const posicoes = DADOS.map(d => ({pos:d.pos,id:d.id,on:etqOn(d.id),alt:()=>this.setState({etq:{...S.etq,[d.id]:!etqOn(d.id)}})}));
+    const etiquetas = DADOS.filter(d=>etqOn(d.id)).map(d => ({pos:d.pos,id:d.id,desc:`${d.iso} · ${d.classe} · ${d.fab}`,
+      qr:`https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent('https://sicei.vercel.app/p/'+d.pos)}`}));
+    const todasOn = DADOS.every(d=>etqOn(d.id));
+
+    const nova = S.nova, conf = S.conf;
+    const regras = [[nova.length>=10,'Pelo menos 10 caracteres'],[nova && nova!=='marina.costa','Diferente do login'],[true,'Não repete nenhuma das 3 últimas senhas'],[nova && nova===conf,'As duas senhas coincidem']];
+    const senhaOk = regras.every(r=>r[0]);
+
+    const W = S.w, stack = W < 1200, mid = W < 1040;
+    const cols = {trilha: mid?'none':'flex', p1: stack?'minmax(0,1fr)':'minmax(0,1.35fr) minmax(0,1fr)', p2: stack?'minmax(0,1fr)':'minmax(0,1fr) minmax(0,1.35fr)',
+      kpi: mid?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr))', item: stack?'minmax(0,1fr)':'minmax(0,2fr) minmax(0,1fr)',
+      reg: stack?'minmax(0,1fr)':'minmax(0,1fr) 360px', movs: stack?'minmax(0,1fr)':'minmax(0,1fr) 340px', users: stack?'minmax(0,1fr)':'380px minmax(0,1fr)',
+      etq: stack?'minmax(0,1fr)':'340px minmax(0,1fr)', tres: mid?'minmax(0,1fr)':'repeat(3,minmax(0,1fr))', filt: mid?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr)) auto',
+      login: mid?'minmax(0,1fr)':'minmax(0,1fr) minmax(0,1fr)', cad: stack?'minmax(0,1fr)':'minmax(0,1fr) 340px'};
+
+    const relAbas = [['consumo','Consumo','icon-chart-bar-big'],['movimentacao','Movimentação','icon-arrow-left-right'],['reposicao','Reposição','icon-shopping-cart']].map(([k,r,i]) => ({rotulo:r,icone:i,
+      bd:S.relAba===k?'var(--accent)':'transparent', fg:S.relAba===k?'var(--ink)':'var(--ink-3)', ir:()=> k==='reposicao' ? this.ir('sugestao') : this.setState({relAba:k})}));
+    const GR = {item: top.map(([id,t]) => { const d = DADOS.find(x=>x.id===id); return [id, d.iso+' · '+d.classe, t]; }),
+      destino:[['Torno CNC 03','Máquina · TCNC-03',262],['Torno CNC 01','Máquina · TCNC-01',231],['Centro de usinagem 02','Máquina · CU-02',204],['Centro de usinagem 01','Máquina · CU-01',176],['Ferramentaria','Setor · FERR',143]],
+      colaborador:[['Carlos Pereira','Usinagem · 1042',298],['Ana Ribeiro','Usinagem · 1057',241],['Diego Martins','Ferramentaria · 1063',213],['Fernanda Lima','Usinagem · 1071',160],['Rafael Teixeira','Manutenção',104]]};
+    const gl = GR[S.relGrupo], gmax = Math.max(...gl.map(x=>x[2]));
+    const rel = {consumo:S.relAba==='consumo', movimentacao:S.relAba==='movimentacao', abas:relAbas,
+      desc: S.relAba==='consumo' ? 'Consumo da produção por item, destino ou colaborador, de 01/09/2026 até 27/09/2026.' : 'Saldo inicial, entradas, saídas e saldo final de cada item no período.',
+      col:{item:'Item',destino:'Destino',colaborador:'Colaborador'}[S.relGrupo],
+      grupos:[['item','Item'],['destino','Destino'],['colaborador','Colaborador']].map(([k,r]) => ({rotulo:r, bg:S.relGrupo===k?'var(--surface)':'transparent', sh:S.relGrupo===k?'var(--shadow)':'none', fg:S.relGrupo===k?'var(--ink)':'var(--ink-2)', ir:()=>this.setState({relGrupo:k})})),
+      linhas: gl.map(([n,sub,t]) => ({nome:n, sub, total:fmt(t), media:dec(t/27), w:(t/gmax*100)+'%', pct:dec(t/totalMes*100)+'%'})),
+      total: S.relGrupo==='item' ? '10 itens mais consumidos' : 'Total: '+fmt(totalMes)+' un.'};
+    const relMov = DADOS.map((d,i) => { const ent = [30,0,20,30,10,0,0,5,20,30,20,10][i], sai = [34,17,21,26,9,7,5,4,15,22,28,8][i]; return {...d, ent, sai, ini:d.saldo+sai-ent}; });
+
+    const tab = CAD[S.cadAba];
+    const cadAbas = Object.entries(CAD).map(([k,c]) => ({rotulo:c.r, icone:c.i, n:k==='posicoes'?90:c.rows.length,
+      bd:S.cadAba===k?'var(--accent)':'transparent', fg:S.cadAba===k?'var(--ink)':'var(--ink-3)', ir:()=>this.setState({cadAba:k})}));
+    const rowsRaw = S.cadAba==='posicoes' ? DADOS.map(d=>[d.pos,d.id,d.iso+' · '+d.classe]).sort().concat([['A01-G01-C01','—','Livre'],['A01-G01-C02','—','Livre']]) : tab.rows;
+    const cad = {desc:tab.desc, novo:tab.novo, btn:tab.btn, mapa:S.cadAba==='posicoes',
+      cols: tab.cols.map(([t,al]) => ({t, al:al||'left'})),
+      campos: tab.campos.map(([t,req,ph,ajuda,mono]) => ({t,req,ph,ajuda,ff:mono?"'Geist Mono',monospace":'inherit'})),
+      rows: rowsRaw.map((r,ri) => { const key = S.cadAba+ri; const ativoBase = r[tab.cols.length] !== false; const ativo = S.cadInat[key] === undefined ? ativoBase : S.cadInat[key];
+        return {cells: tab.cols.map(([t,al,mono],ci) => ({v:r[ci], al:al||'left', ff:mono?"'Geist Mono',monospace":'inherit', fs:mono?'13px':'14px', fg:ci===0?'var(--ink)':'var(--ink-2)', fw:ci===0?500:400})),
+          sit:ativo?'Ativo':'Inativo', sb:ativo?'var(--ok-soft)':'var(--surface-3)', sf:ativo?'var(--ok-ink)':'var(--ink-2)', op:ativo?1:0.6,
+          ac:ativo?'Inativar':'Reativar', acCor:ativo?'var(--crit-ink)':'var(--accent-ink)', alt:()=>this.setState({cadInat:{...S.cadInat,[key]:!ativo}})}; })};
+    const ocup = {}; DADOS.forEach(d => ocup[d.pos] = d);
+    const mapa = [1,2,3].map(a => { const A = 'A0'+a; let n = 0;
+      const gavetas = [1,2,3,4,5].map(g => ({nome:'G0'+g, comps:[1,2,3,4,5,6].map(c => { const code = A+'-G0'+g+'-C0'+c, it = ocup[code]; if (it) n++;
+        return {txt: it ? it.id.slice(3) : '', tip: it ? code+' · '+it.id+' · '+it.iso : code+' · livre', bg: it?'var(--accent-soft)':'transparent', bd: it?'var(--accent)':'var(--line-2)', bs: it?'solid':'dashed', cur: it?'pointer':'default', ir: it ? abrir(it.id) : ()=>{}}; })}));
+      return {nome:'Armário '+A, ocup: n+' de 30 ocupadas', gavetas}; });
+
+    const P = S.par;
+    const params = [
+      {k:'janela',t:'Janela do consumo médio',desc:'Quantos dias entram no cálculo do consumo médio diário, do ponto de reposição e da sugestão de compra. Padrão: 90.',un:'dias',icone:'icon-calendar-range'},
+      {k:'sessao',t:'Sessão expira após',desc:'Minutos parado até a sessão encerrar sozinha. A duração máxima é 12 horas. Padrão: 30.',un:'minutos',icone:'icon-timer'},
+      {k:'email',t:'E-mail corporativo para avisos',desc:'Recebe o aviso quando um item fica crítico ou zerado. Em branco desliga o aviso. Nunca é usado para login.',un:'',icone:'icon-mail',mono:1},
+    ].map(p => ({...p, v:P[p.k], ff:p.mono?"'Geist Mono',monospace":'inherit', set:e=>this.setState({par:{...S.par,[p.k]:e.target.value}, parSalvo:false})}));
+    const jn = parseInt(P.janela,10), sn = parseInt(P.sessao,10);
+    const parErro = !(jn>=1&&jn<=365) ? 'A janela precisa ficar entre 1 e 365 dias.' : !(sn>=5&&sn<=480) ? 'A sessão precisa ficar entre 5 e 480 minutos.' : '';
+    const paramInfo = parErro ? {t:parErro,cor:'var(--crit-ink)'} : S.parSalvo ? {t:'Salvo em 12/09/2026 10:20 por roberto.nunes.',cor:'var(--ink-3)'} : {t:'Alterações não salvas. Pontos de reposição e sugestões serão recalculados.',cor:'var(--warn-ink)'};
+    const paramHist = [{t:'Janela do consumo médio',a:'60',b:'90',quem:'roberto.nunes · 12/09/2026 10:20'},{t:'E-mail para avisos',a:'(vazio)',b:'estoque@ddametalurgica.com.br',quem:'roberto.nunes · 26/08/2026 16:02'},{t:'Sessão expira após',a:'60',b:'30',quem:'roberto.nunes · 26/08/2026 15:58'}];
+
+    const errosImp = S.impCorr ? [] : [{l:17,t:'fornecedor com CNPJ 56.789.012/0001-34 não está cadastrado.'},{l:31,t:'estoque mínimo em branco.'}];
+    const impLinhas = [[2,'PT-0012','CNMG 120408 · P25','Ferramentas Sul','A01-G03-C04',20,47],[3,'PT-0018','WNMG 080408 · M15','Usinatec','A01-G02-C01',15,5],[4,'PT-0024','DCMT 11T304 · P15','Ferramentas Sul','A01-G04-C02',12,9],
+      [17,'PT-0090','CNMG 160612 · P35','56.789.012/0001-34','A03-G04-C01',10,22,'Fornecedor não cadastrado'],[18,'PT-0091','DNMG 150608 · M20','Metalcorte','A03-G04-C02',10,14],
+      [31,'PT-0104','R390-11T308 · P40','Usinatec','A02-G05-C03','',30,'Mínimo em branco'],[32,'PT-0105','LNMX 301940 · K25','Ferramentas Sul','A02-G05-C04',8,12],[33,'PT-0106','TCMT 110204 · P15','Metalcorte','A01-G05-C05',10,18]]
+      .map(r => { const err = r[7] && !S.impCorr; return {n:r[0],id:r[1],iso:r[2],forn:S.impCorr&&r[0]===17?'Metalcorte':r[3],pos:r[4],min:S.impCorr&&r[0]===31?10:(r[5]===''?'—':r[5]),saldo:r[6],
+        res: err ? r[7] : 'Válida', cor: err?'var(--crit-ink)':'var(--ok-ink)', icone: err?'icon-circle-x':'icon-circle-check', bg: err?'var(--crit-soft)':'transparent'}; });
+    const passo = S.imp==='vazio'?1:S.imp==='previa'?2:3;
+    const imp = {vazio:S.imp==='vazio', previa:S.imp==='previa', ok:S.imp==='ok', arquivo: S.impCorr?'planilha-pastilhas-corrigida.csv':'planilha-pastilhas-2026.csv',
+      total:42, nErros:errosImp.length, validas:42-errosImp.length, erros:errosImp, temErros:errosImp.length>0, errCor:errosImp.length?'var(--crit-ink)':'var(--ink-2)',
+      btnBg: errosImp.length?'var(--line-2)':'var(--accent)', btnCur: errosImp.length?'not-allowed':'pointer', reenviar: errosImp.length?'Enviar arquivo corrigido':'Trocar arquivo', linhas:impLinhas,
+      passos:[['Enviar o CSV','No modelo do sistema'],['Conferir a prévia','Erros linha a linha'],['Importar','Tudo ou nada']].map(([t,sub],i) => { const n=i+1, done=n<passo, on=n===passo;
+        return {n: done?'✓':n, t, sub, bd:on?'var(--accent)':'var(--line)', bg:on?'var(--accent-soft)':'var(--surface)', nb:done?'var(--ok)':on?'var(--accent)':'var(--surface-3)', nf:done||on?'var(--on-accent)':'var(--ink-2)'}; })};
+
+    const nf = S.nf, cd = nf.cnpj.replace(/\D/g,'');
+    const cnpjOk = cnpjValido(nf.cnpj), jaExiste = cd === '12345678000190';
+    const nfOk = nf.razao.trim().length > 2 && cnpjOk && !jaExiste;
+    const nfv = {razaoBd:'var(--line-2)',
+      cnpjBd: cd.length === 14 && (!cnpjOk || jaExiste) ? 'var(--crit)' : 'var(--line-2)',
+      cnpjMsg: cd.length < 14 ? 'Dígitos verificadores conferidos ao digitar.' : jaExiste ? 'CNPJ já cadastrado (Ferramentas Sul).' : cnpjOk ? 'CNPJ válido.' : 'Dígito verificador inválido.',
+      cnpjCor: cd.length < 14 ? 'var(--ink-3)' : cnpjOk && !jaExiste ? 'var(--ok-ink)' : 'var(--crit-ink)',
+      btnBg: nfOk ? 'var(--accent)' : 'var(--line-2)', btnCur: nfOk ? 'pointer' : 'not-allowed'};
+    const fornOpts = [{v:'Ferramentas Sul',t:'Ferramentas Sul · preferencial'},{v:'Usinatec Distribuidora',t:'Usinatec Distribuidora'},{v:'Metalcorte Comercial',t:'Metalcorte Comercial'}]
+      .concat(S.fornExtra.map(n => ({v:n, t:n+' · novo'})));
+    const setNf = k => e => this.setState({nf:{...S.nf,[k]: k==='cnpj' ? fmtCnpj(e.target.value) : e.target.value}});
+    return {
+      wordmark: theme==='escuro' ? 'assets/sicei-wordmark-claro.png' : 'assets/sicei-wordmark-escuro.png',
+      precoDica: {'Ferramentas Sul':'Último pago a este fornecedor: R$ 38,90 em 02/09','Usinatec Distribuidora':'Último pago a este fornecedor: R$ 41,20 em 15/08'}[S.fornSel] || 'Primeira compra deste fornecedor: o preço abre o histórico.',
+      fornOpts, fornSel:S.fornSel, setFornSel:e=>this.setState({fornSel:e.target.value}),
+      novoForn:S.novoForn, nf, nfv, abrirNovoForn:()=>this.setState({novoForn:true}), fecharNovoForn:()=>this.setState({novoForn:false}),
+      nfRazao:setNf('razao'), nfCnpj:setNf('cnpj'), nfCod:setNf('cod'), nfLt:setNf('lt'),
+      salvarNovoForn:()=>{ if (!nfOk) return; const n = nf.razao.trim(); this.setState({fornExtra:[...S.fornExtra,n], fornSel:n, novoForn:false, nf:{razao:'',cnpj:'',cod:'',lt:''}}); this.avisar(n+' cadastrado e vinculado a '+sel.id+'.'); },
+      rel, relMov, cadAbas, cad, mapa, params, paramInfo, paramHist, imp,
+      exportar:()=>this.avisar('Exportação registrada no log de auditoria.'),
+      salvarCad:()=>this.avisar('Cadastro salvo e registrado no log de auditoria.'),
+      salvarParams:()=>{ if (parErro) return; this.setState({parSalvo:true}); this.avisar('Parâmetros salvos. Mudança registrada no log.'); },
+      impEnviar:()=>this.setState({imp:'previa',impCorr:false}), impCorrigir:()=>this.setState({impCorr:true}),
+      impGravar:()=>{ if (errosImp.length) return; this.setState({imp:'ok'}); }, impReiniciar:()=>this.setState({imp:'vazio',impCorr:false}),
+      cols, theme, shell:!acesso, acesso, s:{[tela]:true},
+      trilha:{grupo:(TELAS[tela]||['',''])[0], tela:tela==='registrar'?reg.titulo:(TELAS[tela]||['',''])[1]},
+      nav, iconeTema: theme==='escuro'?'icon-sun':'icon-moon',
+      alternarTema:()=>this.setState({tema:theme==='escuro'?'claro':'escuro'}),
+      totalAlertas: emAlerta.length,
+      irAlertas:()=>this.ir('alertas'), irSaida:()=>this.ir('registrar',{modo:'saida'}), irEntrada:()=>this.ir('registrar',{modo:'entrada'}),
+      irItens:()=>this.ir('itens'), irMovs:()=>this.ir('movs'), irSugestao:()=>this.ir('sugestao'), irEtiquetas:()=>this.ir('etiquetas'),
+      irLogin:()=>this.ir('login'), irSenha:()=>this.ir('senha'), entrar:()=>this.ir('painel'), voltarItem:()=>this.ir('item'),
+      kpis, consumo, topConsumo, ultimas:movs.slice(0,6),
+      alertasTop: emAlerta.slice(0,6).map(d=>({...d,abrir:abrir(d.id)})),
+      busca:S.busca, setBusca:e=>this.setState({busca:e.target.value}), filtros, itensFiltrados,
+      contagemLista:`${itensFiltrados.length} de ${DADOS.length} itens ativos`,
+      sel, fornecedores,
+      reg, qtd:S.qtd, setQtd:e=>this.setState({qtd:e.target.value}), unCx:()=>this.setState({un:'cx'}), unUn:()=>this.setState({un:'un'}),
+      confirmar:()=>{ if (erro) return; this.avisar(entrada?`Entrada registrada. Saldo de ${sel.id}: ${depois}.`:`Saída registrada. Saldo de ${sel.id}: ${depois}.`); },
+      abaAl:{abertos:S.aba==='abertos',fechados:S.aba==='fechados',aBg:S.aba==='abertos'?'var(--surface)':'transparent',fBg:S.aba==='fechados'?'var(--surface)':'transparent',aSh:S.aba==='abertos'?'var(--shadow)':'none',fSh:S.aba==='fechados'?'var(--shadow)':'none'},
+      abaAbertos:()=>this.setState({aba:'abertos'}), abaFechados:()=>this.setState({aba:'fechados'}), alertas, fechados,
+      sugestoes, sugTot, movs, movSel,
+      verificado:S.verificado, verificar:()=>this.setState({verificado:true}), auditoria,
+      nNome:S.nNome, nSob:S.nSob, setNome:e=>this.setState({nNome:e.target.value}), setSob:e=>this.setState({nSob:e.target.value}),
+      loginGerado:lg.login, loginNota:lg.nota, perfis, usuarios,
+      semCred:!S.cred, temCred:!!S.cred, cred:S.cred||{},
+      gerar:()=>{ if (lg.login==='—') return; let s=''; for (let i=0;i<12;i++) s+=ALFA[Math.floor(Math.random()*ALFA.length)]; this.setState({cred:{login:lg.login,senha:s}}); },
+      fecharCred:()=>this.setState({cred:null,nNome:'',nSob:''}),
+      posicoes, etiquetas, etqN:etiquetas.length, etqTodasTxt:todasOn?'Limpar seleção':'Selecionar todas',
+      etqTodas:()=>{ const e={}; DADOS.forEach(d=>e[d.id]=!todasOn); this.setState({etq:e}); },
+      nova, conf, setNova:e=>this.setState({nova:e.target.value}), setConf:e=>this.setState({conf:e.target.value}),
+      regrasSenha: regras.map(([ok,t])=>({t, cor:ok?'var(--ok-ink)':'var(--ink-3)', icone:ok?'icon-circle-check':'icon-circle'})),
+      senhaBtnBg: senhaOk?'var(--accent)':'var(--line-2)',
+      temToast:!!S.toast, toast:S.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

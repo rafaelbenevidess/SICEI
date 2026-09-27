@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="icon" type="image/png" href="assets/sicei-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+<style>
+[data-theme]{--bg:oklch(0.975 0.004 250);--surface:#fff;--surface-2:oklch(0.968 0.005 250);--surface-3:oklch(0.94 0.006 250);--line:oklch(0.918 0.006 250);--line-2:oklch(0.86 0.008 250);--ink:oklch(0.21 0.015 255);--ink-2:oklch(0.42 0.015 255);--ink-3:oklch(0.55 0.012 255);--accent:oklch(0.52 0.17 258);--accent-soft:oklch(0.95 0.03 258);--accent-ink:oklch(0.43 0.15 258);--on-accent:#fff;--ok:oklch(0.62 0.14 155);--ok-soft:oklch(0.95 0.04 155);--ok-ink:oklch(0.42 0.1 155);--warn:oklch(0.76 0.15 75);--warn-soft:oklch(0.96 0.05 85);--warn-ink:oklch(0.47 0.11 60);--crit:oklch(0.58 0.2 27);--crit-soft:oklch(0.955 0.03 25);--crit-ink:oklch(0.48 0.17 27);--zero-bg:oklch(0.25 0.015 255);--zero-ink:#fff;--canvas:oklch(0.93 0.005 250)}
+[data-theme="escuro"]{--bg:oklch(0.165 0.01 255);--surface:oklch(0.205 0.012 255);--surface-2:oklch(0.235 0.012 255);--surface-3:oklch(0.27 0.012 255);--line:oklch(0.285 0.012 255);--line-2:oklch(0.35 0.012 255);--ink:oklch(0.95 0.005 255);--ink-2:oklch(0.79 0.01 255);--ink-3:oklch(0.65 0.01 255);--accent:oklch(0.7 0.14 258);--accent-soft:oklch(0.3 0.06 258);--accent-ink:oklch(0.82 0.1 258);--on-accent:oklch(0.17 0.02 258);--ok:oklch(0.72 0.14 155);--ok-soft:oklch(0.3 0.05 155);--ok-ink:oklch(0.86 0.1 155);--warn:oklch(0.8 0.14 80);--warn-soft:oklch(0.32 0.06 75);--warn-ink:oklch(0.88 0.11 85);--crit:oklch(0.68 0.18 27);--crit-soft:oklch(0.32 0.08 27);--crit-ink:oklch(0.87 0.09 27);--zero-bg:oklch(0.92 0.005 255);--zero-ink:oklch(0.18 0.01 255);--canvas:oklch(0.12 0.01 255)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{color:var(--accent)}
+input,select,button{font-family:inherit}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--canvas);color:var(--ink);font-family:Geist,system-ui,sans-serif;font-size:14px;padding:48px">
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:32px">
+  <span style="font-family:'Geist Mono',monospace;font-size:13px;color:var(--ink-3)">SICEI · celular · 360 px</span>
+  <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.025em">Saída pelo QR da gaveta</h1>
+  <span style="color:var(--ink-2);max-width:640px">O almoxarife lê a etiqueta da posição com a câmera, cai na página do item e registra a saída em uma única tela. Toque nos controles para testar.</span>
+</div>
+<div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start">
+
+<!-- 1 · ITEM VIA QR -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font-size:13px;font-weight:600;color:var(--ink-2)">1 · Item aberto pelo QR</span>
+<div style="width:360px;height:760px;border-radius:36px;border:8px solid var(--ink);background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.18)">
+  <div style="height:32px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;font-weight:600"><span>15:41</span><span style="display:flex;gap:4px"><i class="icon-signal" style="font-size:13px"></i><i class="icon-wifi" style="font-size:13px"></i><i class="icon-battery-full" style="font-size:13px"></i></span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;border-bottom:1px solid var(--line);background:var(--surface)">
+    <span style="display:flex;align-items:center;gap:8px"><img src="assets/sicei-icon.png" alt="SICEI" style="width:26px;height:26px;border-radius:7px;display:block"><span role="img" aria-label="SICEI" style="display:block;height:13px;width:47px;background:url({{ wordmark }}) left center/contain no-repeat"></span></span>
+    <span style="display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:var(--crit-soft);color:var(--crit-ink);font-size:12px;font-weight:600"><i class="icon-bell" style="font-size:13px"></i>8</span>
+  </div>
+  <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px"><i class="icon-scan-line" style="font-size:16px"></i>Posição <strong style="font-family:'Geist Mono',monospace">A01-G03-C04</strong> lida pela câmera</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:var(--accent-ink);font-weight:500">PT-0012</span>
+      <span style="font-size:22px;font-weight:600;letter-spacing:-0.02em">CNMG 120408 · P25</span>
+      <span style="font-size:13px;color:var(--ink-3)">Sandvik · Torneamento · caixa com 10</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:var(--ink-3)">Saldo</span><span style="font-size:44px;font-weight:600;letter-spacing:-0.04em;line-height:1">39</span></span>
+        <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:6px;background:var(--ok-soft);color:var(--ok-ink);font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>OK</span>
+      </div>
+      <div style="position:relative;height:8px;border-radius:4px;background:var(--surface-3)"><div style="position:absolute;left:0;top:0;bottom:0;width:28%;background:var(--ok);border-radius:4px"></div><div style="position:absolute;top:-4px;bottom:-4px;left:14.1%;width:2px;background:var(--ink-2)"></div><div style="position:absolute;top:-4px;bottom:-4px;left:28.9%;width:2px;background:var(--ink-3)"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+        <span style="display:flex;flex-direction:column"><span style="color:var(--ink-3);font-size:12px">Mínimo</span><strong>20</strong></span>
+        <span style="display:flex;flex-direction:column"><span style="color:var(--ink-3);font-size:12px">Reposição</span><strong>41</strong></span>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--line)">Últimas saídas</div>
+      <div style="display:flex;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--line);font-size:13px"><span style="display:flex;flex-direction:column"><span>Torno CNC 03</span><span style="font-size:12px;color:var(--ink-3)">26/09 10:14 · Carlos Pereira</span></span><strong>−4</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:11px 16px;font-size:13px"><span style="display:flex;flex-direction:column"><span>Torno CNC 01</span><span style="font-size:12px;color:var(--ink-3)">25/09 14:02 · Diego Martins</span></span><strong>−4</strong></div>
+    </div>
+  </div>
+  <div style="padding:12px 16px 20px;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px">
+    <button style="height:52px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px"><i class="icon-arrow-down-to-line" style="font-size:17px"></i>Entrada</button>
+    <button style="height:52px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-arrow-up-from-line" style="font-size:17px"></i>Registrar saída</button>
+  </div>
+</div>
+</div>
+
+<!-- 2 · SAÍDA -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font-size:13px;font-weight:600;color:var(--ink-2)">2 · Saída em uma tela</span>
+<div style="width:360px;height:760px;border-radius:36px;border:8px solid var(--ink);background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.18)">
+  <div style="height:32px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;font-weight:600"><span>15:41</span><span style="display:flex;gap:4px"><i class="icon-signal" style="font-size:13px"></i><i class="icon-wifi" style="font-size:13px"></i><i class="icon-battery-full" style="font-size:13px"></i></span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:8px 12px 12px;border-bottom:1px solid var(--line);background:var(--surface)">
+    <button style="width:36px;height:36px;border-radius:10px;border:0;background:var(--surface-2);color:var(--ink);display:grid;place-items:center"><i class="icon-x" style="font-size:18px"></i></button>
+    <span style="display:flex;flex-direction:column;line-height:1.2"><span style="font-weight:600">Registrar saída</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3)">PT-0012 · A01-G03-C04 · saldo 39</span></span>
+  </div>
+  <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:13px;font-weight:500">Quantidade</span>
+      <div style="display:grid;grid-template-columns:56px 1fr 56px;gap:8px;align-items:center">
+        <button onClick="{{ menos }}" style="height:56px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:22px;cursor:pointer"><i class="icon-minus"></i></button>
+        <div style="height:56px;border-radius:12px;border:1px solid {{ qBorda }};background:var(--surface);display:flex;align-items:center;justify-content:center;gap:6px"><span style="font-size:28px;font-weight:600">{{ qtd }}</span><span style="color:var(--ink-3)">un.</span></div>
+        <button onClick="{{ mais }}" style="height:56px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:22px;cursor:pointer"><i class="icon-plus"></i></button>
+      </div>
+      <sc-if value="{{ erro }}" hint-placeholder-val="{{ false }}">
+        <span role="alert" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--crit-ink)"><i class="icon-circle-alert" style="font-size:15px"></i>Saldo disponível: 39</span>
+      </sc-if>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:13px;font-weight:500">Destino</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ destinos }}" as="d" hint-placeholder-count="4">
+          <button onClick="{{ d.ir }}" style="height:44px;padding:0 14px;border-radius:22px;border:1px solid {{ d.bd }};background:{{ d.bg }};color:{{ d.fg }};font-size:14px;font-weight:500;cursor:pointer">{{ d.t }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Ordem de produção
+      <input value="2026-0457" inputmode="numeric" style="height:48px;padding:0 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface);color:var(--ink);font-family:'Geist Mono',monospace;font-size:16px;outline:none">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500">Quem retirou
+      <span style="display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface)"><span style="width:28px;height:28px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font-size:11px;font-weight:600">CP</span><span style="flex:1;font-size:15px">Carlos Pereira</span><i class="icon-chevron-down" style="font-size:16px;color:var(--ink-3)"></i></span>
+    </label>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:var(--surface-2);font-size:14px">
+      <span style="color:var(--ink-2)">Saldo depois</span>
+      <span style="display:flex;align-items:center;gap:8px"><strong style="font-size:18px">{{ depois }}</strong><span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;background:{{ stDep.sb }};color:{{ stDep.sf }};font-size:12px;font-weight:600">{{ stDep.t }}</span></span>
+    </div>
+  </div>
+  <div style="padding:12px 16px 20px;background:var(--surface);border-top:1px solid var(--line)">
+    <button onClick="{{ confirmar }}" style="width:100%;height:54px;border-radius:12px;border:0;background:{{ btnBg }};color:var(--on-accent);font-size:16px;font-weight:600;cursor:pointer">Confirmar saída de {{ qtd }} un.</button>
+  </div>
+</div>
+</div>
+
+<!-- 3 · CONFIRMAÇÃO -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font-size:13px;font-weight:600;color:var(--ink-2)">3 · Saída registrada</span>
+<div style="width:360px;height:760px;border-radius:36px;border:8px solid var(--ink);background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.18)">
+  <div style="height:32px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;font-weight:600"><span>15:42</span><span style="display:flex;gap:4px"><i class="icon-signal" style="font-size:13px"></i><i class="icon-wifi" style="font-size:13px"></i><i class="icon-battery-full" style="font-size:13px"></i></span></div>
+  <div style="flex:1;padding:40px 20px 16px;display:flex;flex-direction:column;gap:22px">
+    <div style="width:64px;height:64px;border-radius:50%;background:var(--ok-soft);color:var(--ok-ink);display:grid;place-items:center"><i class="icon-check" style="font-size:32px"></i></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:24px;font-weight:600;letter-spacing:-0.02em">Saída registrada</span>
+      <span style="color:var(--ink-2);line-height:1.5">4 unidades de <strong style="font-family:'Geist Mono',monospace;color:var(--ink)">PT-0012</strong> para o Torno CNC 03, OP 2026-0457, retiradas por Carlos Pereira.</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+      <span style="display:flex;flex-direction:column"><span style="font-size:12px;color:var(--ink-3)">Antes</span><span style="font-size:26px;font-weight:600">39</span></span>
+      <i class="icon-arrow-right" style="color:var(--ink-3)"></i>
+      <span style="display:flex;flex-direction:column"><span style="font-size:12px;color:var(--ink-3)">Agora</span><span style="font-size:26px;font-weight:600">35</span></span>
+    </div>
+    <div style="display:flex;gap:10px;padding:14px;border-radius:12px;background:var(--warn-soft);color:var(--warn-ink);font-size:14px;line-height:1.45"><i class="icon-triangle-alert" style="font-size:18px;margin-top:1px"></i><span>O item passou para <strong>Atenção</strong> (saldo abaixo do ponto de reposição, 41). Alerta aberto para o Gestor.</span></div>
+    <span style="font-size:12px;color:var(--ink-3)">Registrado por lucas.almeida · 27/09/2026 15:42 (servidor)</span>
+  </div>
+  <div style="padding:12px 16px 20px;display:flex;flex-direction:column;gap:8px">
+    <button style="height:52px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-scan-line" style="font-size:17px"></i>Ler outra etiqueta</button>
+    <button style="height:48px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:15px;font-weight:500">Voltar ao item</button>
+  </div>
+</div>
+</div>
+
+<!-- 4 · PAINEL -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font-size:13px;font-weight:600;color:var(--ink-2)">4 · Painel no celular</span>
+<div style="width:360px;height:760px;border-radius:36px;border:8px solid var(--ink);background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.18)">
+  <div style="height:32px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;font-weight:600"><span>15:45</span><span style="display:flex;gap:4px"><i class="icon-signal" style="font-size:13px"></i><i class="icon-wifi" style="font-size:13px"></i><i class="icon-battery-full" style="font-size:13px"></i></span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;border-bottom:1px solid var(--line);background:var(--surface)">
+    <span style="display:flex;align-items:center;gap:8px"><img src="assets/sicei-icon.png" alt="SICEI" style="width:26px;height:26px;border-radius:7px;display:block"><span style="font-weight:600">Painel</span></span>
+    <span style="display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:var(--crit-soft);color:var(--crit-ink);font-size:12px;font-weight:600"><i class="icon-bell" style="font-size:13px"></i>8</span>
+  </div>
+  <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+          <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ k.cor }}"></span>{{ k.t }}</span>
+          <span style="font-size:28px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ k.n }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <span style="display:flex;flex-direction:column"><span style="font-size:12px;color:var(--ink-3)">Consumo em setembro</span><span style="font-size:22px;font-weight:600">1.016 un.</span></span>
+      <span style="font-size:13px;color:var(--ink-2);font-weight:600">−15% vs. agosto</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--line)">Alertas abertos</div>
+      <sc-for list="{{ alertas }}" as="a" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line)">
+          <span style="width:64px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;background:{{ a.sb }};color:{{ a.sf }};font-size:11px;font-weight:600">{{ a.t }}</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.iso }}</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--ink-3)">{{ a.id }}</span></span>
+          <strong style="font-size:15px">{{ a.saldo }}</strong>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px 18px;background:var(--surface);border-top:1px solid var(--line)">
+    <span style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--accent-ink)"><i class="icon-layout-dashboard" style="font-size:20px"></i>Painel</span>
+    <span style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink-3)"><i class="icon-package" style="font-size:20px"></i>Itens</span>
+    <span style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink-3)"><i class="icon-scan-line" style="font-size:20px"></i>Ler QR</span>
+    <span style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink-3)"><i class="icon-bell" style="font-size:20px"></i>Alertas</span>
+  </div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;escuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'escuro'&quot;}}">
+const ST = {
+  OK:{t:'OK',sb:'var(--ok-soft)',sf:'var(--ok-ink)',cor:'var(--ok)'},
+  ATENCAO:{t:'Atenção',sb:'var(--warn-soft)',sf:'var(--warn-ink)',cor:'var(--warn)'},
+  CRITICO:{t:'Crítico',sb:'var(--crit-soft)',sf:'var(--crit-ink)',cor:'var(--crit)'},
+  ZERADO:{t:'Zerado',sb:'var(--zero-bg)',sf:'var(--zero-ink)',cor:'var(--ink)'},
+};
+const status = s => s===0?'ZERADO':s<=20?'CRITICO':s<=41?'ATENCAO':'OK';
+class Component extends DCLogic {
+  state = { qtd: 4, destino: 0 };
+  renderVals() {
+    const { qtd, destino } = this.state, saldo = 39;
+    const erro = qtd > saldo, dep = saldo - qtd;
+    const D = ['Torno CNC 03','Torno CNC 01','Centro usinagem 02','Ferramentaria'];
+    return {
+      theme: this.props.tema ?? 'claro', qtd, erro,
+      wordmark: (this.props.tema ?? 'claro')==='escuro' ? 'assets/sicei-wordmark-claro.png' : 'assets/sicei-wordmark-escuro.png',
+      menos: () => this.setState({ qtd: Math.max(1, qtd - 1) }),
+      mais: () => this.setState({ qtd: qtd + (qtd >= 36 ? 5 : 1) }),
+      qBorda: erro ? 'var(--crit)' : 'var(--line-2)',
+      depois: erro ? '—' : dep,
+      stDep: erro ? { t:'Recusada', sb:'var(--crit-soft)', sf:'var(--crit-ink)' } : ST[status(dep)],
+      btnBg: erro ? 'var(--line-2)' : 'var(--accent)',
+      confirmar: () => {},
+      destinos: D.map((t,i) => ({ t, bd: i===destino?'var(--accent)':'var(--line-2)', bg: i===destino?'var(--accent-soft)':'var(--surface)', fg: i===destino?'var(--accent-ink)':'var(--ink)', ir: () => this.setState({ destino: i }) })),
+      kpis: [['ZERADO',2],['CRITICO',2],['ATENCAO',4],['OK',4]].map(([k,n]) => ({ t: ST[k].t, n, cor: ST[k].cor })),
+      alertas: [['ZERADO','WNMG 080408 · M15','PT-0018',0],['ZERADO','SPMG 060204 · P40','PT-0045',0],['CRITICO','TNMG 160404 · M25','PT-0041',3],['CRITICO','DCMT 11T304 · P15','PT-0024',8],['ATENCAO','CNMG 120408 · P25','PT-0012',35]]
+        .map(([k,iso,id,saldo]) => ({ ...ST[k], iso, id, saldo })),
+    };
+  }
+}
+</script>
+</body>
+</html>

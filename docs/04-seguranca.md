@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 04, Segurança |
-| **Versão** | 1.2 |
+| **Versão** | 1.3 |
 | **Base** | [03, System Design, seção 6](03-system-design.md#6-segurança) |
 
 ## 1. Controles implementados
@@ -20,6 +20,7 @@
 | CSRF | Server Actions só aceitam a mesma origem; cookie `SameSite=Lax`. | Next.js 16 |
 | Cabeçalhos | CSP, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS em produção. | `src/proxy.ts` |
 | Redirecionamento | O parâmetro `volta` do login só aceita caminhos internos, sem caracteres de controle. | `src/lib/redirecionamento.ts` |
+| IP no log | Grava o IP público da rede, vindo do `X-Real-IP` do proxy da Vercel, que o cliente não controla. É o mesmo para todos os computadores atrás do mesmo roteador; o IP interno do computador não chega ao servidor em nenhum sistema web. O usuário é identificado pelo login e o aparelho pelo navegador gravado junto. | `src/lib/ip.ts` |
 | Integridade do histórico | Usuário `sicei_<sigla>_app` sem UPDATE/DELETE em `movimentacao` e `audit_log`; triggers que barram até o dono do banco; log encadeado por SHA-256; verificação que aponta o registro adulterado e a movimentação que não bate com o log. | `prisma/migrations/*regras_do_banco`, `*nomes_sicei`, `src/server/audit/*` |
 | Regras no banco | `CHECK` de saldo não negativo, campos obrigatórios por tipo, coerência do saldo; índices únicos parciais. | migration `regras_do_banco` |
 | Rotina diária | Aceita só `Authorization: Bearer CRON_SECRET`, comparado em tempo constante. Sem segredo configurado, recusa tudo. | `src/app/api/cron/diario/route.ts` |
@@ -83,6 +84,9 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | Cookie do tema (`sicei_tema`) | O servidor só aceita `claro` ou `escuro` (`temaDoCookie`). Não guarda nada sensível. |
 | Tela "Ler QR" (`/p`) | O código digitado só vira redirecionamento depois de passar pelo formato `A01-G03-C04`, e vai codificado na URL. |
 | Câmera na tela "Ler QR" | O cabeçalho `Permissions-Policy` passou de `camera=()` para `camera=(self)`: só o próprio SICEI pode pedir a câmera, e o navegador ainda pergunta ao usuário. A imagem é analisada no aparelho e não é enviada a lugar nenhum. Do texto lido só se aproveita o código da posição (`codigoDoQr`), e a navegação é sempre para a rota interna `/p/<código>`: um QR malicioso não leva o usuário para outro site nem injeta nada na página. |
+| Pop-up de alertas | O cookie `sicei_aviso_alertas` é `HttpOnly`, `SameSite=Lax` e dura a sessão; só guarda "1". A contagem é feita no servidor e só para quem tem `alertas:ciente`. | `src/app/acoes/autenticacao.ts`, `(app)/layout.tsx` |
+| Cadastro rápido no novo item | Fabricante e fornecedor passam pelos mesmos services do cadastro normal (`cadastros:editar`, Zod, unicidade, log). | `src/app/acoes/cadastros.ts` |
+| Registro da impressão de etiquetas | Exige `etiquetas:imprimir`; os códigos passam pelo schema (formato, no máximo 500, sem repetidos) antes de ir ao banco. | `src/server/services/etiquetas.ts` |
 | Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
 
 ## 6. Histórico do documento
@@ -92,3 +96,4 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | 1.0 | 26/09/2026 | Primeira versão: controles, revisão de segurança, revisão de código e riscos aceitos. |
 | 1.1 | 27/09/2026 | Revisão do redesign (seção 5). O SVG do QR passou para `FolhaDeEtiquetas.tsx`. |
 | 1.2 | 27/09/2026 | Câmera liberada só para o próprio SICEI (`camera=(self)`), para ler a etiqueta na tela "Ler QR". |
+| 1.3 | 27/09/2026 | O que o IP do log representa; pop-up de alertas, cadastro rápido no novo item e registro da impressão de etiquetas na revisão (seção 5). |

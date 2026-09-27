@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.4 (para revisão) |
+| **Versão** | 1.5 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -158,7 +158,7 @@ erDiagram
 | `fornecedor` | id, razao_social, nome_fantasia, cnpj, telefone, contato, ativo | `cnpj` único |
 | `item` | id, codigo, descricao, iso, classe, cobertura, aplicacao, fabricante_id, embalagem, estoque_minimo, estoque_maximo, **saldo**, **ponto_reposicao**, **status**, ativo | `codigo` único; `CHECK (saldo >= 0)`; `CHECK (estoque_maximo IS NULL OR estoque_maximo > estoque_minimo)` |
 | `item_fornecedor` | item_id, fornecedor_id, codigo_no_fornecedor, lead_time_dias, preferencial, ultimo_preco, data_ultima_compra | PK (item_id, fornecedor_id); índice único parcial para um preferencial por item |
-| `posicao` | id, armario, gaveta, compartimento, codigo, item_id, ativo | `codigo` único (`A01-G03-C04`); `item_id` único quando preenchido |
+| `posicao` | id, armario, gaveta, compartimento, codigo, item_id, ativo, etiqueta_pendente | `codigo` único (`A01-G03-C04`); `item_id` único quando preenchido; `etiqueta_pendente` fica true quando um item entra e volta a false quando a etiqueta é impressa (RN-26) |
 | `destino` | id, tipo, codigo, nome, ativo | `codigo` único |
 | `colaborador` | id, nome, matricula, setor, ativo | `matricula` única quando preenchida |
 | `movimentacao` | id, item_id, tipo, quantidade, saldo_anterior, saldo_posterior, fornecedor_id, preco_unitario, nota_fiscal, destino_id, ordem_producao, colaborador_id, motivo, estorna_id, usuario_id, ip, user_agent, criado_em | `CHECK (quantidade > 0)`; `estorna_id` único; `CHECK`s por tipo (ex.: `COMPRA` exige fornecedor, preço e NF); **sem UPDATE nem DELETE** |
@@ -271,6 +271,7 @@ A **conferência de saldo** (RN-09b) compara `item.saldo` com a soma das movimen
 - Se a posição estiver vazia, a rota mostra isso.
 - Sem login, a rota leva ao login e volta para o item depois. O redirecionamento só aceita caminhos internos, para evitar open redirect.
 - A página de etiquetas monta uma grade A4 com QR, código da posição, código interno e descrição, pronta para imprimir.
+- Quando um item entra numa posição (troca pela página do item ou importação), a posição fica com `etiqueta_pendente = true`, e a posição que ficou vazia volta a false. A página do item avisa, e a tela de etiquetas marca e já escolhe as pendentes. Ao mandar imprimir, a Server Action `acaoEtiquetasImpressas` limpa a pendência e grava `ETIQUETA_IMPRESSA` no log, com as posições e os itens, antes de abrir a janela de impressão do navegador. O sistema não tem como saber se o papel saiu; considera impressa a etiqueta mandada para a impressora.
 
 ### 5.7 Importação inicial (RF-25)
 
@@ -295,6 +296,7 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revis
 | A05 Configuração insegura | Cabeçalhos definidos no `proxy.ts`: CSP com nonce, `frame-ancestors 'none'`, `X-Content-Type-Options`, `Referrer-Policy`. Mensagens de erro genéricas em produção. |
 | A06 Componentes vulneráveis | `npm audit` e Dependabot no GitHub. |
 | A07 Falhas de autenticação | Bloqueio após 5 falhas, rate limit por IP, política de senha, expiração de sessão, troca obrigatória da provisória. |
+| IP no log (RN-09) | O IP gravado é o que chega ao servidor: o endereço público da rede do usuário (o do provedor ou do roteador da empresa), lido do `X-Real-IP` da Vercel. O IP interno do computador (192.168.x.x) não viaja na internet e o navegador não o revela, então nenhum sistema web consegue gravá-lo. Quem fez a operação é identificado pelo login; o aparelho, pelo navegador e sistema gravados junto (`user_agent`). |
 | A08 Integridade de dados | Log inalterável com cadeia de hash, lockfile versionado. |
 | A09 Falhas de log e monitoramento | Log de auditoria (negócio) + pino (técnico). Tentativas de login com falha ficam registradas. |
 | A10 SSRF | O sistema não busca URLs informadas pelo usuário. |
@@ -468,7 +470,13 @@ Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, 
 
 O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na barra inferior), a câmera traseira abre dentro do SICEI; ao enquadrar a etiqueta, o sistema tira o código da posição do texto lido (`codigoDoQr`, em `domain/posicao.ts`) e abre `/p/<código>`, que leva ao item. A câmera do celular fora do sistema também funciona, porque o QR é a própria URL. No item, uma barra fixa traz "Entrada" e "Registrar saída". A saída cabe numa tela: quantidade com − e +, destino em botões de 44 px, OP, quem retirou e o botão de confirmar preso embaixo. Depois de gravar, a tela de confirmação mostra o saldo antes e agora, avisa se o item entrou em alerta e oferece "Ler outra etiqueta". Se a câmera não abrir (permissão negada, aparelho sem câmera, conexão sem HTTPS), a tela explica o motivo e aceita o código digitado. A imagem é analisada no aparelho, a cada 200 ms, reduzida a no máximo 640 px; nada da câmera vai para o servidor. O cabeçalho `Permissions-Policy` libera a câmera só para o próprio SICEI (`camera=(self)`).
 
-### 10.4 Prévia no navegador, decisão no servidor
+### 10.4 Avisos que não podem passar despercebidos
+
+- Pop-up de alertas (RF-13): no login, a Server Action grava o cookie de sessão `sicei_aviso_alertas`. Enquanto ele existir e houver alerta aberto sem ciente, o layout mostra a Gestor e Administrador um diálogo `alertdialog` no centro da tela, sem botão de fechar, com "Existem N alertas sem ciente" e o botão VER. VER apaga o cookie e leva a `/alertas`; abrir `/alertas` por outro caminho também apaga. Como o cookie é apagado dentro de uma Server Action, o Next renderiza o layout de novo e o aviso some. A regra de quando mostrar fica em `lib/avisoDeAlertas.ts`.
+- Etiqueta pendente (RN-26): aviso na página do item até a etiqueta ser impressa (seção 5.6).
+- Código interno (RN-01): o cadastro sugere o próximo da sequência (`domain/codigo.ts`) e avisa na hora se o código já existe; o banco continua recusando código repetido.
+
+### 10.5 Prévia no navegador, decisão no servidor
 
 Várias telas mostram o resultado antes de enviar, usando as mesmas funções puras de `domain/`: o saldo e o status depois da movimentação, a conversão de caixas, o login que será gerado, a checklist da senha, a situação do CNPJ e os limites dos parâmetros. A prévia só ajuda quem digita. O servidor valida tudo de novo e é quem decide (RN-08, RNF-05).
 
@@ -499,3 +507,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.2 | 27/09/2026 | Novo nome: SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Cookie de sessão passa a `sicei_sessao`. Uma instalação por cliente, com a empresa no endereço e nos nomes do banco (seção 7, ADR-12). |
 | 1.3 | 27/09/2026 | Redesign da interface (seção 10): tokens com tema claro e escuro, menu lateral, tela de acesso, fluxo do celular pela etiqueta QR e prévias no navegador. Stack corrigida para o que o código usa (Tailwind com componentes próprios, Geist, lucide-react; sem shadcn/ui, Recharts nem pino). Pasta `consultas/` no lugar de `repositories/`. E2E em 360 px e 1366 px. ADRs passam a ser a seção 11. |
 | 1.4 | 27/09/2026 | Leitura do QR dentro do SICEI com a câmera de qualquer celular (seção 10.3, stack, ADR-13). |
+| 1.5 | 27/09/2026 | Coluna `posicao.etiqueta_pendente` e fluxo da impressão (5.6); avisos de alertas, etiqueta e código (10.4); o que o IP do log representa (seção 6). |

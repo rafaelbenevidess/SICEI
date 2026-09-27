@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.4 (validada) |
+| **Versão** | 1.5 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -82,6 +82,9 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 3. **Dado** um item com saldo maior que zero, **quando** o Gestor tenta inativá-lo, **então** a inativação é recusada e o sistema mostra o saldo.
 4. **Dado** o termo "120408", **quando** o usuário busca, **então** aparecem todos os itens com esse trecho no código, na descrição ou na ISO.
 5. **Dado** um item novo, **quando** o Gestor tenta salvar sem fabricante, estoque mínimo ou pelo menos um fornecedor, **então** o sistema pede os campos faltantes.
+6. **Dado** os itens PST-001 a PST-006 já cadastrados, **quando** o Gestor abre "Novo item", **então** o código já vem preenchido com PST-007. Se ele digitar um código em uso (inclusive de item inativo), a tela avisa, sugere o próximo livre e não deixa salvar.
+7. **Dado** um item novo cujo fabricante ou fornecedor ainda não existe, **quando** o Gestor usa "Fabricante não está na lista?" ou "Fornecedor não está na lista?", **então** cadastra ali mesmo (o CNPJ é conferido enquanto digita), o novo registro já fica escolhido e o cadastro fica no log. O vínculo com o fornecedor nasce junto com o item.
+8. **Dado** a tela Cadastros, **quando** o usuário abre, **então** a primeira aba é Itens, com todos os itens, inclusive os inativos, e os atalhos para cadastrar, editar e importar.
 
 ### RF-04. Cadastro de fabricantes
 1. **Dado** um fabricante "Sandvik" cadastrado, **quando** alguém tenta cadastrar "SANDVIK", **então** o cadastro é recusado por duplicidade.
@@ -142,6 +145,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 2. **Dado** um alerta `ATENCAO` aberto, **quando** o saldo cai abaixo do mínimo, **então** o mesmo alerta sobe para `CRITICO` e nenhum alerta novo é criado.
 3. **Dado** um alerta aberto, **quando** uma compra leva o saldo acima do ponto de reposição, **então** o alerta fecha sozinho.
 4. **Dado** um alerta aberto, **quando** o Gestor marca como ciente, **então** ele continua aberto, mas aparece identificado com quem marcou e quando.
+5. **Dado** um Gestor ou Administrador e 3 alertas abertos sem ciente, **quando** ele entra no sistema, **então** aparece no centro da tela "Existem 3 alertas sem ciente", com um símbolo de atenção e o botão VER. Não há como fechar: o aviso continua em qualquer página até ele ir à tela de alertas. Almoxarife e Consulta, que não dão ciente, não veem o aviso.
 
 ### RF-14. Aviso por e-mail
 1. **Dado** o e-mail corporativo configurado, **quando** um item passa para `CRITICO` ou `ZERADO`, **então** o sistema envia um e-mail com o código, a descrição, o saldo, o mínimo e o link do item.
@@ -177,8 +181,9 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 2. **Dado** qualquer perfil, inclusive o Administrador, **quando** procura um jeito de editar ou apagar um registro do log, **então** essa função não existe no sistema.
 3. **Dado** um registro alterado direto no banco de dados, **quando** a verificação de integridade roda, **então** o sistema aponta o ponto exato onde a cadeia foi quebrada.
 4. **Dado** a conferência de saldo, **quando** roda, **então** compara o saldo de cada item com a soma das movimentações e lista as divergências, ou informa que não há nenhuma.
-5. **Dado** a lista do log, **quando** o Administrador olha uma linha, **então** vê de forma resumida só o que mudou (antes riscado, depois destacado), a origem com IP e dispositivo e o hash encurtado do registro.
-6. **Dado** a verificação de integridade, **quando** o Administrador a executa, **então** a própria execução e o resultado entram no log, com hora e usuário mostrados na tela.
+5. **Dado** o filtro de ação, **quando** o Administrador ou o Gestor abre a lista, **então** vê todas as ações que o sistema grava, com nome legível e agrupadas (movimentações, itens e etiquetas, cadastros, usuários e acesso, sistema). A escolha filtra a ação exata.
+6. **Dado** a lista do log, **quando** o Administrador olha uma linha, **então** vê de forma resumida só o que mudou (antes riscado, depois destacado), a origem com IP e dispositivo e o hash encurtado do registro.
+7. **Dado** a verificação de integridade, **quando** o Administrador a executa, **então** a própria execução e o resultado entram no log, com hora e usuário mostrados na tela.
 
 ### RF-22. Etiquetas QR
 1. **Dado** uma ou mais posições ocupadas, **quando** o almoxarife pede a impressão, **então** o sistema gera uma página de etiquetas com QR, código da posição, código interno e descrição, pronta para imprimir em A4.
@@ -188,6 +193,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 5. **Dado** um QR que não é etiqueta do SICEI (por exemplo, o de uma nota fiscal), **quando** a câmera o lê, **então** a tela avisa e continua lendo, sem abrir nada. Um QR de outro site nunca leva o usuário para fora do SICEI: o sistema usa só o código da posição.
 6. **Dado** a câmera negada, ausente ou em uso por outro aplicativo, **quando** a tela "Ler QR" abre, **então** explica o motivo, oferece tentar de novo e deixa digitar o código da posição.
 7. **Dado** a leitura pela câmera, **quando** ela acontece, **então** a imagem é analisada só no aparelho; nenhuma imagem da câmera vai para o servidor.
+8. **Dado** um item que mudou para a posição A05-G01-C02, **quando** alguém abre o item, **então** vê o aviso de que a etiqueta dessa posição ainda não foi impressa, com o botão "Imprimir etiqueta". A tela de etiquetas marca as não impressas e já as deixa escolhidas. Mandar imprimir tira a pendência e grava a impressão no log.
 
 ### RF-25. Importação inicial
 1. **Dado** um CSV no modelo fornecido pelo sistema, **quando** o Administrador importa, **então** o sistema mostra uma prévia com as linhas válidas e os erros de cada linha inválida, antes de gravar qualquer coisa.
@@ -329,3 +335,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. Nenhum requisito mudou. |
 | 1.3 | 27/09/2026 | Critérios novos com o redesign da interface: prévia do login (RF-02), fornecedor cadastrado na hora da compra (RF-07), aviso de saldo antes de enviar e confirmação da saída (RF-08), critérios do RF-20 (CSV de itens e movimentações, log da exportação), resumo do log e registro da verificação (RF-21), importação bloqueada com erro (RF-25), limites e histórico dos parâmetros (RF-26). Nenhum requisito novo nem removido. |
 | 1.4 | 27/09/2026 | RF-22: leitura do QR dentro do SICEI com a câmera de qualquer celular (critérios 4 a 7). |
+| 1.5 | 27/09/2026 | Critérios novos: RF-03 (próximo código, fabricante e fornecedor cadastrados na hora, aba Itens em Cadastros), RF-13 (pop-up de alertas sem ciente ao entrar), RF-21 (filtro com todas as ações), RF-22 (etiqueta pendente ao mudar de posição). |

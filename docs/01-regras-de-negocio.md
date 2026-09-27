@@ -6,7 +6,7 @@
 | **Titular** | Benevides Soluções Industriais, dona do SICEI e responsável pelo contato comercial |
 | **Cliente** | DDA Metalúrgica (Santa Catarina), que usa o sistema sob licença. Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.3 (validada) |
+| **Versão** | 1.4 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
@@ -88,7 +88,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 
 ### 5.1 Cadastros
 
-**RN-01. Código interno único.** Todo item tem um código interno obrigatório, e dois itens não podem ter o mesmo código. Depois da primeira movimentação do item, o código fica travado, porque o histórico e os relatórios dependem dele.
+**RN-01. Código interno único.** Todo item tem um código interno obrigatório, e dois itens não podem ter o mesmo código. Depois da primeira movimentação do item, o código fica travado, porque o histórico e os relatórios dependem dele. O código de um item inativo também continua ocupado. No cadastro, o sistema sugere o próximo número da sequência em uso (depois de PST-006 vem PST-007) e avisa na hora se o código digitado já existe.
 
 **RN-02. Nada com histórico é apagado.** Item, fabricante, fornecedor, destino, colaborador, posição ou usuário que já aparece em alguma movimentação ou registro de log não pode ser excluído. O que existe é a **inativação**. Um cadastro criado por engano e que nunca foi usado pode ser excluído, e a exclusão fica no log.
 
@@ -111,7 +111,7 @@ Este é um modelo conceitual. O modelo de dados de verdade está no [documento 0
 - Mudar um item de posição é permitido, e a mudança fica no log.
 - A organização física recomendada é agrupar por aplicação (torneamento, fresamento, furação, rosca) e, dentro dela, por formato. O sistema não obriga essa organização.
 
-**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR abre a página do item no SICEI, desde que o usuário esteja logado. A leitura pode ser feita pela tela "Ler QR" do próprio SICEI, que usa a câmera de qualquer celular (Android ou iPhone), ou pela câmera do celular fora do sistema. Se a etiqueta estiver apagada, o código da posição pode ser digitado. Se o item mudar de posição, a etiqueta precisa ser reimpressa.
+**RN-26. Etiqueta QR.** O sistema gera uma etiqueta com QR code para cada posição ocupada, com o código da posição, o código interno e a descrição do item. A etiqueta vai na frente do compartimento. Ler o QR abre a página do item no SICEI, desde que o usuário esteja logado. A leitura pode ser feita pela tela "Ler QR" do próprio SICEI, que usa a câmera de qualquer celular (Android ou iPhone), ou pela câmera do celular fora do sistema. Se a etiqueta estiver apagada, o código da posição pode ser digitado. Se o item mudar de posição, a etiqueta precisa ser reimpressa: a posição fica com a etiqueta pendente, o sistema avisa na página do item e na tela de etiquetas, e a pendência só some quando a etiqueta é mandada para a impressora pela tela de etiquetas. A impressão fica no log.
 
 ### 5.2 Movimentações e saldo
 
@@ -247,3 +247,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 1.1 | 26/09/2026 | RN-18: alerta que melhora sem sair do alerta é atualizado para o nível atual. Glossário: crítico é saldo igual ou abaixo do mínimo. |
 | 1.2 | 27/09/2026 | O projeto passa a se chamar SICEI (Sistema Inteligente de Controle de Estoques Industriais), antes SIMI. O SICEI pertence à Benevides Soluções Industriais, e a DDA passa a constar como cliente licenciada. Nenhuma regra mudou. |
 | 1.3 | 27/09/2026 | RN-26: a etiqueta pode ser lida dentro do SICEI, pela tela "Ler QR", com a câmera de qualquer celular, ou digitada quando estiver apagada. |
+| 1.4 | 27/09/2026 | RN-01: sugestão do próximo código e aviso de código já usado. RN-26: etiqueta pendente quando o item muda de posição, até ser impressa. |

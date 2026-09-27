@@ -15,7 +15,7 @@ A DDA controla as pastilhas em planilhas preenchidas à mão. Entrada e saída �
 - Mostra o saldo de cada pastilha em tempo real, com status (OK, Atenção, Crítico, Zerado) e a posição exata no almoxarifado (armário, gaveta, compartimento).
 - Registra entrada por compra (com nota fiscal e preço), saída para a produção (com destino, ordem de produção e quem retirou), devolução, perda, inventário e estorno. O saldo nunca fica negativo, nem com duas saídas ao mesmo tempo.
 - Guarda todos os fornecedores de cada item, com o último preço de cada um e o histórico de preços.
-- Avisa no painel e por e-mail quando um item chega ao ponto de reposição, e sugere quanto comprar.
+- Avisa no painel e por e-mail quando um item chega ao ponto de reposição, e sugere quanto comprar. Ao entrar, Gestor e Administrador veem um pop-up com os alertas ainda sem ciente.
 - Gera relatórios de consumo, movimentação e reposição, com exportação em CSV e impressão em PDF.
 - Imprime etiquetas QR para as gavetas. A tela "Ler QR" abre a câmera de qualquer celular (Android ou iPhone) dentro do próprio SICEI, lê a etiqueta, abre o item e a saída é registrada numa tela só.
 - Tema claro e escuro, e telas pensadas para o celular do almoxarife e para o computador do escritório.
@@ -30,9 +30,9 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 531 | Regras de negócio, validações, telas e componentes (99% das linhas) |
-| Integração | 70 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash |
-| Ponta a ponta | 17 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
+| Unitários | 562 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Integração | 72 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash |
+| Ponta a ponta | 19 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
 
 ```bash
 npm test                  # unitários
@@ -62,11 +62,11 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 
 | # | Documento | Versão |
 |---|---|---|
-| 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.3 |
-| 02 | [Requisitos](docs/02-requisitos.md) | 1.4 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.4 |
-| 04 | [Segurança](docs/04-seguranca.md) | 1.2 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.2 |
+| 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.4 |
+| 02 | [Requisitos](docs/02-requisitos.md) | 1.5 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.5 |
+| 04 | [Segurança](docs/04-seguranca.md) | 1.3 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.3 |
 | 06 | [Operação](docs/06-operacao.md) | 1.0 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).

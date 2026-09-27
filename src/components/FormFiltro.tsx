@@ -7,15 +7,18 @@ export function FormFiltro({
   acao,
   children,
   className,
+  rotulo,
 }: {
   acao?: string
   children: ReactNode
   className?: string
+  rotulo?: string
 }) {
   return (
     <form
       action={acao}
       role="search"
+      aria-label={rotulo}
       className={className}
       onChange={(e) => {
         const alvo = e.target as HTMLElement

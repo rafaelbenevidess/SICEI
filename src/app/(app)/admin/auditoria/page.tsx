@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { FormFiltro } from '@/components/FormFiltro'
 import { Paginacao } from '@/components/Paginacao'
 import { Pagina, Tabela, Vazio } from '@/components/ui'
 import { descreverDispositivo } from '@/lib/dispositivo'
 import { formatarDataHora, formatarNumero } from '@/lib/formatar'
+import { nomeDaAcao, opcoesDoFiltroDeAcao } from '@/lib/acoesDoLog'
 import { hashCurto, resumoDaMudanca } from '@/lib/mudanca'
-import { listarAuditoria } from '@/server/consultas/auditoria'
+import { acoesGravadas, listarAuditoria } from '@/server/consultas/auditoria'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 import { CartaoConferencia } from './CartaoConferencia'
 
@@ -36,7 +38,11 @@ export default async function Auditoria({
   await exigirPermissaoDaPagina('auditoria:ver')
   const f = await searchParams
   const pagina = Math.max(1, Number(f.pagina) || 1)
-  const { linhas, total, paginas } = await listarAuditoria(f, pagina)
+  const [{ linhas, total, paginas }, gravadas] = await Promise.all([
+    listarAuditoria(f, pagina),
+    acoesGravadas(),
+  ])
+  const gruposDeAcao = opcoesDoFiltroDeAcao(gravadas)
   const filtrado = Boolean(f.de || f.ate || f.acao || f.usuario)
 
   return (
@@ -47,9 +53,8 @@ export default async function Auditoria({
       <CartaoConferencia />
 
       <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
-        <form
-          role="search"
-          aria-label="Filtros do log"
+        <FormFiltro
+          rotulo="Filtros do log"
           className="flex flex-wrap items-end gap-3 border-b border-line p-4"
         >
           <fieldset className="flex min-w-0 items-center gap-2">
@@ -76,14 +81,20 @@ export default async function Auditoria({
               className={`${campo} w-auto`}
             />
           </fieldset>
-          <label className="min-w-40 flex-1 basis-48">
+          <label className="min-w-40 flex-1 basis-56">
             <span className="sr-only">Ação</span>
-            <input
-              name="acao"
-              defaultValue={f.acao}
-              placeholder="Ação: ESTORNO, LOGIN…"
-              className={campo}
-            />
+            <select name="acao" defaultValue={f.acao ?? ''} className={campo}>
+              <option value="">Todas as ações</option>
+              {gruposDeAcao.map((g) => (
+                <optgroup key={g.grupo} label={g.grupo}>
+                  {g.acoes.map((a) => (
+                    <option key={a.acao} value={a.acao}>
+                      {a.rotulo}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </label>
           <label className="min-w-32 flex-1 basis-40">
             <span className="sr-only">Usuário</span>
@@ -102,7 +113,7 @@ export default async function Auditoria({
               Limpar
             </Link>
           )}
-        </form>
+        </FormFiltro>
 
         {linhas.length === 0 ? (
           <div className="p-4">
@@ -117,7 +128,9 @@ export default async function Auditoria({
                 <th>Ação</th>
                 <th>Usuário</th>
                 <th>Antes → depois</th>
-                <th>Origem</th>
+                <th title="IP público da rede de onde veio o acesso (o mesmo para todos os computadores atrás do mesmo roteador) e o navegador usado">
+                  Origem
+                </th>
                 <th>Hash</th>
               </tr>
             </thead>
@@ -130,6 +143,7 @@ export default async function Auditoria({
                     <td className="whitespace-nowrap">{formatarDataHora(l.criadoEm)}</td>
                     <td>
                       <span
+                        title={nomeDaAcao(l.acao)}
                         className={`block font-mono text-xs font-semibold ${corDaAcao(l.acao)}`}
                       >
                         {l.acao}

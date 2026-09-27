@@ -74,7 +74,7 @@ test('RF-26: parâmetros avisam o limite e a mudança vai para as últimas alter
 
 test('RF-21: o log mostra o antes → depois da mudança de parâmetro', async ({ page }) => {
   await entrarComoAdmin(page)
-  await page.goto('/admin/auditoria?acao=PARAMETROS')
+  await page.goto('/admin/auditoria?acao=PARAMETROS_ALTERADOS')
   const linha = page.locator('tbody tr').first()
   await expect(linha).toContainText('PARAMETROS_ALTERADOS')
   await expect(linha.locator('del')).toContainText('janelaConsumoDias: 60')

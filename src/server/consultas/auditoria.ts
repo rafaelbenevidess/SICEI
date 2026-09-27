@@ -14,7 +14,7 @@ export async function listarAuditoria(
   const de = f.de ? inicioDoDia(f.de) : null
   const ate = f.ate ? fimDoDia(f.ate) : null
   if (de || ate) where.criadoEm = { ...(de ? { gte: de } : {}), ...(ate ? { lte: ate } : {}) }
-  if (f.acao?.trim()) where.acao = { contains: f.acao.trim().toUpperCase() }
+  if (f.acao?.trim()) where.acao = f.acao.trim().toUpperCase()
   if (f.usuario?.trim()) {
     const usuarios = await prisma.usuario.findMany({
       where: { login: { contains: f.usuario.trim().toLowerCase() } },
@@ -73,4 +73,10 @@ export async function historicoDeParametros(quantos = 10) {
     quando: l.criadoEm,
     login: l.usuarioId ? (logins.get(l.usuarioId) ?? '?') : 'sistema',
   }))
+}
+
+/** Ações que já aparecem no log, para o filtro não esconder nenhuma (RF-21). */
+export async function acoesGravadas(): Promise<string[]> {
+  const linhas = await prisma.auditLog.findMany({ distinct: ['acao'], select: { acao: true } })
+  return linhas.map((l) => l.acao)
 }

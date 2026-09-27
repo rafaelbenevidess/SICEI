@@ -82,7 +82,10 @@ export async function acaoImportar(conteudo: string): Promise<EstadoAcao> {
     if (conteudo.length > LIMITE_ARQUIVO) throw new ErroDeNegocio('O arquivo passa de 2 MB.')
     const r = await importarPlanilha(await atorDaAcao(), conteudo)
     revalidatePath('/itens')
-    return { mensagem: `${r.itens} itens importados, com o saldo inicial lançado como ajuste.` }
+    return {
+      mensagem: `${r.itens} itens importados, com o saldo inicial lançado como ajuste.`,
+      dados: { itens: r.itens },
+    }
   })
 }
 

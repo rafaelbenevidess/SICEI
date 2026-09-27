@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { COLUNAS_IMPORTACAO, colunasFaltando, validarLinhasImportacao } from './importacao'
+import {
+  COLUNAS_IMPORTACAO,
+  colunasFaltando,
+  resumoDaLinha,
+  validarLinhasImportacao,
+} from './importacao'
 
 const valida = {
   codigo: 'PST-001',
@@ -97,5 +102,42 @@ describe('RF-25 · Cabeçalho do CSV', () => {
         COLUNAS_IMPORTACAO.filter((c) => c !== 'saldo_inicial').map((c) => ` ${c.toUpperCase()} `),
       ),
     ).toEqual(['saldo_inicial'])
+  })
+})
+
+describe('RF-25 · Resumo da linha na prévia', () => {
+  it('junta ISO e classe, põe a posição em maiúsculas e usa o nome do fornecedor', () => {
+    expect(
+      resumoDaLinha(
+        {
+          codigo: ' PST-001 ',
+          iso: 'CNMG 120408',
+          classe: 'P25',
+          fornecedor_cnpj: '11.222.333/0001-81',
+          posicao: 'a01-g03-c04',
+          estoque_minimo: '20',
+          saldo_inicial: '35',
+        },
+        'Sandvik',
+      ),
+    ).toEqual({
+      codigo: 'PST-001',
+      isoClasse: 'CNMG 120408 · P25',
+      fornecedor: 'Sandvik',
+      posicao: 'A01-G03-C04',
+      minimo: '20',
+      saldo: '35',
+    })
+  })
+
+  it('linha incompleta: campos vazios e o CNPJ como veio no arquivo', () => {
+    expect(resumoDaLinha({ codigo: 'X', fornecedor_cnpj: '123', estoque_minimo: 5 })).toEqual({
+      codigo: 'X',
+      isoClasse: '',
+      fornecedor: '123',
+      posicao: '',
+      minimo: '5',
+      saldo: '',
+    })
   })
 })

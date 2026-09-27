@@ -197,6 +197,7 @@ describe('RF-25 · Importação da planilha', () => {
     expect(previa[0]).toMatchObject({
       ok: false,
       erros: ['fornecedor_cnpj: fornecedor não cadastrado no SICEI.'],
+      resumo: { codigo: cod1 },
     })
     expect(await prisma.item.count({ where: { codigo: cod1 } })).toBe(0)
 

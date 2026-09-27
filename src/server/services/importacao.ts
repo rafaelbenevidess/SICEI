@@ -3,8 +3,9 @@ import Papa from 'papaparse'
 import {
   colunasFaltando,
   COLUNAS_IMPORTACAO,
+  resumoDaLinha,
   validarLinhasImportacao,
-  type ResultadoLinha,
+  type LinhaDaPrevia,
 } from '@/domain/importacao'
 import { lerCodigoDaPosicao } from '@/domain/posicao'
 import { exigirPermissao } from '@/domain/permissoes'
@@ -25,7 +26,7 @@ export function modeloCsv(): string {
 }
 
 /** Lê o CSV (separador ; ou ,) e valida linha a linha, sem gravar nada (critério 1 do RF-25). */
-export async function previaImportacao(ator: Ator, conteudo: string): Promise<ResultadoLinha[]> {
+export async function previaImportacao(ator: Ator, conteudo: string): Promise<LinhaDaPrevia[]> {
   exigirPermissao(ator.perfil, 'importacao:executar')
   const r = Papa.parse<Record<string, string>>(conteudo.replace(/^﻿/, ''), {
     header: true,
@@ -57,8 +58,9 @@ export async function previaImportacao(ator: Ator, conteudo: string): Promise<Re
       await prisma.posicao.findMany({ where: { itemId: { not: null } }, select: { codigo: true } })
     ).map((p) => p.codigo),
   )
-  return resultados.map((l) => {
-    if (!l.ok) return l
+  return resultados.map((l, i): LinhaDaPrevia => {
+    const bruta = r.data[i]
+    if (!l.ok) return { ...l, resumo: resumoDaLinha(bruta) }
     const erros: string[] = []
     const f = fornecedores.get(l.dados.fornecedor_cnpj)
     if (!f) erros.push('fornecedor_cnpj: fornecedor não cadastrado no SICEI.')
@@ -66,7 +68,8 @@ export async function previaImportacao(ator: Ator, conteudo: string): Promise<Re
     if (existentes.has(l.dados.codigo)) erros.push('codigo: já existe um item com este código.')
     if (l.dados.posicao && posicoesOcupadas.has(l.dados.posicao.toUpperCase()))
       erros.push('posicao: posição já ocupada.')
-    return erros.length ? { linha: l.linha, ok: false, erros } : l
+    const resumo = resumoDaLinha(bruta, f ? (f.nomeFantasia ?? f.razaoSocial) : undefined)
+    return erros.length ? { linha: l.linha, ok: false, erros, resumo } : { ...l, resumo }
   })
 }
 

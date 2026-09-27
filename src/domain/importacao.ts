@@ -106,3 +106,33 @@ export function colunasFaltando(cabecalho: string[]): string[] {
   const presentes = new Set(cabecalho.map((c) => c.trim().toLowerCase()))
   return COLUNAS_IMPORTACAO.filter((c) => !presentes.has(c))
 }
+
+/** Colunas que a prévia mostra de cada linha, válida ou não (RF-25). */
+export interface ResumoDaLinha {
+  codigo: string
+  isoClasse: string
+  fornecedor: string
+  posicao: string
+  minimo: string
+  saldo: string
+}
+
+export type LinhaDaPrevia = ResultadoLinha & { resumo: ResumoDaLinha }
+
+function celula(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : v === undefined || v === null ? '' : String(v)
+}
+
+/** Resumo de uma linha crua do CSV; o nome do fornecedor, quando encontrado, troca o CNPJ. */
+export function resumoDaLinha(bruta: Record<string, unknown>, fornecedor?: string): ResumoDaLinha {
+  const iso = celula(bruta.iso)
+  const classe = celula(bruta.classe)
+  return {
+    codigo: celula(bruta.codigo),
+    isoClasse: [iso, classe].filter(Boolean).join(' · '),
+    fornecedor: fornecedor ?? celula(bruta.fornecedor_cnpj),
+    posicao: celula(bruta.posicao).toUpperCase(),
+    minimo: celula(bruta.estoque_minimo),
+    saldo: celula(bruta.saldo_inicial),
+  }
+}

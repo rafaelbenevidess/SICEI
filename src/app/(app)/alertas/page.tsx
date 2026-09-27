@@ -14,6 +14,7 @@ import {
 import { formatarDiaHora, NOME_TIPO, nomeDaPastilha } from '@/lib/formatar'
 import { listarAlertas } from '@/server/consultas/estoque'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
+import { AvisoVisto } from './AvisoVisto'
 import { BotaoCiente } from './BotaoCiente'
 
 export const metadata: Metadata = { title: 'Alertas' }
@@ -48,6 +49,7 @@ export default async function PaginaAlertas({
         />
       }
     >
+      <AvisoVisto />
       {!fechadosAba &&
         (abertos.length === 0 ? (
           <Vazio>Nenhum alerta aberto. Todos os itens estão acima do ponto de reposição.</Vazio>

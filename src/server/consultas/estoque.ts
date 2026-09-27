@@ -229,6 +229,13 @@ export function contarAlertasAbertos() {
   return prisma.alerta.count({ where: { fechadoEm: null, item: { ativo: true } } })
 }
 
+/** RF-13: alertas abertos que ninguém marcou como ciente (o pop-up do login conta estes). */
+export function contarAlertasSemCiente() {
+  return prisma.alerta.count({
+    where: { fechadoEm: null, cienteEm: null, item: { ativo: true } },
+  })
+}
+
 export async function listarAlertas() {
   const [abertos, fechados] = await Promise.all([
     prisma.alerta.findMany({

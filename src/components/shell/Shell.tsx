@@ -28,9 +28,11 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { mostrarAvisoDeAlertas } from '@/lib/avisoDeAlertas'
 import type { Tema } from '@/lib/tema'
 import { Avatar, classeBotao } from '../ui'
 import { Marca } from '../Marca'
+import { AvisoDeAlertas } from './AvisoDeAlertas'
 import { BotaoTema } from './BotaoTema'
 import { hrefAtivo, trilha, type GrupoMenu, type NomeIcone } from './menu'
 
@@ -55,6 +57,8 @@ interface Props {
   grupos: GrupoMenu[]
   usuario: { nome: string; detalhe: string }
   alertas: number
+  /** RF-13: alertas sem ciente a anunciar no pop-up (0 = sem pop-up) */
+  alertasSemCiente?: number
   licenciada: string | null
   tema: Tema
   podeRegistrarSaida: boolean
@@ -68,6 +72,7 @@ export function Shell({
   grupos,
   usuario,
   alertas,
+  alertasSemCiente = 0,
   licenciada,
   tema,
   podeRegistrarSaida,
@@ -271,6 +276,13 @@ export function Shell({
           )
         })}
       </nav>
+
+      {mostrarAvisoDeAlertas({
+        marcado: alertasSemCiente > 0,
+        podeDarCiente: true,
+        semCiente: alertasSemCiente,
+        caminho,
+      }) && <AvisoDeAlertas semCiente={alertasSemCiente} />}
     </div>
   )
 }

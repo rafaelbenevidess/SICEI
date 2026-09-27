@@ -6,13 +6,20 @@ import { Shell } from '@/components/shell/Shell'
 import { NOME_DO_PERFIL, pode } from '@/domain/permissoes'
 import { licenciada } from '@/lib/produto'
 import { COOKIE_TEMA, temaDoCookie } from '@/lib/tema'
-import { contarAlertasAbertos } from '@/server/consultas/estoque'
+import { COOKIE_AVISO_ALERTAS } from '@/lib/avisoDeAlertas'
+import { contarAlertasAbertos, contarAlertasSemCiente } from '@/server/consultas/estoque'
 import { exigirUsuario } from '@/server/web/sessao-atual'
 
 export default async function LayoutDoSistema({ children }: { children: React.ReactNode }) {
   const u = await exigirUsuario()
-  const alertas = await contarAlertasAbertos()
-  const tema = temaDoCookie((await cookies()).get(COOKIE_TEMA)?.value)
+  const jar = await cookies()
+  const tema = temaDoCookie(jar.get(COOKIE_TEMA)?.value)
+  // RF-13: só conta os alertas sem ciente se o login marcou o aviso e o perfil dá ciente
+  const avisar = jar.has(COOKIE_AVISO_ALERTAS) && pode(u.perfil, 'alertas:ciente')
+  const [alertas, semCiente] = await Promise.all([
+    contarAlertasAbertos(),
+    avisar ? contarAlertasSemCiente() : Promise.resolve(0),
+  ])
   return (
     <Shell
       grupos={menuDoPerfil(u.perfil)}
@@ -21,6 +28,7 @@ export default async function LayoutDoSistema({ children }: { children: React.Re
         detalhe: [NOME_DO_PERFIL[u.perfil], u.setor].filter(Boolean).join(' · '),
       }}
       alertas={alertas}
+      alertasSemCiente={avisar ? semCiente : 0}
       licenciada={licenciada()}
       tema={tema}
       podeRegistrarSaida={pode(u.perfil, 'movimentacao:saida')}

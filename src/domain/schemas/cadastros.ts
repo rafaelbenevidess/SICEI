@@ -1,6 +1,7 @@
 /** Schemas dos cadastros (doc 01, seção 5.1; doc 02, RF-02 a RF-06, RF-12, RF-26 a RF-28). */
 import { z } from 'zod'
 import { cnpjValido, limparCnpj } from '../cnpj'
+import { lerCodigoDaPosicao } from '../posicao'
 import { PERFIS } from '../tipos'
 import {
   idObrigatorio,
@@ -144,4 +145,21 @@ export const schemaParametros = z.object({
   emailAvisos: textoOpcional(200).refine((v) => v === undefined || z.email().safeParse(v).success, {
     error: 'E-mail inválido.',
   }),
+})
+
+/** RN-26: posições cujas etiquetas foram mandadas para a impressora. */
+export const schemaImpressaoEtiquetas = z.object({
+  codigos: z
+    .array(
+      z
+        .string()
+        .transform((c) => c.trim().toUpperCase())
+        .refine((c) => lerCodigoDaPosicao(c) !== null, {
+          error: 'Código de posição inválido.',
+        }),
+      { error: 'Informe as posições.' },
+    )
+    .min(1, { error: 'Escolha pelo menos uma etiqueta.' })
+    .max(500, { error: 'Imprima no máximo 500 etiquetas por vez.' })
+    .transform((l) => [...new Set(l)]),
 })

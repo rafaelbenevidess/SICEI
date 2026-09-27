@@ -120,8 +120,8 @@ export async function importarPlanilha(ator: Ator, conteudo: string): Promise<{ 
           const codigo = l.posicao.toUpperCase()
           await tx.posicao.upsert({
             where: { codigo },
-            create: { ...end, codigo, itemId: item.id },
-            update: { itemId: item.id },
+            create: { ...end, codigo, itemId: item.id, etiquetaPendente: true },
+            update: { itemId: item.id, etiquetaPendente: true },
           })
         }
         if (l.saldo_inicial > 0) {

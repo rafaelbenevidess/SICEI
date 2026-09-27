@@ -1,14 +1,19 @@
 'use client'
 
 import { Printer } from 'lucide-react'
-import { useState } from 'react'
-import { classeBotao } from '@/components/ui'
+import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
+import { acaoEtiquetasImpressas } from '@/app/acoes/cadastros'
+import { Toast } from '@/components/formulario'
+import { classeBotao, Selo } from '@/components/ui'
 
 interface Etiqueta {
   codigo: string
   itemCodigo: string
   nome: string
   svg: string
+  /** RN-26: o item entrou nesta posição e a etiqueta ainda não foi impressa */
+  pendente: boolean
 }
 
 /** Escolha das posições e prévia da folha A4; na impressão sai só a folha. */
@@ -19,7 +24,13 @@ export function FolhaDeEtiquetas({
   etiquetas: Etiqueta[]
   inicial: string[]
 }) {
+  const router = useRouter()
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set(inicial))
+  const [pendente, iniciar] = useTransition()
+  const [resultado, setResultado] = useState<{ ok: boolean; texto: string; chave: number } | null>(
+    null,
+  )
+  const pendentes = etiquetas.filter((e) => e.pendente)
   const todas = marcadas.size === etiquetas.length
   const escolhidas = etiquetas.filter((e) => marcadas.has(e.codigo))
   const alternar = (codigo: string) =>
@@ -33,8 +44,17 @@ export function FolhaDeEtiquetas({
   return (
     <div className="grid items-start gap-6 min-[65rem]:grid-cols-[340px_minmax(0,1fr)]">
       <section className="nao-imprimir overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
-        <div className="flex items-center justify-between gap-3 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <h2 className="font-semibold">Posições ocupadas</h2>
+          {pendentes.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMarcadas(new Set(pendentes.map((e) => e.codigo)))}
+              className="text-[13px] font-medium text-warn-ink hover:underline"
+            >
+              Só as {pendentes.length} pendentes
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setMarcadas(todas ? new Set() : new Set(etiquetas.map((e) => e.codigo)))}
@@ -55,6 +75,11 @@ export function FolhaDeEtiquetas({
                 />
                 <span className="font-mono text-[13px] font-medium">{e.codigo}</span>
                 <span className="font-mono text-xs text-ink-3">{e.itemCodigo}</span>
+                {e.pendente && (
+                  <span className="ml-auto">
+                    <Selo tom="warn">Não impressa</Selo>
+                  </span>
+                )}
               </label>
             </li>
           ))}
@@ -62,14 +87,32 @@ export function FolhaDeEtiquetas({
         <div className="border-t border-line p-4">
           <button
             type="button"
-            onClick={() => window.print()}
-            disabled={escolhidas.length === 0}
+            onClick={() =>
+              iniciar(async () => {
+                // registra antes de abrir a janela de impressão, que trava a página
+                const r = await acaoEtiquetasImpressas(escolhidas.map((e) => e.codigo))
+                setResultado({
+                  ok: Boolean(r.ok),
+                  texto: r.ok ? (r.mensagem ?? '') : (r.erro ?? 'Não foi possível registrar.'),
+                  chave: Date.now(),
+                })
+                window.print()
+                router.refresh()
+              })
+            }
+            disabled={escolhidas.length === 0 || pendente}
             className={`${classeBotao('primario')} w-full`}
           >
             <Printer aria-hidden />
             Imprimir {escolhidas.length} {escolhidas.length === 1 ? 'etiqueta' : 'etiquetas'}
           </button>
+          {resultado && !resultado.ok && (
+            <p role="alert" className="mt-3 text-[13px] text-crit-ink">
+              {resultado.texto}
+            </p>
+          )}
         </div>
+        {resultado?.ok && <Toast chave={resultado.chave}>{resultado.texto}</Toast>}
       </section>
 
       <section

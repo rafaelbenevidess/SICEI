@@ -368,7 +368,11 @@ export async function alterarSituacaoItem(ator: Ator, id: string, ativo: boolean
       throw new ErroDeNegocio('Vincule pelo menos um fornecedor antes de reativar o item.')
     }
     await tx.item.update({ where: { id }, data: { ativo } })
-    if (!ativo) await tx.posicao.updateMany({ where: { itemId: id }, data: { itemId: null } })
+    if (!ativo)
+      await tx.posicao.updateMany({
+        where: { itemId: id },
+        data: { itemId: null, etiquetaPendente: false },
+      })
     await recalcularItem(tx, id)
     await auditar(
       tx,
@@ -517,8 +521,15 @@ export async function atribuirPosicao(ator: Ator, itemId: string, posicaoId: str
       })
       if (!d.ok) throw new ErroDeNegocio(d.motivo, { posicaoId: d.motivo })
       if (pos.item_id === itemId) return { codigo: pos.codigo, reimprimirEtiqueta: false }
-      await tx.posicao.updateMany({ where: { itemId }, data: { itemId: null } })
-      await tx.posicao.update({ where: { id: posicaoId }, data: { itemId } })
+      await tx.posicao.updateMany({
+        where: { itemId },
+        data: { itemId: null, etiquetaPendente: false },
+      })
+      // RN-26: a etiqueta da nova posição precisa ser impressa
+      await tx.posicao.update({
+        where: { id: posicaoId },
+        data: { itemId, etiquetaPendente: true },
+      })
       await auditar(
         tx,
         ator,
@@ -530,7 +541,10 @@ export async function atribuirPosicao(ator: Ator, itemId: string, posicaoId: str
       )
       return { codigo: pos.codigo, reimprimirEtiqueta: true }
     }
-    await tx.posicao.updateMany({ where: { itemId }, data: { itemId: null } })
+    await tx.posicao.updateMany({
+      where: { itemId },
+      data: { itemId: null, etiquetaPendente: false },
+    })
     await auditar(
       tx,
       ator,

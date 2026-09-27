@@ -153,6 +153,28 @@ export default async function PaginaItem({
         </Aviso>
       )}
 
+      {item.posicao?.etiquetaPendente && (
+        <Aviso
+          tipo="alerta"
+          titulo="Etiqueta QR desta posição ainda não impressa"
+          acoes={
+            pode(u.perfil, 'etiquetas:imprimir') && (
+              <LinkBotao
+                href={`/cadastros/posicoes/etiquetas?codigos=${item.posicao.codigo}`}
+                variante="secundario"
+                pequeno
+                icone={QrCode}
+              >
+                Imprimir etiqueta
+              </LinkBotao>
+            )
+          }
+        >
+          O item está em <strong className="font-mono">{item.posicao.codigo}</strong>. Imprima a
+          etiqueta e cole na frente do compartimento: sem ela, a leitura do QR não leva a este item.
+        </Aviso>
+      )}
+
       {alerta && (
         <Aviso
           tipo={alerta.nivel === 'ATENCAO' ? 'alerta' : 'erro'}

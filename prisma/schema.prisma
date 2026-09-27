@@ -147,23 +147,23 @@ model Fornecedor {
 }
 
 model Item {
-  id             String      @id @default(uuid(7)) @db.Uuid
-  codigo         String      @unique
+  id             String     @id @default(uuid(7)) @db.Uuid
+  codigo         String     @unique
   descricao      String
   iso            String?
   classe         String?
   cobertura      String?
   aplicacao      Aplicacao
-  fabricanteId   String      @map("fabricante_id") @db.Uuid
+  fabricanteId   String     @map("fabricante_id") @db.Uuid
   embalagem      Int
-  estoqueMinimo  Int         @map("estoque_minimo")
-  estoqueMaximo  Int?        @map("estoque_maximo")
-  saldo          Int         @default(0)
-  pontoReposicao Int         @default(0) @map("ponto_reposicao")
-  status         StatusItem  @default(ZERADO)
-  ativo          Boolean     @default(true)
-  criadoEm       DateTime    @default(now()) @map("criado_em") @db.Timestamptz
-  atualizadoEm   DateTime    @updatedAt @map("atualizado_em") @db.Timestamptz
+  estoqueMinimo  Int        @map("estoque_minimo")
+  estoqueMaximo  Int?       @map("estoque_maximo")
+  saldo          Int        @default(0)
+  pontoReposicao Int        @default(0) @map("ponto_reposicao")
+  status         StatusItem @default(ZERADO)
+  ativo          Boolean    @default(true)
+  criadoEm       DateTime   @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm   DateTime   @updatedAt @map("atualizado_em") @db.Timestamptz
 
   fabricante    Fabricante       @relation(fields: [fabricanteId], references: [id])
   fornecedores  ItemFornecedor[]
@@ -192,14 +192,16 @@ model ItemFornecedor {
 }
 
 model Posicao {
-  id            String  @id @default(uuid(7)) @db.Uuid
-  armario       Int
-  gaveta        Int
-  compartimento Int
-  codigo        String  @unique
-  itemId        String? @unique @map("item_id") @db.Uuid
-  ativo         Boolean @default(true)
-  item          Item?   @relation(fields: [itemId], references: [id])
+  id               String  @id @default(uuid(7)) @db.Uuid
+  armario          Int
+  gaveta           Int
+  compartimento    Int
+  codigo           String  @unique
+  itemId           String? @unique @map("item_id") @db.Uuid
+  ativo            Boolean @default(true)
+  /// RN-26: o item mudou e a etiqueta QR desta posição ainda não foi impressa
+  etiquetaPendente Boolean @default(false) @map("etiqueta_pendente")
+  item             Item?   @relation(fields: [itemId], references: [id])
 
   @@unique([armario, gaveta, compartimento])
   @@map("posicao")
@@ -267,16 +269,16 @@ model Movimentacao {
 }
 
 model Alerta {
-  id           String         @id @default(uuid(7)) @db.Uuid
-  itemId       String         @map("item_id") @db.Uuid
+  id           String        @id @default(uuid(7)) @db.Uuid
+  itemId       String        @map("item_id") @db.Uuid
   nivel        NivelAlerta
-  abertoEm     DateTime       @default(now()) @map("aberto_em") @db.Timestamptz
-  atualizadoEm DateTime       @default(now()) @map("atualizado_em") @db.Timestamptz
-  fechadoEm    DateTime?      @map("fechado_em") @db.Timestamptz
-  cientePorId  String?        @map("ciente_por_id") @db.Uuid
-  cienteEm     DateTime?      @map("ciente_em") @db.Timestamptz
-  item         Item           @relation(fields: [itemId], references: [id])
-  cientePor    Usuario?       @relation("AlertaCiente", fields: [cientePorId], references: [id])
+  abertoEm     DateTime      @default(now()) @map("aberto_em") @db.Timestamptz
+  atualizadoEm DateTime      @default(now()) @map("atualizado_em") @db.Timestamptz
+  fechadoEm    DateTime?     @map("fechado_em") @db.Timestamptz
+  cientePorId  String?       @map("ciente_por_id") @db.Uuid
+  cienteEm     DateTime?     @map("ciente_em") @db.Timestamptz
+  item         Item          @relation(fields: [itemId], references: [id])
+  cientePor    Usuario?      @relation("AlertaCiente", fields: [cientePorId], references: [id])
   notificacoes Notificacao[]
 
   @@index([fechadoEm])

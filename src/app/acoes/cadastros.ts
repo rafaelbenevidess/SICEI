@@ -9,6 +9,7 @@ import {
   salvarFabricante,
   salvarFornecedor,
 } from '@/server/services/cadastros'
+import { registrarImpressaoDeEtiquetas } from '@/server/services/etiquetas'
 import { dadosDoFormulario, executarAcao, type EstadoAcao } from '@/server/web/acao'
 import { atorDaAcao } from '@/server/web/sessao-atual'
 
@@ -87,6 +88,21 @@ export async function acaoFornecedorNovo(_: EstadoAcao, form: FormData): Promise
     return {
       mensagem: `Fornecedor ${f.razaoSocial} cadastrado.`,
       dados: { id: f.id, nome: f.nomeFantasia ?? f.razaoSocial },
+    }
+  })
+}
+
+/** RN-26: chamada ao mandar imprimir; limpa a pendência das etiquetas e grava no log. */
+export async function acaoEtiquetasImpressas(codigos: string[]): Promise<EstadoAcao> {
+  return executarAcao(async () => {
+    const r = await registrarImpressaoDeEtiquetas(await atorDaAcao(), { codigos })
+    revalidatePath('/cadastros', 'layout')
+    revalidatePath('/itens', 'layout')
+    return {
+      mensagem:
+        r.impressas.length === 1
+          ? `Etiqueta de ${r.impressas[0]} registrada como impressa.`
+          : `${r.impressas.length} etiquetas registradas como impressas.`,
     }
   })
 }

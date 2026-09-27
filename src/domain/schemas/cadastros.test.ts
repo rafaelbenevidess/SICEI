@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { validar } from './comum'
 import {
+  schemaImpressaoEtiquetas,
   schemaColaborador,
   schemaDestino,
   schemaFabricante,
@@ -154,5 +155,22 @@ describe('RF-26 · Parâmetros', () => {
         emailAvisos: '',
       }).ok,
     ).toBe(true)
+  })
+})
+
+describe('RN-26 · Etiquetas mandadas para a impressora', () => {
+  it('aceita códigos válidos, põe em maiúsculas e tira repetidos', () => {
+    const r = schemaImpressaoEtiquetas.safeParse({
+      codigos: ['a01-g01-c01', 'A01-G01-C01', 'A02-G01-C01'],
+    })
+    expect(r.success && r.data.codigos).toEqual(['A01-G01-C01', 'A02-G01-C01'])
+  })
+  it('recusa lista vazia e código fora do formato', () => {
+    expect(schemaImpressaoEtiquetas.safeParse({ codigos: [] }).success).toBe(false)
+    expect(schemaImpressaoEtiquetas.safeParse({ codigos: ['A1-G1-C1'] }).success).toBe(false)
+  })
+  it('recusa mais de 500 de uma vez', () => {
+    const muitos = Array.from({ length: 501 }, () => 'A01-G01-C01')
+    expect(schemaImpressaoEtiquetas.safeParse({ codigos: muitos }).success).toBe(false)
   })
 })

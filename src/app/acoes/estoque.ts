@@ -98,7 +98,7 @@ export async function acaoAtribuirPosicao(_: EstadoAcao, form: FormData): Promis
     revalidatePath(`/itens/${form.get('itemId')}`)
     return {
       mensagem: r.codigo
-        ? `Item guardado em ${r.codigo}.${r.reimprimirEtiqueta ? ' Reimprima a etiqueta QR da posição (RN-26).' : ''}`
+        ? `Item guardado em ${r.codigo}.${r.reimprimirEtiqueta ? ' Atenção: imprima a etiqueta QR da nova posição.' : ''}`
         : 'Item retirado da posição.',
     }
   })

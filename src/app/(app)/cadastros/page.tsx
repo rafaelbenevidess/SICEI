@@ -365,7 +365,14 @@ export default async function Cadastros({
           <tbody>
             {posicoes.map((p) => (
               <tr key={p.id} className={p.ativo ? '' : 'opacity-60'}>
-                <td className="font-mono text-[13px] font-medium">{p.codigo}</td>
+                <td className="font-mono text-[13px] font-medium">
+                  {p.codigo}
+                  {p.item && p.etiquetaPendente && (
+                    <span className="ml-2 font-sans">
+                      <Selo tom="warn">Etiqueta não impressa</Selo>
+                    </span>
+                  )}
+                </td>
                 <td>
                   {p.item ? (
                     <Link href={`/itens/${p.item.id}`} className="text-ink no-underline">

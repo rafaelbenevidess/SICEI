@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import QRCode from 'qrcode'
 import { lerCodigoDaPosicao } from '@/domain/posicao'
-import { Pagina, Vazio } from '@/components/ui'
+import { Aviso, Pagina, Vazio } from '@/components/ui'
 import { nomeDaPastilha } from '@/lib/formatar'
 import { posicoesOcupadas } from '@/server/consultas/cadastros'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
@@ -28,6 +28,7 @@ export default async function Etiquetas({
       codigo: p.codigo,
       itemCodigo: p.item!.codigo,
       nome: nomeDaPastilha(p.item!),
+      pendente: p.etiquetaPendente,
       // SVG gerado no servidor pela biblioteca qrcode, a partir de um código de posição do banco
       svg: await QRCode.toString(`${base}/p/${p.codigo}`, {
         type: 'svg',
@@ -36,15 +37,28 @@ export default async function Etiquetas({
       }),
     })),
   )
+  const pendentes = etiquetas.filter((e) => e.pendente).map((e) => e.codigo)
+  // sem pedido na URL, já vêm marcadas as que faltam imprimir (RN-26)
   const inicial = pedidos.length
     ? etiquetas.filter((e) => pedidos.includes(e.codigo)).map((e) => e.codigo)
-    : etiquetas.map((e) => e.codigo)
+    : pendentes.length
+      ? pendentes
+      : etiquetas.map((e) => e.codigo)
 
   return (
     <Pagina
       titulo="Etiquetas QR"
       descricao="Uma etiqueta por posição ocupada. O QR aponta para a posição: ler com a câmera abre o item."
     >
+      {pendentes.length > 0 && (
+        <Aviso
+          tipo="alerta"
+          titulo={`${pendentes.length} ${pendentes.length === 1 ? 'etiqueta não impressa' : 'etiquetas não impressas'}`}
+        >
+          Posições que receberam item e cuja etiqueta ainda não saiu por esta tela. Sem a etiqueta
+          certa na gaveta, a leitura do QR não leva ao item.
+        </Aviso>
+      )}
       {etiquetas.length === 0 ? (
         <Vazio>Nenhuma posição ocupada. Atribua itens às posições em Cadastros.</Vazio>
       ) : (

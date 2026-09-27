@@ -15,6 +15,7 @@ import {
   salvarFornecedor,
   vincularFornecedor,
 } from '@/server/services/cadastros'
+import { registrarImpressaoDeEtiquetas } from '@/server/services/etiquetas'
 import { importarPlanilha, previaImportacao } from '@/server/services/importacao'
 import { atualizarParametros } from '@/server/services/parametros'
 import { registrarMovimentacao } from '@/server/services/movimentacoes'
@@ -169,6 +170,46 @@ describe('RF-28 / RN-25 · Posições', () => {
     const r = await atribuirPosicao(admin, a.item.id, p2.id)
     expect(r.reimprimirEtiqueta).toBe(true)
     expect((await prisma.posicao.findUniqueOrThrow({ where: { id: p1.id } })).itemId).toBeNull()
+  })
+
+  it('RN-26: trocar de posição deixa a etiqueta da nova pendente até ser impressa', async () => {
+    const a = await cenario(admin)
+    let p1 = null
+    while (!p1) p1 = await criarPosicao(admin, posicaoLivre()).catch(() => null)
+    let p2 = null
+    while (!p2) p2 = await criarPosicao(admin, posicaoLivre()).catch(() => null)
+    const pendencia = async (id: string) =>
+      (await prisma.posicao.findUniqueOrThrow({ where: { id } })).etiquetaPendente
+    expect(await pendencia(p1.id)).toBe(false)
+    await atribuirPosicao(admin, a.item.id, p1.id)
+    expect(await pendencia(p1.id)).toBe(true)
+    await atribuirPosicao(admin, a.item.id, p2.id)
+    expect(await pendencia(p1.id)).toBe(false) // a antiga ficou vazia
+    expect(await pendencia(p2.id)).toBe(true)
+
+    const r = await registrarImpressaoDeEtiquetas(admin, { codigos: [p2.codigo.toLowerCase()] })
+    expect(r.impressas).toEqual([p2.codigo])
+    expect(await pendencia(p2.id)).toBe(false)
+    const log = await prisma.auditLog.findFirst({ orderBy: { seq: 'desc' } })
+    expect(log).toMatchObject({
+      acao: 'ETIQUETA_IMPRESSA',
+      entidade: 'posicao',
+      entidadeId: p2.id,
+      usuarioId: admin.usuarioId,
+      depois: { etiquetas: 1, posicoes: [`${p2.codigo} (${a.item.codigo})`] },
+    })
+  })
+
+  it('RN-26: posição vazia não gera etiqueta; Consulta não registra impressão', async () => {
+    let vazia = null
+    while (!vazia) vazia = await criarPosicao(admin, posicaoLivre()).catch(() => null)
+    await expect(registrarImpressaoDeEtiquetas(admin, { codigos: [vazia.codigo] })).rejects.toThrow(
+      'Nenhuma das posições tem item guardado.',
+    )
+    const consulta = await criarAtor('CONSULTA')
+    await expect(
+      registrarImpressaoDeEtiquetas(consulta, { codigos: [vazia.codigo] }),
+    ).rejects.toBeInstanceOf(ErroDePermissao)
   })
 
   it('posição ocupada não pode ser inativada', async () => {

@@ -73,8 +73,13 @@ export const casosLeituraQr: CasoDeTeste<string, string | null>[] = [
     esperado: 'A01-G03-C04',
   },
   {
-    descricao: 'código com formato errado na URL → não é etiqueta do SICEI',
+    descricao: 'código sem zeros na URL "A1-G3-C4" → A01-G03-C04 (mesma tolerância da digitação)',
     entrada: 'https://sicei-ddametalurgica.vercel.app/p/A1-G3-C4',
+    esperado: 'A01-G03-C04',
+  },
+  {
+    descricao: 'código incompleto na URL "A1-G3" → não é etiqueta do SICEI',
+    entrada: 'https://sicei-ddametalurgica.vercel.app/p/A1-G3',
     esperado: null,
   },
   {
@@ -97,4 +102,25 @@ export const casosLeituraQr: CasoDeTeste<string, string | null>[] = [
     entrada: 'A00-G01-C01',
     esperado: null,
   },
+]
+
+export const casosPosicaoDigitada: CasoDeTeste<string, string | null>[] = [
+  {
+    descricao: 'sem traços e sem zeros "a4g2c1" → A04-G02-C01',
+    entrada: 'a4g2c1',
+    esperado: 'A04-G02-C01',
+  },
+  {
+    descricao: 'com espaços "A4 G2 C1" → A04-G02-C01',
+    entrada: 'A4 G2 C1',
+    esperado: 'A04-G02-C01',
+  },
+  {
+    descricao: 'já no padrão, em minúsculas "a01-g03-c04" → A01-G03-C04',
+    entrada: 'a01-g03-c04',
+    esperado: 'A01-G03-C04',
+  },
+  { descricao: 'nível 0 "a0g1c1" → não é posição', entrada: 'a0g1c1', esperado: null },
+  { descricao: 'faltando o compartimento "a1g1" → não é posição', entrada: 'a1g1', esperado: null },
+  { descricao: 'código de item "PST-001" → não é posição', entrada: 'PST-001', esperado: null },
 ]

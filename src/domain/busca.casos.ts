@@ -80,3 +80,32 @@ export const casosBusca: CasoDeTeste<string, string[]>[] = [
   },
   { descricao: 'nada parecido "xyz" → nenhum', entrada: 'xyz', esperado: [] },
 ]
+
+export const OPCOES_DE_EXEMPLO = [
+  { valor: 'f1', rotulo: 'Ferramentas Sul', busca: ['11.222.333/0001-81', 'Ferramentas Sul Ltda'] },
+  { valor: 'f2', rotulo: 'Metal Duro', busca: ['04.252.011/0001-10'] },
+  { valor: 'c1', rotulo: 'Carlos Pereira', busca: ['1102', 'Usinagem'] },
+  { valor: 'c2', rotulo: 'Juliana Martins', busca: ['1107', 'Almoxarifado'] },
+  { valor: 'd1', rotulo: 'Torno CNC 03 (CNC-03)', busca: ['CNC-03'] },
+  { valor: 'p1', rotulo: 'A04-G02-C01' },
+]
+
+/** Entrada: o que a pessoa digitou numa lista de opções. Esperado: valores achados, em ordem. */
+export const casosOpcoes: CasoDeTeste<string, string[]>[] = [
+  { descricao: 'nome sem maiúscula "metal" → Metal Duro', entrada: 'metal', esperado: ['f2'] },
+  {
+    descricao: 'CNPJ só com números "11222333" → Ferramentas Sul',
+    entrada: '11222333',
+    esperado: ['f1'],
+  },
+  { descricao: 'sobrenome "pereira" → Carlos Pereira', entrada: 'pereira', esperado: ['c1'] },
+  { descricao: 'matrícula "1107" → Juliana Martins', entrada: '1107', esperado: ['c2'] },
+  { descricao: 'destino sem zero "cnc 3" → Torno CNC 03', entrada: 'cnc 3', esperado: ['d1'] },
+  { descricao: 'posição "a4g2c1" → A04-G02-C01', entrada: 'a4g2c1', esperado: ['p1'] },
+  {
+    descricao: 'acento não importa: "julianá" → Juliana Martins',
+    entrada: 'julianá',
+    esperado: ['c2'],
+  },
+  { descricao: 'nada parecido "zzz" → nenhuma', entrada: 'zzz', esperado: [] },
+]

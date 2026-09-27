@@ -70,3 +70,56 @@ export function buscarItens<T extends ItemBuscavel>(termo: string, itens: T[]): 
     .sort((a, b) => b.pontos - a.pontos || a.item.codigo.localeCompare(b.item.codigo))
     .map((r) => r.item)
 }
+
+/**
+ * Busca genérica em opções de uma lista (fornecedor, fabricante, colaborador, destino,
+ * posição, login). O primeiro texto é o nome; os outros são apoio (CNPJ, matrícula, setor…).
+ * Mesma tolerância da busca de itens.
+ */
+export function pontuarTexto(termo: string, textos: (string | null | undefined)[]): number {
+  const t = normalizarBusca(termo)
+  if (!t) return 1
+  let melhor = 0
+  textos.forEach((texto, i) => {
+    if (!texto) return
+    const bonus = i === 0 ? 5 : 0
+    const n = normalizarBusca(texto)
+    const palavrasDoTexto = texto
+      .split(/[\s\-/.,()]+/)
+      .map(normalizarBusca)
+      .filter(Boolean)
+    let p = 0
+    if (n === t || mesmaSequencia(termo, texto)) p = 95
+    else if (n.startsWith(t)) p = 80
+    else if (palavrasDoTexto.some((w) => w.startsWith(t))) p = 70
+    else if (n.includes(t)) p = 50
+    if (p) melhor = Math.max(melhor, p + bonus)
+  })
+  if (melhor) return melhor
+  // várias palavras ("carlos per"): cada uma precisa aparecer em algum texto
+  const palavras = termo
+    .split(/\s+/)
+    .map(normalizarBusca)
+    .filter((w) => w.length > 1)
+  if (palavras.length > 1) {
+    const tudo = textos.map((x) => normalizarBusca(x ?? '')).join(' ')
+    if (palavras.every((w) => tudo.includes(w))) return 10
+  }
+  return 0
+}
+
+export interface OpcaoBuscavel {
+  valor: string
+  rotulo: string
+  /** textos que também servem para achar a opção (CNPJ, matrícula, código…) */
+  busca?: string[]
+}
+
+/** Opções que combinam, da mais parecida para a menos; empate na ordem original. */
+export function buscarOpcoes<T extends OpcaoBuscavel>(termo: string, opcoes: T[]): T[] {
+  return opcoes
+    .map((o, i) => ({ o, i, p: pontuarTexto(termo, [o.rotulo, ...(o.busca ?? [])]) }))
+    .filter((r) => r.p > 0)
+    .sort((a, b) => b.p - a.p || a.i - b.i)
+    .map((r) => r.o)
+}

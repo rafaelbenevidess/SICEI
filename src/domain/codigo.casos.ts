@@ -42,3 +42,30 @@ export const casosProximoCodigo: CasoDeTeste<string[], string>[] = [
     esperado: 'PST-001',
   },
 ]
+
+const CADASTRADOS = ['PST-001', 'PST-002', 'PST-006', 'IMP-050']
+
+export const CODIGOS_CADASTRADOS = CADASTRADOS
+
+/** Entrada: o que a pessoa digitou no código do item novo. Esperado: como fica gravado. */
+export const casosPadronizarCodigo: CasoDeTeste<string, string>[] = [
+  { descricao: '"pst8" vira PST-008 (padrão da sequência)', entrada: 'pst8', esperado: 'PST-008' },
+  { descricao: '"PST-8" vira PST-008', entrada: 'PST-8', esperado: 'PST-008' },
+  { descricao: '"pst 0012" vira PST-012', entrada: 'pst 0012', esperado: 'PST-012' },
+  { descricao: '"imp51" segue a outra sequência: IMP-051', entrada: 'imp51', esperado: 'IMP-051' },
+  { descricao: 'sequência nova "abc7" fica ABC7', entrada: 'abc7', esperado: 'ABC7' },
+  {
+    descricao: 'código livre "especial x" fica ESPECIAL X',
+    entrada: ' especial x ',
+    esperado: 'ESPECIAL X',
+  },
+]
+
+/** Entrada: código digitado. Esperado: o código já cadastrado que é o mesmo, ou null. */
+export const casosCodigoEquivalente: CasoDeTeste<string, string | null>[] = [
+  { descricao: '"pst001" é o PST-001', entrada: 'pst001', esperado: 'PST-001' },
+  { descricao: '"PST1" é o PST-001', entrada: 'PST1', esperado: 'PST-001' },
+  { descricao: '"PST-006" é ele mesmo', entrada: 'PST-006', esperado: 'PST-006' },
+  { descricao: '"PST-007" é livre', entrada: 'PST-007', esperado: null },
+  { descricao: '"PST10" não é o PST-001', entrada: 'PST10', esperado: null },
+]

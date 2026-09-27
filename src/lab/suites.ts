@@ -6,11 +6,16 @@
 import { decidirAlerta, type NivelAlerta } from '@/domain/alertas'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
-import { buscarItens } from '@/domain/busca'
-import { casosBusca, ITENS_DE_EXEMPLO } from '@/domain/busca.casos'
+import { buscarItens, buscarOpcoes } from '@/domain/busca'
+import { casosBusca, casosOpcoes, ITENS_DE_EXEMPLO, OPCOES_DE_EXEMPLO } from '@/domain/busca.casos'
 import { cnpjValido } from '@/domain/cnpj'
-import { proximoCodigo } from '@/domain/codigo'
-import { casosProximoCodigo } from '@/domain/codigo.casos'
+import { codigoEquivalente, padronizarCodigo, proximoCodigo } from '@/domain/codigo'
+import {
+  casosCodigoEquivalente,
+  casosPadronizarCodigo,
+  casosProximoCodigo,
+  CODIGOS_CADASTRADOS,
+} from '@/domain/codigo.casos'
 import { casosCnpj } from '@/domain/cnpj.casos'
 import {
   consumoMedioDiario,
@@ -41,8 +46,18 @@ import {
 import { casosEstorno, casosInventario, casosMovimentacao } from '@/domain/movimentacao.casos'
 import { NOME_DO_PERFIL, PERMISSOES, pode, type Permissao } from '@/domain/permissoes'
 import { casosPermissao } from '@/domain/permissoes.casos'
-import { avaliarAtribuicao, codigoDaPosicao, codigoDoQr } from '@/domain/posicao'
-import { casosAtribuicao, casosCodigoPosicao, casosLeituraQr } from '@/domain/posicao.casos'
+import {
+  avaliarAtribuicao,
+  codigoDaPosicao,
+  codigoDoQr,
+  interpretarCodigoDePosicao,
+} from '@/domain/posicao'
+import {
+  casosAtribuicao,
+  casosCodigoPosicao,
+  casosLeituraQr,
+  casosPosicaoDigitada,
+} from '@/domain/posicao.casos'
 import { ultimoPrecoValido, variacaoPercentual } from '@/domain/precos'
 import { casosUltimoPreco, casosVariacao } from '@/domain/precos.casos'
 import { validarMovimentacao } from '@/domain/schemas/movimentacao'
@@ -837,6 +852,43 @@ export const SUITES: SuiteLab[] = [
         }
       },
     },
+  },
+  {
+    id: 'RF-11',
+    titulo: 'Busca nas listas de escolha (fornecedor, colaborador, destino, posição)',
+    regra:
+      'Acha pelo nome, CNPJ só com números, matrícula ou setor, sem ligar para maiúsculas, acentos, traços e zeros à esquerda.',
+    casos: casos(casosOpcoes),
+    executar: (e) => buscarOpcoes(e as string, OPCOES_DE_EXEMPLO).map((o) => o.valor),
+    formatar: (v) => {
+      const l = (v as string[]).map((x) => OPCOES_DE_EXEMPLO.find((o) => o.valor === x)?.rotulo)
+      return l.length ? l.join(', ') : 'nenhuma'
+    },
+  },
+  {
+    id: 'RN-25',
+    titulo: 'Posição digitada de qualquer jeito',
+    regra:
+      '"a4g2c1", "A4 G2 C1" e "a04-g02-c01" viram A04-G02-C01; o que não for posição é recusado.',
+    casos: casos(casosPosicaoDigitada),
+    executar: (e) => interpretarCodigoDePosicao(e as string),
+    formatar: (v) => (v === null ? 'não é posição' : String(v)),
+  },
+  {
+    id: 'RN-01',
+    titulo: 'Código do item no padrão da sequência',
+    regra: 'Com PST-001 cadastrado, "pst8" e "PST-8" são gravados como PST-008.',
+    casos: casos(casosPadronizarCodigo),
+    executar: (e) => padronizarCodigo(e as string, CODIGOS_CADASTRADOS),
+    formatar: (v) => String(v),
+  },
+  {
+    id: 'RN-01',
+    titulo: 'Código escrito de outro jeito é o mesmo código',
+    regra: '"pst001" e "PST1" são o PST-001: o cadastro recusa como código repetido.',
+    casos: casos(casosCodigoEquivalente),
+    executar: (e) => codigoEquivalente(e as string, CODIGOS_CADASTRADOS),
+    formatar: (v) => (v === null ? 'livre' : `igual a ${v}`),
   },
   {
     id: 'RF-03',

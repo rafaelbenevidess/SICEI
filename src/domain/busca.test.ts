@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buscarItens, mesmaSequencia, normalizarBusca, pontuarBusca } from './busca'
-import { casosBusca, ITENS_DE_EXEMPLO } from './busca.casos'
+import { buscarItens, buscarOpcoes, mesmaSequencia, normalizarBusca, pontuarBusca } from './busca'
+import { casosBusca, casosOpcoes, ITENS_DE_EXEMPLO, OPCOES_DE_EXEMPLO } from './busca.casos'
 
 describe('RF-11 · Busca tolerante de itens', () => {
   it.each(casosBusca)('$descricao', ({ entrada, esperado }) => {
@@ -35,5 +35,26 @@ describe('RF-11 · Normalização do que foi digitado', () => {
     ['', 'PST-001', false],
   ])('%s e %s são o mesmo código? %s', (a, b, esperado) => {
     expect(mesmaSequencia(a, b)).toBe(esperado)
+  })
+})
+
+describe('RF-11 · Busca nas listas de escolha (fornecedor, colaborador, destino, posição)', () => {
+  it.each(casosOpcoes)('$descricao', ({ entrada, esperado }) => {
+    expect(buscarOpcoes(entrada, OPCOES_DE_EXEMPLO).map((o) => o.valor)).toEqual(esperado)
+  })
+
+  it('termo vazio devolve todas, na ordem original', () => {
+    expect(buscarOpcoes('', OPCOES_DE_EXEMPLO).map((o) => o.valor)).toEqual(
+      OPCOES_DE_EXEMPLO.map((o) => o.valor),
+    )
+  })
+
+  it('o nome vale mais que o texto de apoio: "almox" acha pelo setor, "juli" pelo nome', () => {
+    expect(buscarOpcoes('juli', OPCOES_DE_EXEMPLO)[0].valor).toBe('c2')
+    expect(buscarOpcoes('almox', OPCOES_DE_EXEMPLO).map((o) => o.valor)).toEqual(['c2'])
+  })
+
+  it('duas palavras em textos diferentes: "carlos usinagem" → Carlos Pereira', () => {
+    expect(buscarOpcoes('carlos usinagem', OPCOES_DE_EXEMPLO).map((o) => o.valor)).toEqual(['c1'])
   })
 })

@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { avaliarAtribuicao, codigoDaPosicao, codigoDoQr, lerCodigoDaPosicao } from './posicao'
-import { casosAtribuicao, casosCodigoPosicao, casosLeituraQr } from './posicao.casos'
+import {
+  avaliarAtribuicao,
+  codigoDaPosicao,
+  codigoDoQr,
+  interpretarCodigoDePosicao,
+  lerCodigoDaPosicao,
+} from './posicao'
+import {
+  casosAtribuicao,
+  casosCodigoPosicao,
+  casosLeituraQr,
+  casosPosicaoDigitada,
+} from './posicao.casos'
 
 describe('RN-25 · Código da posição', () => {
   it.each(casosCodigoPosicao)('$descricao', ({ entrada, esperado }) => {
@@ -28,5 +39,11 @@ describe('RN-26 · Leitura do QR da etiqueta', () => {
 
   it('URL com codificação inválida não quebra a leitura', () => {
     expect(codigoDoQr('https://x.com/p/%E0%A4%A')).toBeNull()
+  })
+})
+
+describe('RN-25 · Posição digitada de qualquer jeito', () => {
+  it.each(casosPosicaoDigitada)('$descricao', ({ entrada, esperado }) => {
+    expect(interpretarCodigoDePosicao(entrada)).toBe(esperado)
   })
 })

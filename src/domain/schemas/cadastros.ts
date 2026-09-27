@@ -77,6 +77,17 @@ export const schemaVinculoFornecedor = z.object({
   preferencial: z.preprocess((v) => v === 'on' || v === 'true' || v === true, z.boolean()),
 })
 
+/** Cadastro rápido na tela de entrada: fornecedor novo já vinculado ao item (RF-05, RF-07). */
+export const schemaFornecedorRapido = z.object({
+  itemId: idObrigatorio('Escolha o item.'),
+  razaoSocial: textoObrigatorio('Informe a razão social.', 150),
+  cnpj: textoObrigatorio('Informe o CNPJ.', 18)
+    .refine(cnpjValido, { error: 'CNPJ inválido.' })
+    .transform(limparCnpj),
+  codigoNoFornecedor: textoOpcional(60),
+  leadTimeDias: inteiroOpcional('O lead time precisa ser um número inteiro de dias.'),
+})
+
 export const schemaLimites = z
   .object({
     itemId: idObrigatorio('Escolha o item.'),

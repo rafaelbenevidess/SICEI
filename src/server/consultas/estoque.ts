@@ -255,3 +255,46 @@ export async function itemParaEdicao(id: string) {
   ])
   return item ? { item, codigoTravado: movimentacoes > 0 } : null
 }
+
+/**
+ * Tela de registrar entrada/saída (RF-07, RF-08): o item, as listas dos campos e o último
+ * preço pago a cada fornecedor (dica do campo de preço). CNPJs cadastrados só vão para
+ * quem pode cadastrar fornecedor (validação ao vivo do cadastro rápido).
+ */
+export async function dadosDoRegistro(itemId: string, perfil: Perfil) {
+  if (!ehUuid(itemId)) return null
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
+    include: { posicao: { select: { codigo: true } }, fabricante: { select: { nome: true } } },
+  })
+  if (!item) return null
+  const [opcoes, compras, cnpjs] = await Promise.all([
+    opcoesDeMovimentacao(itemId),
+    pode(perfil, 'precos:ver')
+      ? prisma.movimentacao.findMany({
+          where: { itemId, tipo: 'COMPRA', estornadaPor: null },
+          select: { fornecedorId: true, precoUnitario: true, criadoEm: true },
+          orderBy: { criadoEm: 'desc' },
+        })
+      : [],
+    pode(perfil, 'cadastros:editar')
+      ? prisma.fornecedor.findMany({
+          select: { cnpj: true, razaoSocial: true, nomeFantasia: true },
+        })
+      : [],
+  ])
+  const ultimos: Record<string, { preco: number; data: string }> = {}
+  for (const c of compras) {
+    if (c.fornecedorId && !ultimos[c.fornecedorId]) {
+      ultimos[c.fornecedorId] = { preco: Number(c.precoUnitario), data: c.criadoEm.toISOString() }
+    }
+  }
+  return {
+    item,
+    ...opcoes,
+    ultimosPrecos: ultimos,
+    cnpjsExistentes: Object.fromEntries(
+      cnpjs.map((f) => [f.cnpj, f.nomeFantasia ?? f.razaoSocial]),
+    ),
+  }
+}

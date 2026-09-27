@@ -7,6 +7,7 @@ import {
   schemaDestino,
   schemaFabricante,
   schemaFornecedor,
+  schemaFornecedorRapido,
   schemaItem,
   schemaLimites,
   schemaPosicao,
@@ -431,6 +432,39 @@ export async function vincularFornecedor(ator: Ator, entrada: unknown) {
     )
     return v
   })
+}
+
+/**
+ * Cadastro rápido (tela de entrada): cria o fornecedor e o vínculo com o item na mesma
+ * transação, com os dois registros no log. O fornecedor novo não vira preferencial.
+ */
+export async function cadastrarFornecedorParaItem(ator: Ator, entrada: unknown) {
+  exigirPermissao(ator.perfil, 'cadastros:editar')
+  const dados = validarOuFalhar(schemaFornecedorRapido, entrada)
+  exigirUuid(dados.itemId, 'Item')
+  return comUnicidade('cnpj', 'Já existe um fornecedor com este CNPJ.', () =>
+    prisma.$transaction(async (tx) => {
+      const item = await tx.item.findUnique({ where: { id: dados.itemId } })
+      if (!item) throw naoEncontrado('Item')
+      if (!item.ativo) throw new ErroDeNegocio('O item está inativo.')
+      const f = await tx.fornecedor.create({
+        data: { razaoSocial: dados.razaoSocial, cnpj: dados.cnpj },
+      })
+      await auditar(tx, ator, 'FORNECEDOR_CRIADO', 'fornecedor', f.id, null, f)
+      const v = await tx.itemFornecedor.create({
+        data: {
+          itemId: item.id,
+          fornecedorId: f.id,
+          codigoNoFornecedor: dados.codigoNoFornecedor ?? null,
+          leadTimeDias: dados.leadTimeDias ?? null,
+          preferencial: false,
+        },
+      })
+      await recalcularItem(tx, item.id)
+      await auditar(tx, ator, 'FORNECEDOR_VINCULADO', 'item', item.id, null, v)
+      return f
+    }),
+  )
 }
 
 /** Critério do RF-05: o último fornecedor de um item ativo não pode ser desvinculado. */

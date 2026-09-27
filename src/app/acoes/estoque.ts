@@ -10,6 +10,7 @@ import {
   alterarLimites,
   alterarSituacaoItem,
   atribuirPosicao,
+  cadastrarFornecedorParaItem,
   criarItem,
   desvincularFornecedor,
   vincularFornecedor,
@@ -102,6 +103,18 @@ export async function acaoVincularFornecedor(_: EstadoAcao, form: FormData): Pro
     await vincularFornecedor(await atorDaAcao(), dadosDoFormulario(form))
     revalidatePath(`/itens/${form.get('itemId')}`)
     return { mensagem: 'Fornecedor salvo no item.' }
+  })
+}
+
+/** Cadastro rápido na tela de entrada: o fornecedor novo volta selecionado. */
+export async function acaoFornecedorRapido(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
+  return executarAcao(async () => {
+    const f = await cadastrarFornecedorParaItem(await atorDaAcao(), dadosDoFormulario(form))
+    revalidatePath(`/itens/${form.get('itemId')}`)
+    return {
+      mensagem: 'Fornecedor cadastrado e vinculado ao item.',
+      dados: { fornecedorId: f.id, nome: f.razaoSocial },
+    }
   })
 }
 

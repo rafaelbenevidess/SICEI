@@ -34,3 +34,36 @@ export function formatarCnpj(cnpj: string): string {
   if (l.length !== 14) return cnpj
   return `${l.slice(0, 2)}.${l.slice(2, 5)}.${l.slice(5, 8)}/${l.slice(8, 12)}-${l.slice(12)}`
 }
+
+/** Máscara enquanto digita: aplica a pontuação conforme os caracteres chegam (até 14). */
+export function mascararCnpj(valor: string): string {
+  const l = limparCnpj(valor)
+    .replace(/[^0-9A-Z]/g, '')
+    .slice(0, 14)
+  const partes = [l.slice(0, 2), l.slice(2, 5), l.slice(5, 8), l.slice(8, 12), l.slice(12, 14)]
+  let r = partes[0]
+  if (partes[1]) r += `.${partes[1]}`
+  if (partes[2]) r += `.${partes[2]}`
+  if (partes[3]) r += `/${partes[3]}`
+  if (partes[4]) r += `-${partes[4]}`
+  return r
+}
+
+export type SituacaoCnpj =
+  | { estado: 'vazio' | 'incompleto'; mensagem: null }
+  | { estado: 'invalido' | 'duplicado' | 'valido'; mensagem: string }
+
+/**
+ * Situação do CNPJ digitado no cadastro rápido de fornecedor (RN-04):
+ * incompleto, dígito verificador inválido, já cadastrado ou válido.
+ * existentes: CNPJ limpo → nome do fornecedor que já usa.
+ */
+export function situacaoDoCnpj(valor: string, existentes: Record<string, string>): SituacaoCnpj {
+  const l = limparCnpj(valor)
+  if (!l) return { estado: 'vazio', mensagem: null }
+  if (l.length < 14) return { estado: 'incompleto', mensagem: null }
+  if (!cnpjValido(l)) return { estado: 'invalido', mensagem: 'Dígito verificador inválido.' }
+  if (existentes[l])
+    return { estado: 'duplicado', mensagem: `CNPJ já cadastrado (${existentes[l]}).` }
+  return { estado: 'valido', mensagem: 'CNPJ válido.' }
+}

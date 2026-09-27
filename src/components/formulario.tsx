@@ -37,6 +37,8 @@ export function FormAcao({
   limparAoConcluir = false,
   confirmar,
   rotulo,
+  aoConcluir,
+  id,
 }: {
   acao: Acao
   children: ReactNode
@@ -44,19 +46,29 @@ export function FormAcao({
   limparAoConcluir?: boolean
   confirmar?: string
   rotulo?: string
+  /** chamado uma vez a cada envio que deu certo */
+  aoConcluir?: (estado: EstadoAcao) => void
+  id?: string
 }) {
   const [estado, executar] = useActionState(acao, {})
   const [pendente, iniciar] = useTransition()
   const ref = useRef<HTMLFormElement>(null)
 
+  const aoConcluirRef = useRef(aoConcluir)
   useEffect(() => {
-    if (estado.ok && limparAoConcluir) ref.current?.reset()
-  }, [estado.instante, estado.ok, limparAoConcluir])
+    aoConcluirRef.current = aoConcluir
+  })
+  useEffect(() => {
+    if (!estado.ok) return
+    if (limparAoConcluir) ref.current?.reset()
+    aoConcluirRef.current?.(estado)
+  }, [estado, limparAoConcluir])
 
   return (
     <Contexto.Provider value={{ estado, pendente }}>
       <form
         ref={ref}
+        id={id}
         aria-label={rotulo}
         className={className}
         noValidate
@@ -117,12 +129,16 @@ export function Campo({
   rotulo,
   ajuda,
   obrigatorio,
+  prefixo,
+  className = '',
   ...resto
 }: {
   nome: string
   rotulo: string
-  ajuda?: string
+  ajuda?: ReactNode
   obrigatorio?: boolean
+  /** texto fixo dentro do campo, à esquerda (ex.: "R$") */
+  prefixo?: string
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'name'>) {
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
@@ -137,15 +153,25 @@ export function Campo({
           </span>
         )}
       </label>
-      <input
-        id={id}
-        name={nome}
-        aria-invalid={erro ? true : undefined}
-        aria-describedby={erro ? `${id}-erro` : ajuda ? `${id}-ajuda` : undefined}
-        required={obrigatorio}
-        className={`${estiloEntrada} ${erro ? 'border-crit' : 'border-line-2'}`}
-        {...resto}
-      />
+      <span className="relative flex">
+        {prefixo && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm font-normal text-ink-3"
+          >
+            {prefixo}
+          </span>
+        )}
+        <input
+          id={id}
+          name={nome}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={erro ? `${id}-erro` : ajuda ? `${id}-ajuda` : undefined}
+          required={obrigatorio}
+          className={`${estiloEntrada} ${prefixo ? 'pl-10' : ''} ${erro ? 'border-crit' : 'border-line-2'} ${className}`}
+          {...resto}
+        />
+      </span>
       {ajuda && !erro && (
         <span id={`${id}-ajuda`} className="text-xs font-normal text-ink-3">
           {ajuda}
@@ -168,6 +194,8 @@ export function Selecao({
   vazio,
   obrigatorio,
   ajuda,
+  valor,
+  aoMudar,
 }: {
   nome: string
   rotulo: string
@@ -175,7 +203,10 @@ export function Selecao({
   padrao?: string
   vazio?: string
   obrigatorio?: boolean
-  ajuda?: string
+  ajuda?: ReactNode
+  /** com valor, o select fica controlado pela tela */
+  valor?: string
+  aoMudar?: (valor: string) => void
 }) {
   const erro = useErro(nome)
   const id = `campo-${nome}-${useId()}`
@@ -193,7 +224,9 @@ export function Selecao({
       <select
         id={id}
         name={nome}
-        defaultValue={padrao ?? ''}
+        {...(valor !== undefined
+          ? { value: valor, onChange: (e) => aoMudar?.(e.target.value) }
+          : { defaultValue: padrao ?? '' })}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? `${id}-erro` : undefined}
         className={`${estiloEntrada} ${erro ? 'border-crit' : 'border-line-2'}`}

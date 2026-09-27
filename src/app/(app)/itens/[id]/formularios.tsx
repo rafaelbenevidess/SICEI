@@ -1,12 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import {
   acaoAtribuirPosicao,
   acaoDesvincularFornecedor,
   acaoInventario,
   acaoLimites,
-  acaoMovimentar,
   acaoSituacaoItem,
   acaoVincularFornecedor,
 } from '@/app/acoes/estoque'
@@ -21,139 +19,6 @@ import {
 } from '@/components/formulario'
 
 type Opcao = { valor: string; rotulo: string }
-
-const TIPOS = {
-  CONSUMO_PRODUCAO: 'Saída para a produção',
-  COMPRA: 'Entrada por compra',
-  DEVOLUCAO_PRODUCAO: 'Devolução da produção',
-  PERDA_QUEBRA: 'Perda ou quebra',
-} as const
-type Tipo = keyof typeof TIPOS
-
-/** RF-07 / RF-08: um formulário, com os campos obrigatórios de cada tipo (RN-10, RN-11). */
-export function FormMovimentacao({
-  itemId,
-  embalagem,
-  podeEntrada,
-  podeSaida,
-  fornecedores,
-  destinos,
-  colaboradores,
-}: {
-  itemId: string
-  embalagem: number
-  podeEntrada: boolean
-  podeSaida: boolean
-  fornecedores: Opcao[]
-  destinos: Opcao[]
-  colaboradores: Opcao[]
-}) {
-  const permitidos = (Object.keys(TIPOS) as Tipo[]).filter((t) =>
-    t === 'COMPRA' || t === 'DEVOLUCAO_PRODUCAO' ? podeEntrada : podeSaida,
-  )
-  const [tipo, setTipo] = useState<Tipo>(permitidos[0])
-  return (
-    <div className="flex flex-col gap-3">
-      <div
-        role="radiogroup"
-        aria-label="Tipo de movimentação"
-        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-      >
-        {permitidos.map((t) => (
-          <button
-            key={t}
-            type="button"
-            role="radio"
-            aria-checked={tipo === t}
-            onClick={() => setTipo(t)}
-            className={`rounded-md border px-2 py-2 text-sm font-medium ${tipo === t ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white'}`}
-          >
-            {TIPOS[t]}
-          </button>
-        ))}
-      </div>
-      <FormAcao
-        key={tipo}
-        acao={acaoMovimentar}
-        limparAoConcluir
-        rotulo={TIPOS[tipo]}
-        className="grid gap-3 sm:grid-cols-2"
-      >
-        <Oculto nome="itemId" valor={itemId} />
-        <Oculto nome="tipo" valor={tipo} />
-        <Campo
-          nome="quantidade"
-          rotulo="Quantidade"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          step={1}
-          obrigatorio
-        />
-        {tipo === 'COMPRA' ? (
-          <Selecao
-            nome="unidade"
-            rotulo="Informada em"
-            opcoes={[
-              { valor: 'CAIXA', rotulo: `caixas (${embalagem} un.)` },
-              { valor: 'UNIDADE', rotulo: 'unidades' },
-            ]}
-            padrao="CAIXA"
-          />
-        ) : (
-          <Oculto nome="unidade" valor="UNIDADE" />
-        )}
-        {tipo === 'COMPRA' && (
-          <>
-            <Selecao
-              nome="fornecedorId"
-              rotulo="Fornecedor"
-              opcoes={fornecedores}
-              vazio="Escolha…"
-              obrigatorio
-            />
-            <Campo
-              nome="precoUnitario"
-              rotulo="Preço unitário (R$)"
-              inputMode="decimal"
-              placeholder="38,90"
-              obrigatorio
-            />
-            <Campo nome="notaFiscal" rotulo="Nota fiscal" obrigatorio />
-          </>
-        )}
-        {(tipo === 'CONSUMO_PRODUCAO' || tipo === 'DEVOLUCAO_PRODUCAO') && (
-          <>
-            <Selecao
-              nome="destinoId"
-              rotulo="Destino (máquina, setor ou centro de custo)"
-              opcoes={destinos}
-              vazio="Escolha…"
-              obrigatorio
-            />
-            <Selecao
-              nome="colaboradorId"
-              rotulo={tipo === 'CONSUMO_PRODUCAO' ? 'Quem retirou' : 'Quem devolveu'}
-              opcoes={colaboradores}
-              vazio="Escolha…"
-              obrigatorio
-            />
-          </>
-        )}
-        {tipo === 'CONSUMO_PRODUCAO' && (
-          <Campo nome="ordemProducao" rotulo="Ordem de produção" obrigatorio />
-        )}
-        {(tipo === 'PERDA_QUEBRA' || tipo === 'DEVOLUCAO_PRODUCAO') && (
-          <Campo nome="motivo" rotulo="Motivo" obrigatorio />
-        )}
-        <Campo nome="observacao" rotulo="Observação" />
-        <div className="sm:col-span-2">
-          <BotaoEnviar>Registrar {TIPOS[tipo].toLowerCase()}</BotaoEnviar>
-        </div>
-      </FormAcao>
-    </div>
-  )
-}
 
 export function FormLimites({
   itemId,

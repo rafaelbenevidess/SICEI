@@ -8,6 +8,7 @@ import {
   alterarSituacao,
   alterarSituacaoItem,
   atribuirPosicao,
+  cadastrarFornecedorParaItem,
   criarPosicao,
   desvincularFornecedor,
   salvarFabricante,
@@ -245,5 +246,58 @@ describe('RF-26 · Parâmetros', () => {
       sessaoInatividadeMinutos: 30,
       emailAvisos: '',
     })
+  })
+})
+
+describe('RF-05 / RF-07 · Cadastro rápido de fornecedor na entrada', () => {
+  it('cria o fornecedor e o vínculo com o item na mesma transação, com os dois no log', async () => {
+    const c = await cenario(admin)
+    const cnpj = cnpjValidoAleatorio()
+    const f = await cadastrarFornecedorParaItem(admin, {
+      itemId: c.item.id,
+      razaoSocial: unico('Cortemax'),
+      cnpj,
+      codigoNoFornecedor: 'CX-01',
+      leadTimeDias: '4',
+    })
+    const vinculo = await prisma.itemFornecedor.findUnique({
+      where: { itemId_fornecedorId: { itemId: c.item.id, fornecedorId: f.id } },
+    })
+    expect(vinculo).toMatchObject({
+      codigoNoFornecedor: 'CX-01',
+      leadTimeDias: 4,
+      preferencial: false,
+    })
+    const log = await prisma.auditLog.findMany({
+      where: { OR: [{ entidadeId: f.id }, { entidadeId: c.item.id }] },
+      orderBy: { seq: 'asc' },
+    })
+    expect(log.map((l) => l.acao)).toEqual(
+      expect.arrayContaining(['FORNECEDOR_CRIADO', 'FORNECEDOR_VINCULADO']),
+    )
+  })
+
+  it('CNPJ já cadastrado recusa tudo: nem fornecedor, nem vínculo', async () => {
+    const c = await cenario(admin)
+    const antes = await prisma.fornecedor.count()
+    await expect(
+      cadastrarFornecedorParaItem(admin, {
+        itemId: c.item.id,
+        razaoSocial: 'Repetido',
+        cnpj: c.fornecedor.cnpj,
+      }),
+    ).rejects.toThrow('Já existe um fornecedor com este CNPJ.')
+    expect(await prisma.fornecedor.count()).toBe(antes)
+  })
+
+  it('Almoxarife registra compra, mas não cadastra fornecedor (matriz de permissões)', async () => {
+    const c = await cenario(admin)
+    await expect(
+      cadastrarFornecedorParaItem(almoxarife, {
+        itemId: c.item.id,
+        razaoSocial: 'Sem permissão',
+        cnpj: cnpjValidoAleatorio(),
+      }),
+    ).rejects.toBeInstanceOf(ErroDePermissao)
   })
 })

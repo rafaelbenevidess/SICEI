@@ -20,7 +20,7 @@ function idOpcional(form: FormData): string | undefined {
 export async function acaoSalvarFabricante(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   return executarAcao(async () => {
     await salvarFabricante(await atorDaAcao(), dadosDoFormulario(form), idOpcional(form))
-    revalidatePath('/cadastros/fabricantes')
+    revalidatePath('/cadastros')
     return { mensagem: 'Fabricante salvo.' }
   })
 }
@@ -28,7 +28,7 @@ export async function acaoSalvarFabricante(_: EstadoAcao, form: FormData): Promi
 export async function acaoSalvarFornecedor(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   return executarAcao(async () => {
     await salvarFornecedor(await atorDaAcao(), dadosDoFormulario(form), idOpcional(form))
-    revalidatePath('/cadastros/fornecedores')
+    revalidatePath('/cadastros')
     return { mensagem: 'Fornecedor salvo.' }
   })
 }
@@ -36,7 +36,7 @@ export async function acaoSalvarFornecedor(_: EstadoAcao, form: FormData): Promi
 export async function acaoSalvarDestino(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   return executarAcao(async () => {
     await salvarDestino(await atorDaAcao(), dadosDoFormulario(form), idOpcional(form))
-    revalidatePath('/cadastros/destinos')
+    revalidatePath('/cadastros')
     return { mensagem: 'Destino salvo.' }
   })
 }
@@ -44,7 +44,7 @@ export async function acaoSalvarDestino(_: EstadoAcao, form: FormData): Promise<
 export async function acaoSalvarColaborador(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   return executarAcao(async () => {
     await salvarColaborador(await atorDaAcao(), dadosDoFormulario(form), idOpcional(form))
-    revalidatePath('/cadastros/colaboradores')
+    revalidatePath('/cadastros')
     return { mensagem: 'Colaborador salvo.' }
   })
 }
@@ -52,7 +52,7 @@ export async function acaoSalvarColaborador(_: EstadoAcao, form: FormData): Prom
 export async function acaoCriarPosicao(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   return executarAcao(async () => {
     const p = await criarPosicao(await atorDaAcao(), dadosDoFormulario(form))
-    revalidatePath('/cadastros/posicoes')
+    revalidatePath('/cadastros', 'layout')
     return { mensagem: `Posição ${p.codigo} criada.` }
   })
 }

@@ -202,6 +202,8 @@ const BOTOES = {
   perigo: 'border border-crit bg-surface text-crit-ink hover:bg-crit-soft',
   escuro: 'bg-ink text-bg hover:opacity-90',
   fantasma: 'text-ink-2 hover:bg-surface-2',
+  textoPerigo: 'text-crit-ink hover:bg-crit-soft',
+  textoAcento: 'text-accent-ink hover:bg-accent-soft',
 }
 
 export type VarianteBotao = keyof typeof BOTOES

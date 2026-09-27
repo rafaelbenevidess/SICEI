@@ -11,7 +11,7 @@ import {
 import { BotaoEnviar, Campo, FormAcao, Oculto, Selecao } from '@/components/formulario'
 import { NOME_TIPO_DESTINO } from '@/lib/formatar'
 
-const grade = 'grid gap-3 sm:grid-cols-2'
+const grade = 'flex flex-col gap-4'
 
 export function FormFabricante({ id, nome }: { id?: string; nome?: string }) {
   return (
@@ -23,7 +23,7 @@ export function FormFabricante({ id, nome }: { id?: string; nome?: string }) {
     >
       {id && <Oculto nome="id" valor={id} />}
       <Campo nome="nome" rotulo="Nome" defaultValue={nome} obrigatorio />
-      <div className="flex items-end">
+      <div className="[&>button]:w-full">
         <BotaoEnviar>{id ? 'Salvar' : 'Cadastrar fabricante'}</BotaoEnviar>
       </div>
     </FormAcao>
@@ -67,7 +67,7 @@ export function FormFornecedor({
       />
       <Campo nome="telefone" rotulo="Telefone" defaultValue={valores.telefone ?? ''} />
       <Campo nome="contato" rotulo="Contato" defaultValue={valores.contato ?? ''} />
-      <div className="flex items-end">
+      <div className="[&>button]:w-full">
         <BotaoEnviar>{id ? 'Salvar' : 'Cadastrar fornecedor'}</BotaoEnviar>
       </div>
     </FormAcao>
@@ -94,7 +94,7 @@ export function FormDestino({
       />
       <Campo nome="codigo" rotulo="Código" defaultValue={valores.codigo} obrigatorio />
       <Campo nome="nome" rotulo="Nome" defaultValue={valores.nome} obrigatorio />
-      <div className="flex items-end">
+      <div className="[&>button]:w-full">
         <BotaoEnviar>{id ? 'Salvar' : 'Cadastrar destino'}</BotaoEnviar>
       </div>
     </FormAcao>
@@ -124,7 +124,7 @@ export function FormColaborador({
         ajuda="Opcional, única"
       />
       <Campo nome="setor" rotulo="Setor" defaultValue={valores.setor} obrigatorio />
-      <div className="flex items-end">
+      <div className="[&>button]:w-full">
         <BotaoEnviar>{id ? 'Salvar' : 'Cadastrar colaborador'}</BotaoEnviar>
       </div>
     </FormAcao>
@@ -136,7 +136,7 @@ export function FormPosicao() {
     <FormAcao
       acao={acaoCriarPosicao}
       limparAoConcluir
-      className="grid gap-3 sm:grid-cols-4 sm:items-end"
+      className="flex flex-col gap-4"
       rotulo="Nova posição"
     >
       <Campo nome="armario" rotulo="Armário" type="number" min={1} max={99} obrigatorio />
@@ -149,7 +149,9 @@ export function FormPosicao() {
         max={99}
         obrigatorio
       />
-      <BotaoEnviar>Criar posição</BotaoEnviar>
+      <div className="[&>button]:w-full">
+        <BotaoEnviar>Criar posição</BotaoEnviar>
+      </div>
     </FormAcao>
   )
 }
@@ -172,7 +174,9 @@ export function BotaoSituacao({
       <Oculto nome="entidade" valor={entidade} />
       <Oculto nome="id" valor={id} />
       <Oculto nome="ativo" valor={String(!ativo)} />
-      <BotaoEnviar variante="secundario">{ativo ? 'Inativar' : 'Reativar'}</BotaoEnviar>
+      <BotaoEnviar variante={ativo ? 'textoPerigo' : 'textoAcento'} pequeno>
+        {ativo ? 'Inativar' : 'Reativar'}
+      </BotaoEnviar>
     </FormAcao>
   )
 }

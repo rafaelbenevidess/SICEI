@@ -243,7 +243,27 @@ export async function listarAlertas() {
       take: 20,
     }),
   ])
-  return { abertos, fechados }
+  // o alerta não guarda o que o fechou: é a movimentação do item gravada na mesma
+  // transação (mesmo instante); sem ela, foi um recálculo (rotina diária ou limites)
+  const causas = await Promise.all(
+    fechados.map((a) =>
+      prisma.movimentacao.findFirst({
+        where: {
+          itemId: a.itemId,
+          criadoEm: {
+            gte: new Date(a.fechadoEm!.getTime() - 5000),
+            lte: new Date(a.fechadoEm!.getTime() + 5000),
+          },
+        },
+        select: { tipo: true, notaFiscal: true, usuario: { select: { login: true } } },
+        orderBy: { criadoEm: 'desc' },
+      }),
+    ),
+  )
+  return {
+    abertos,
+    fechados: fechados.map((a, i) => ({ ...a, fechadoPor: causas[i] })),
+  }
 }
 
 /** Dados do item para o formulário de edição, e se o código já está travado (RN-01). */

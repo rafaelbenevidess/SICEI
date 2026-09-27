@@ -45,11 +45,11 @@ describe('Componentes de apoio', () => {
         filtros={{ item: 'PST-001', tipo: undefined }}
       />,
     )
-    expect(screen.getByRole('link', { name: '← anterior' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '← Anterior' })).toHaveAttribute(
       'href',
       '/movimentacoes?item=PST-001&pagina=1',
     )
-    expect(screen.getByRole('link', { name: 'próxima →' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Próxima →' })).toHaveAttribute(
       'href',
       '/movimentacoes?item=PST-001&pagina=3',
     )

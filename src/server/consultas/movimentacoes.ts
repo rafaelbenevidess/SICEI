@@ -14,6 +14,8 @@ export interface FiltroMovimentacoes {
   destino?: string
   colaborador?: string
   op?: string
+  /** um campo só: código do item, OP ou nome do colaborador */
+  busca?: string
 }
 
 export const POR_PAGINA = 50
@@ -30,6 +32,14 @@ export function filtroParaWhere(f: FiltroMovimentacoes): Prisma.MovimentacaoWher
   if (f.destino && ehUuid(f.destino)) where.destinoId = f.destino
   if (f.colaborador && ehUuid(f.colaborador)) where.colaboradorId = f.colaborador
   if (f.op?.trim()) where.ordemProducao = { contains: f.op.trim(), mode: 'insensitive' }
+  const busca = f.busca?.trim()
+  if (busca) {
+    where.OR = [
+      { item: { codigo: { contains: busca, mode: 'insensitive' } } },
+      { ordemProducao: { contains: busca, mode: 'insensitive' } },
+      { colaborador: { nome: { contains: busca, mode: 'insensitive' } } },
+    ]
+  }
   return where
 }
 
@@ -83,4 +93,21 @@ export async function opcoesDeFiltro() {
     destinos: destinos.map((d) => ({ valor: d.id, rotulo: d.nome })),
     colaboradores: colaboradores.map((c) => ({ valor: c.id, rotulo: c.nome })),
   }
+}
+
+/** Exportação: todas as linhas do filtro (até 20 mil), sem paginação. */
+export function listarTodasAsMovimentacoes(f: FiltroMovimentacoes) {
+  return prisma.movimentacao.findMany({
+    where: filtroParaWhere(f),
+    include: {
+      item: { select: { codigo: true } },
+      usuario: { select: { login: true } },
+      destino: { select: { nome: true } },
+      colaborador: { select: { nome: true } },
+      fornecedor: { select: { razaoSocial: true, nomeFantasia: true } },
+      estornadaPor: { select: { id: true } },
+    },
+    orderBy: { criadoEm: 'desc' },
+    take: 20_000,
+  })
 }

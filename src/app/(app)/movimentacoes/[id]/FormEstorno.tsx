@@ -1,5 +1,6 @@
 'use client'
 
+import { Undo2 } from 'lucide-react'
 import { acaoEstornar } from '@/app/acoes/estoque'
 import { AreaTexto, BotaoEnviar, FormAcao, Oculto } from '@/components/formulario'
 
@@ -11,8 +12,11 @@ export function FormEstorno({ movimentacaoId }: { movimentacaoId: string }) {
     >
       <Oculto nome="movimentacaoId" valor={movimentacaoId} />
       <AreaTexto nome="justificativa" rotulo="Justificativa do estorno" obrigatorio />
-      <div>
-        <BotaoEnviar variante="perigo">Estornar movimentação</BotaoEnviar>
+      <div className="[&>button]:w-full">
+        <BotaoEnviar variante="perigo">
+          <Undo2 aria-hidden />
+          Estornar movimentação
+        </BotaoEnviar>
       </div>
     </FormAcao>
   )

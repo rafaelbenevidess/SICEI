@@ -39,3 +39,21 @@ export async function registrarExportacaoDeItens(
     }),
   )
 }
+
+/** RN-23: a exportação do histórico de movimentações também fica no log. */
+export async function registrarExportacaoDeMovimentacoes(
+  ator: Ator,
+  dados: Record<string, unknown>,
+): Promise<void> {
+  exigirPermissao(ator.perfil, 'historico:ver')
+  await prisma.$transaction((tx) =>
+    registrarAuditoria(tx, {
+      acao: 'RELATORIO_EXPORTADO',
+      entidade: 'relatorio',
+      depois: { tipo: 'movimentacoes', ...dados },
+      usuarioId: ator.usuarioId,
+      ip: ator.ip,
+      userAgent: ator.userAgent,
+    }),
+  )
+}

@@ -4,11 +4,11 @@
  */
 export function urlCom(
   caminho: string,
-  atuais: Record<string, string | string[] | undefined>,
+  atuais: object,
   mudancas: Record<string, string | null | undefined>,
 ): string {
   const p = new URLSearchParams()
-  for (const [k, v] of Object.entries(atuais)) {
+  for (const [k, v] of Object.entries(atuais as Record<string, unknown>)) {
     if (typeof v === 'string' && v !== '') p.set(k, v)
   }
   for (const [k, v] of Object.entries(mudancas)) {

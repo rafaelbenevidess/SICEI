@@ -1,54 +1,84 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Paginacao } from '@/components/Paginacao'
-import { Pagina, Tabela, Vazio } from '@/components/ui'
+import { Download } from 'lucide-react'
 import { TIPOS_MOVIMENTACAO } from '@/domain/tipos'
-import { formatarDataHora, NOME_TIPO } from '@/lib/formatar'
+import { pode } from '@/domain/permissoes'
+import { QtdMovimentacao, TipoMovimentacao } from '@/components/movimentacao'
+import { Paginacao } from '@/components/Paginacao'
+import { ChipCodigo, LinkBotao, Pagina, Selo, Tabela, Vazio } from '@/components/ui'
+import { contextoDaMovimentacao } from '@/lib/contexto'
+import { formatarDiaHora, formatarNumero, NOME_TIPO } from '@/lib/formatar'
+import { urlCom } from '@/lib/url'
 import {
+  detalheMovimentacao,
   listarMovimentacoes,
   opcoesDeFiltro,
   type FiltroMovimentacoes,
 } from '@/server/consultas/movimentacoes'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
+import { PainelMovimentacao } from './PainelMovimentacao'
 
 export const metadata: Metadata = { title: 'Movimentações' }
 
-const campo = 'rounded-md border border-slate-300 px-2 py-2 text-base sm:text-sm'
+const campo =
+  'h-10 w-full min-w-0 rounded-lg border border-line-2 bg-surface px-3 text-base text-ink placeholder:text-ink-3 sm:text-sm'
+const rotulo = 'flex min-w-0 flex-col gap-1.5 text-[13px] font-medium'
 
+type Filtros = FiltroMovimentacoes & { pagina?: string; sel?: string }
+
+/** RF-15: histórico completo e inalterável, com filtros e o detalhe ao lado. */
 export default async function PaginaMovimentacoes({
   searchParams,
 }: {
-  searchParams: Promise<FiltroMovimentacoes & { pagina?: string }>
+  searchParams: Promise<Filtros>
 }) {
-  await exigirPermissaoDaPagina('historico:ver')
+  const u = await exigirPermissaoDaPagina('historico:ver')
   const f = await searchParams
   const pagina = Math.max(1, Number(f.pagina) || 1)
+  const verPrecos = pode(u.perfil, 'precos:ver')
   const [{ linhas, total, paginas }, opcoes] = await Promise.all([
     listarMovimentacoes(f, pagina),
     opcoesDeFiltro(),
   ])
+  const selId = f.sel ?? linhas[0]?.id
+  const sel = selId ? await detalheMovimentacao(selId) : null
+  const filtros: Filtros = { ...f }
+  delete filtros.sel
+  delete filtros.pagina
+
   return (
     <Pagina
       titulo="Movimentações"
-      descricao={`Histórico completo e inalterável (RF-15). ${total} registro(s).`}
+      descricao={`Histórico completo e inalterável. ${formatarNumero(total)} ${total === 1 ? 'registro' : 'registros'}${Object.values(filtros).some(Boolean) ? ' com estes filtros' : ''}.`}
+      acoes={
+        <LinkBotao
+          href={urlCom('/movimentacoes/csv', filtros, {})}
+          variante="secundario"
+          icone={Download}
+        >
+          Exportar CSV
+        </LinkBotao>
+      }
     >
       <form
-        className="grid gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-4"
         role="search"
+        className="grid items-end gap-4 rounded-[14px] border border-line bg-surface p-4 shadow-cartao sm:grid-cols-2 min-[75rem]:grid-cols-[1.3fr_1fr_1fr_1.2fr_auto]"
       >
-        <label className="flex flex-col text-xs font-medium">
-          De
-          <input type="date" name="de" defaultValue={f.de} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
-          Até
-          <input type="date" name="ate" defaultValue={f.ate} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
-          Item (código)
-          <input name="item" defaultValue={f.item} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
+        <fieldset className={rotulo}>
+          <legend className="mb-1.5">Período</legend>
+          <div className="flex items-center gap-2">
+            <label className="sr-only" htmlFor="de">
+              De
+            </label>
+            <input id="de" type="date" name="de" defaultValue={f.de} className={campo} />
+            <span className="text-ink-3">–</span>
+            <label className="sr-only" htmlFor="ate">
+              Até
+            </label>
+            <input id="ate" type="date" name="ate" defaultValue={f.ate} className={campo} />
+          </div>
+        </fieldset>
+        <label className={rotulo}>
           Tipo
           <select name="tipo" defaultValue={f.tipo ?? ''} className={campo}>
             <option value="">Todos</option>
@@ -59,107 +89,107 @@ export default async function PaginaMovimentacoes({
             ))}
           </select>
         </label>
-        <label className="flex flex-col text-xs font-medium">
-          Usuário (login)
-          <input name="usuario" defaultValue={f.usuario} className={campo} />
-        </label>
-        <label className="flex flex-col text-xs font-medium">
+        <label className={rotulo}>
           Destino
           <select name="destino" defaultValue={f.destino ?? ''} className={campo}>
             <option value="">Todos</option>
-            {opcoes.destinos.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
+            {opcoes.destinos.map((d) => (
+              <option key={d.valor} value={d.valor}>
+                {d.rotulo}
               </option>
             ))}
           </select>
         </label>
-        <label className="flex flex-col text-xs font-medium">
-          Colaborador
-          <select name="colaborador" defaultValue={f.colaborador ?? ''} className={campo}>
-            <option value="">Todos</option>
-            {opcoes.colaboradores.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
-              </option>
-            ))}
-          </select>
+        <label className={rotulo}>
+          Item, OP ou colaborador
+          <input
+            name="busca"
+            type="search"
+            defaultValue={f.busca ?? f.op ?? f.item}
+            placeholder="PST-001, 2026-0457…"
+            className={campo}
+          />
         </label>
-        <label className="flex flex-col text-xs font-medium">
-          Ordem de produção
-          <input name="op" defaultValue={f.op} className={campo} />
-        </label>
-        <div className="flex gap-2 sm:col-span-4">
-          <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white">
-            Filtrar
-          </button>
-          <Link
-            href="/movimentacoes"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
-            Limpar
-          </Link>
-        </div>
+        <button type="submit" className="h-10 rounded-lg bg-ink px-5 text-sm font-medium text-bg">
+          Filtrar
+        </button>
       </form>
 
       {linhas.length === 0 ? (
-        <Vazio>Nenhuma movimentação encontrada.</Vazio>
+        <Vazio>Nenhuma movimentação com esses filtros.</Vazio>
       ) : (
-        <Tabela rotulo="Histórico de movimentações">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Item</th>
-              <th>Tipo</th>
-              <th className="text-right">Qtd.</th>
-              <th className="text-right">Saldo</th>
-              <th className="hidden md:table-cell">Destino · OP · colaborador</th>
-              <th className="hidden sm:table-cell">Usuário</th>
-            </tr>
-          </thead>
-          <tbody>
-            {linhas.map((m) => (
-              <tr key={m.id} className={m.estornadaPor ? 'text-slate-400' : ''}>
-                <td className="whitespace-nowrap">
-                  <Link href={`/movimentacoes/${m.id}`} className="underline">
-                    {formatarDataHora(m.criadoEm)}
-                  </Link>
-                </td>
-                <td className="whitespace-nowrap">
-                  <Link href={`/itens/${m.item.id}`} className="underline">
-                    {m.item.codigo}
-                  </Link>
-                </td>
-                <td>
-                  {NOME_TIPO[m.tipo]}
-                  {m.estornadaPor && ' (estornada)'}
-                </td>
-                <td className="text-right">{m.quantidade}</td>
-                <td className="whitespace-nowrap text-right">
-                  {m.saldoAnterior} → {m.saldoPosterior}
-                </td>
-                <td className="hidden md:table-cell">
-                  {[
-                    m.destino?.nome,
-                    m.ordemProducao,
-                    m.colaborador?.nome,
-                    m.fornecedor && (m.fornecedor.nomeFantasia ?? m.fornecedor.razaoSocial),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ') || '—'}
-                </td>
-                <td className="hidden sm:table-cell">{m.usuario.login}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Tabela>
+        <div className="grid items-start gap-6 min-[75rem]:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="flex min-w-0 flex-col gap-4">
+            <Tabela rotulo="Movimentações" larguraMinima={700}>
+              <thead>
+                <tr>
+                  <th>Quando</th>
+                  <th>Item</th>
+                  <th>Tipo</th>
+                  <th className="text-right">Qtd.</th>
+                  <th className="text-right">Saldo</th>
+                  <th>Destino · OP · colaborador</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linhas.map((m) => {
+                  const delta = m.saldoPosterior - m.saldoAnterior
+                  const ativa = m.id === sel?.id
+                  return (
+                    <tr
+                      key={m.id}
+                      className={`relative ${ativa ? 'bg-accent-soft hover:!bg-accent-soft' : ''} ${m.estornadaPor ? 'text-ink-3' : ''}`}
+                    >
+                      <td className="whitespace-nowrap">
+                        <Link
+                          href={`${urlCom('/movimentacoes', f, { sel: m.id })}#detalhe`}
+                          scroll={false}
+                          aria-current={ativa ? 'true' : undefined}
+                          className="text-inherit no-underline after:absolute after:inset-0 after:content-['']"
+                        >
+                          {formatarDiaHora(m.criadoEm)}
+                        </Link>
+                      </td>
+                      <td>
+                        <ChipCodigo>{m.item.codigo}</ChipCodigo>
+                      </td>
+                      <td>
+                        <span className="flex flex-col items-start gap-1">
+                          <TipoMovimentacao tipo={m.tipo} delta={delta} />
+                          {m.estornadaPor && <Selo>estornada</Selo>}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <QtdMovimentacao delta={delta} />
+                      </td>
+                      <td className="text-right whitespace-nowrap text-ink-2">
+                        {m.saldoAnterior} → {m.saldoPosterior}
+                      </td>
+                      <td className="min-w-[180px] text-[13px] text-ink-2">
+                        {contextoDaMovimentacao(m, verPrecos)}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </Tabela>
+            <Paginacao
+              pagina={pagina}
+              paginas={paginas}
+              caminho="/movimentacoes"
+              filtros={filtros}
+            />
+          </div>
+          {sel && (
+            <aside
+              id="detalhe"
+              className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[75rem]:sticky min-[75rem]:top-[88px]"
+            >
+              <PainelMovimentacao m={sel} perfil={u.perfil} />
+            </aside>
+          )}
+        </div>
       )}
-      <Paginacao
-        pagina={pagina}
-        paginas={paginas}
-        caminho="/movimentacoes"
-        filtros={{ ...f, pagina: undefined }}
-      />
     </Pagina>
   )
 }

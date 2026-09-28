@@ -1,8 +1,11 @@
 import { chaveDaLicenciada } from '@/lib/produto'
 import { LogoDdaMetalurgica } from './LogoDdaMetalurgica'
 
-/** Licenciadas que têm logo, pela chave do nome ("DDA Metalúrgica" → "dda-metalurgica"). */
-export const LICENCIADAS_COM_LOGO = ['dda-metalurgica'] as const
+/**
+ * Licenciadas que têm logo, pela chave do nome ("DDA Usinagem Industrial" →
+ * "dda-usinagem-industrial"). A DDA tem as duas chaves: o nome antigo continua valendo.
+ */
+export const LICENCIADAS_COM_LOGO = ['dda-usinagem-industrial', 'dda-metalurgica'] as const
 
 /** A licenciada tem logo cadastrada? */
 export function temLogo(nome: string | null): boolean {
@@ -26,6 +29,7 @@ export function LogoDaLicenciada({
   titulo?: string
 }) {
   switch (chaveDaLicenciada(nome)) {
+    case 'dda-usinagem-industrial':
     case 'dda-metalurgica':
       return <LogoDdaMetalurgica className={className} titulo={titulo} />
     default:

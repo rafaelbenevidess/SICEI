@@ -31,7 +31,7 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 663 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Unitários | 665 | Regras de negócio, validações, telas e componentes (99% das linhas) |
 | Integração | 80 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash, filtros de busca |
 | Ponta a ponta | 20 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
 
@@ -65,7 +65,7 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.5 |
 | 02 | [Requisitos](docs/02-requisitos.md) | 1.8 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.10 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.11 |
 | 04 | [Segurança](docs/04-seguranca.md) | 1.5 |
 | 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.5 |
 | 06 | [Operação](docs/06-operacao.md) | 1.1 |

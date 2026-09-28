@@ -152,6 +152,12 @@ describe('Marca · Ícone em vetor e nome em texto', () => {
     // o ícone é SVG decorativo: leitor de tela lê só o nome
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
+  it('a licenciada aparece em maiúsculas, encaixada na altura do ícone', () => {
+    render(<Marca licenciada="DDA Usinagem Industrial" />)
+    const nome = screen.getByText('DDA Usinagem Industrial')
+    expect(nome).toHaveClass('uppercase')
+    expect(nome.parentElement).toHaveClass('h-9')
+  })
   it('sem licenciada, só o nome', () => {
     render(<Marca />)
     expect(screen.getByText('SICEI')).toBeInTheDocument()
@@ -178,6 +184,7 @@ describe('Login · Logo da licenciada', () => {
   })
 
   it.each([
+    ['DDA Usinagem Industrial', true],
     ['DDA Metalúrgica', true],
     ['dda metalurgica', true],
     ['Metalúrgica Exemplo', false],

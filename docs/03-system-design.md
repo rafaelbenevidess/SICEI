@@ -326,8 +326,8 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revis
 | Banco | `sicei_<sigla>` | `sicei_dda` |
 | Dono do banco (migrations) | `sicei_<sigla>_owner` | `sicei_dda_owner` |
 | Usuário da aplicação | `sicei_<sigla>_app` | `sicei_dda_app` |
-| Nome no rodapé e no login | variável `SICEI_LICENCIADA` | `DDA Metalúrgica` |
-| Logo no login | componente SVG em `components/licenciadas/`, ligado à chave do nome em `LogoDaLicenciada.tsx` | `LogoDdaMetalurgica.tsx` (chave `dda-metalurgica`) |
+| Nome no menu, no rodapé e no login | variável `SICEI_LICENCIADA` (no menu, em maiúsculas embaixo do SICEI) | `DDA Usinagem Industrial` |
+| Logo no login | componente SVG em `components/licenciadas/`, ligado à chave do nome em `LogoDaLicenciada.tsx` | `LogoDdaMetalurgica.tsx` (chaves `dda-usinagem-industrial` e `dda-metalurgica`) |
 
 A migration `nomes_sicei` dá as permissões a todo usuário que segue o padrão `sicei_<sigla>_app`, então o mesmo código serve para qualquer cliente. O projeto se chamava SIMI: a primeira migration ainda cria a função `simi_bloquear_alteracao`, e a `nomes_sicei` a renomeia para `sicei_bloquear_alteracao` (migration já aplicada não pode ser editada).
 
@@ -528,3 +528,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.8 | 27/09/2026 | A mesma busca em todos os campos que permitem (nova 10.5; a prévia passa a 10.6): campos de escolha com busca, sugestões no topo, filtros de texto tolerantes, posição digitada de qualquer jeito, código equivalente e padronizado no cadastro e na importação. |
 | 1.9 | 27/09/2026 | Marca em vetor: ícone em SVG e o nome SICEI em texto, no lugar das imagens recortadas (10.2). |
 | 1.10 | 28/09/2026 | Logo da licenciada na tela de login, em SVG sem fundo, escolhida pelo nome da empresa (seção 7 e 10.2). |
+| 1.11 | 28/09/2026 | A licenciada passa a se chamar DDA Usinagem Industrial; no menu, o nome fica em maiúsculas, encaixado na altura do ícone (seção 7). |

@@ -50,7 +50,7 @@ afterEach(() => {
 describe('RN-26 · Leitor de QR na tela Ler QR', () => {
   it('etiqueta do SICEI: desliga a câmera e abre a posição lida', async () => {
     camera(async () => fluxoFalso)
-    leitorNativo(['https://sicei-ddametalurgica.vercel.app/p/a01-g03-c04'])
+    leitorNativo(['https://sicei-ddausinagem.vercel.app/p/a01-g03-c04'])
     render(<LeitorQr autoIniciar />)
     await waitFor(() => expect(push).toHaveBeenCalledWith('/p/A01-G03-C04'))
     expect(parar).toHaveBeenCalled()

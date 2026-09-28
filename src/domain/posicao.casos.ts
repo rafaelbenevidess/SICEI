@@ -59,6 +59,11 @@ export const casosAtribuicao: CasoDeTeste<
 export const casosLeituraQr: CasoDeTeste<string, string | null>[] = [
   {
     descricao: 'URL impressa na etiqueta → A01-G03-C04',
+    entrada: 'https://sicei-ddausinagem.vercel.app/p/A01-G03-C04',
+    esperado: 'A01-G03-C04',
+  },
+  {
+    descricao: 'etiqueta já impressa com o endereço antigo (sicei-ddametalurgica) → A01-G03-C04',
     entrada: 'https://sicei-ddametalurgica.vercel.app/p/A01-G03-C04',
     esperado: 'A01-G03-C04',
   },
@@ -74,17 +79,17 @@ export const casosLeituraQr: CasoDeTeste<string, string | null>[] = [
   },
   {
     descricao: 'código sem zeros na URL "A1-G3-C4" → A01-G03-C04 (mesma tolerância da digitação)',
-    entrada: 'https://sicei-ddametalurgica.vercel.app/p/A1-G3-C4',
+    entrada: 'https://sicei-ddausinagem.vercel.app/p/A1-G3-C4',
     esperado: 'A01-G03-C04',
   },
   {
     descricao: 'código incompleto na URL "A1-G3" → não é etiqueta do SICEI',
-    entrada: 'https://sicei-ddametalurgica.vercel.app/p/A1-G3',
+    entrada: 'https://sicei-ddausinagem.vercel.app/p/A1-G3',
     esperado: null,
   },
   {
     descricao: 'outra página do sistema → não é etiqueta',
-    entrada: 'https://sicei-ddametalurgica.vercel.app/itens/123',
+    entrada: 'https://sicei-ddausinagem.vercel.app/itens/123',
     esperado: null,
   },
   {

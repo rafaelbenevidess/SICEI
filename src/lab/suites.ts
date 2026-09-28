@@ -931,7 +931,7 @@ export const SUITES: SuiteLab[] = [
           nome: 'texto',
           rotulo: 'Texto lido pela câmera',
           tipo: 'texto',
-          padrao: 'https://sicei-ddametalurgica.vercel.app/p/A01-G03-C04',
+          padrao: 'https://sicei-ddausinagem.vercel.app/p/A01-G03-C04',
         },
       ],
       esperado: { nome: 'esperado', rotulo: 'Código esperado', tipo: 'texto' },

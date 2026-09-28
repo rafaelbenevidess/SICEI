@@ -70,7 +70,7 @@ Cada empresa que licencia o SICEI ganha uma instalação própria (doc 03, seç�
    - `SICEI_LICENCIADA`: nome da empresa, como aparece no login e no rodapé. Se a empresa tiver logo, crie o componente SVG dela em `src/components/licenciadas/` (sem fundo, com `fill="currentColor"`) e ligue-o à chave do nome em `LogoDaLicenciada.tsx`; a chave é o nome em minúsculas, sem acentos e com hífens (DDA Usinagem Industrial → `dda-usinagem-industrial`). A logo aparece só na tela de login; sem ela, o login mostra só a marca do SICEI.
    - `DATABASE_URL`: URL com pooling, usuário `sicei_<sigla>_app`
    - `DIRECT_URL`: URL direta, usuário `sicei_<sigla>_owner`
-   - `APP_URL`: `https://sicei-<empresa>.vercel.app` (usado no QR das etiquetas e nos e-mails)
+   - `APP_URL`: `https://sicei-<empresa>.vercel.app` (usado no QR das etiquetas e nos e-mails). Para trocar o endereço, adicione o domínio novo ao projeto, mude o `APP_URL` e mantenha o antigo no projeto: as etiquetas já impressas apontam para ele e continuam abrindo o item. As etiquetas impressas depois da troca usam o endereço novo.
    - `CRON_SECRET`: texto aleatório longo (a Vercel manda no cabeçalho da rotina diária)
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`: e-mail corporativo, se houver
    - `SEED_SENHA_ADMIN`: senha provisória do `admin` no primeiro deploy (a troca é obrigatória no primeiro acesso)
@@ -117,4 +117,4 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 | Versão | Data | Mudança |
 |---|---|---|
 | 1.0 | 26/09/2026 | Primeira versão. |
-| 1.1 | 28/09/2026 | Seção 5: logo da licenciada na tela de login; a DDA passa a aparecer como DDA Usinagem Industrial. |
+| 1.1 | 28/09/2026 | Seção 5: logo da licenciada na tela de login; a DDA passa a aparecer como DDA Usinagem Industrial. Seção 5: como trocar o endereço sem perder as etiquetas impressas. |

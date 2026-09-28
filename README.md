@@ -4,7 +4,7 @@
 
 Sistema Inteligente de Controle de Estoques Industriais. Controla o estoque de pastilhas de usinagem: quanto tem, onde está, quem tirou, para qual máquina e quando é hora de comprar. Trabalho acadêmico de Rafael Benevides, feito a partir da demanda real da DDA Metalúrgica (Santa Catarina), primeira empresa a usar o sistema.
 
-Em produção: https://sicei-ddametalurgica.vercel.app
+Em produção: https://sicei-ddausinagem.vercel.app
 
 ## O problema
 
@@ -31,7 +31,7 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 665 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Unitários | 666 | Regras de negócio, validações, telas e componentes (99% das linhas) |
 | Integração | 80 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash, filtros de busca |
 | Ponta a ponta | 20 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV |
 
@@ -41,7 +41,7 @@ npm run test:integracao   # integração (precisa de PostgreSQL)
 npm run test:e2e          # ponta a ponta (rode npm run build:app antes)
 ```
 
-Para o professor: em [/testes](https://sicei-ddametalurgica.vercel.app/testes) os testes das regras rodam no próprio navegador, sem instalar nada, e dá para criar casos novos. O relatório completo da suíte, com a cobertura, fica em [/relatorio-testes](https://sicei-ddametalurgica.vercel.app/relatorio-testes/index.html). O build só publica uma versão se todos os testes passarem.
+Para o professor: em [/testes](https://sicei-ddausinagem.vercel.app/testes) os testes das regras rodam no próprio navegador, sem instalar nada, e dá para criar casos novos. O relatório completo da suíte, com a cobertura, fica em [/relatorio-testes](https://sicei-ddausinagem.vercel.app/relatorio-testes/index.html). O build só publica uma versão se todos os testes passarem.
 
 ## Como rodar
 

@@ -16,7 +16,7 @@ export default async function PaginaLogin({
   if (u) redirect(u.deveTrocarSenha ? '/trocar-senha' : '/painel')
   const { volta } = await searchParams
   return (
-    <TelaDeAcesso>
+    <TelaDeAcesso comLogoDaLicenciada>
       <h1 className="text-[30px] font-semibold tracking-tight">Entrar</h1>
       <p className="mt-1 mb-7 text-ink-2">Use o login que o Administrador entregou para você.</p>
       <FormularioLogin volta={volta ?? ''} />

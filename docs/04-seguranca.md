@@ -90,6 +90,7 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | Sugestões da busca do topo (`acaoSugerirItens`) | Só leitura. Confere a sessão e a troca de senha, recusa termo que não seja texto ou passe de 60 caracteres e devolve só código, descrição, posição e status de até 8 itens ativos, o mesmo que a lista de itens mostra a qualquer perfil. Nenhum preço. | `src/app/acoes/estoque.ts` |
 | Filtros de texto tolerantes (movimentações e auditoria) | O texto não vai para o SQL: é comparado em memória com a regra do domínio e o banco recebe só a lista de ids ou OPs encontrados, pelo Prisma parametrizado. | `src/server/consultas/busca.ts` |
 | Campo de escolha com busca | Envia só o id da opção escolhida; o service confere de novo se o fornecedor, colaborador, destino ou posição existe e está ativo. | `src/components/formulario.tsx` |
+| Logo da licenciada no login | Arquivo estático em `public/licenciadas/`, liberado no `proxy.ts` porque aparece antes do login. A escolha vem de uma lista fixa no código (`LOGOS_DAS_LICENCIADAS`), pela variável do servidor; nenhum texto do usuário vira caminho de arquivo. | `src/lib/produto.ts` |
 | Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
 
 ## 6. Histórico do documento
@@ -101,3 +102,4 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | 1.2 | 27/09/2026 | Câmera liberada só para o próprio SICEI (`camera=(self)`), para ler a etiqueta na tela "Ler QR". |
 | 1.3 | 27/09/2026 | O que o IP do log representa; pop-up de alertas, cadastro rápido no novo item e registro da impressão de etiquetas na revisão (seção 5). |
 | 1.4 | 27/09/2026 | Sugestões da busca do topo, filtros de texto tolerantes e campo de escolha com busca na revisão (seção 5). |
+| 1.5 | 28/09/2026 | Logo da licenciada no login na revisão (seção 5). |

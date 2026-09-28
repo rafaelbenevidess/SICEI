@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BotaoEnviar, Campo, CampoSenha, DadosDaAcao, FormAcao, Selecao } from './formulario'
 import { Marca } from './Marca'
 import { Paginacao } from './Paginacao'
 import { Rodape } from './Rodape'
+import { TelaDeAcesso } from './TelaDeAcesso'
 import { Aviso, BadgeStatus, rotulosDoNivel, Vazio } from './ui'
 
 afterEach(cleanup)
@@ -154,6 +155,30 @@ describe('Marca · Ícone em vetor e nome em texto', () => {
     render(<Marca />)
     expect(screen.getByText('SICEI')).toBeInTheDocument()
     expect(screen.queryByText('DDA Metalúrgica')).not.toBeInTheDocument()
+  })
+})
+
+describe('Login · Logo da licenciada', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('no login da DDA, a logo aparece acima do formulário e no painel', () => {
+    vi.stubEnv('SICEI_LICENCIADA', 'DDA Metalúrgica')
+    const { container } = render(<TelaDeAcesso comLogoDaLicenciada>formulário</TelaDeAcesso>)
+    expect(screen.getByRole('img', { name: 'DDA Metalúrgica' })).toBeInTheDocument()
+    expect(container.querySelectorAll('img[src*="dda-metalurgica"]')).toHaveLength(2)
+  })
+
+  it('nas outras telas de acesso (troca de senha, acesso negado) a logo não aparece', () => {
+    vi.stubEnv('SICEI_LICENCIADA', 'DDA Metalúrgica')
+    const { container } = render(<TelaDeAcesso>formulário</TelaDeAcesso>)
+    expect(container.querySelector('img')).toBeNull()
+  })
+
+  it('empresa sem logo cadastrada: login só com a marca do SICEI', () => {
+    vi.stubEnv('SICEI_LICENCIADA', 'Metalúrgica Exemplo')
+    const { container } = render(<TelaDeAcesso comLogoDaLicenciada>formulário</TelaDeAcesso>)
+    expect(container.querySelector('img')).toBeNull()
+    expect(screen.getAllByText('SICEI').length).toBeGreaterThan(0)
   })
 })
 

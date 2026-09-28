@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { anosDeDireitos, licenciada, nomeDaLicenciada, PRODUTO } from './produto'
+import {
+  anosDeDireitos,
+  chaveDaLicenciada,
+  licenciada,
+  logoDaLicenciada,
+  nomeDaLicenciada,
+  PRODUTO,
+} from './produto'
 
 describe('Produto · Dados do SICEI e da licença', () => {
   it('sigla e nome por extenso', () => {
@@ -37,5 +44,28 @@ describe('Produto · Dados do SICEI e da licença', () => {
       vi.stubEnv('SICEI_LICENCIADA', '')
       expect(licenciada()).toBeNull()
     })
+  })
+})
+
+describe('Produto · Logo da licenciada no login', () => {
+  it.each([
+    ['DDA Metalúrgica', 'dda-metalurgica'],
+    ['  dda   METALÚRGICA ', 'dda-metalurgica'],
+    ['Aço & Cia. Ltda', 'aco-cia-ltda'],
+  ])('"%s" vira a chave "%s"', (nome, chave) => {
+    expect(chaveDaLicenciada(nome)).toBe(chave)
+  })
+
+  it('a DDA Metalúrgica tem logo, com o arquivo e o tamanho original', () => {
+    expect(logoDaLicenciada('DDA Metalúrgica')).toEqual({
+      src: '/licenciadas/dda-metalurgica.png',
+      largura: 339,
+      altura: 161,
+    })
+  })
+
+  it('empresa sem logo cadastrada ou instalação sem licenciada: sem logo', () => {
+    expect(logoDaLicenciada('Metalúrgica Exemplo')).toBeNull()
+    expect(logoDaLicenciada(null)).toBeNull()
   })
 })

@@ -60,9 +60,10 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // fora: arquivos estáticos do Next, ícones, imagens da marca e o relatório estático do Vitest
+      // fora: arquivos estáticos do Next, ícones, imagens da marca e das licenciadas (usadas no
+      // login, antes de haver sessão) e o relatório estático do Vitest
       source:
-        '/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|brand/|relatorio-testes).*)',
+        '/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|brand/|licenciadas/|relatorio-testes).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },

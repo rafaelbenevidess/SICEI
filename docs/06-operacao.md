@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 06, Operação (instalação, execução, testes, publicação, backup) |
-| **Versão** | 1.0 |
+| **Versão** | 1.1 |
 | **Base** | [03, System Design](03-system-design.md) |
 
 ## 1. Pré-requisitos
@@ -67,7 +67,7 @@ Cada empresa que licencia o SICEI ganha uma instalação própria (doc 03, seç�
 1. No Neon, crie um projeto `sicei-<empresa>` (ex.: `sicei-ddametalurgica`), com o banco `sicei_<sigla>` (`sicei_dda`) e o dono `sicei_<sigla>_owner` (`sicei_dda_owner`), pelo console ou pela API.
 2. **O `sicei_<sigla>_app` precisa ser criado por SQL**, conectado como o dono: `CREATE ROLE sicei_dda_app LOGIN PASSWORD '...'`. Não crie pelo console nem pela API: papéis criados assim entram no grupo `neon_superuser`, que tem `pg_write_all_data` e anularia a proteção do histórico.
 3. Na Vercel, crie um projeto `sicei-<empresa>` ligado ao repositório, adicione o domínio `sicei-<empresa>.vercel.app` e configure as variáveis:
-   - `SICEI_LICENCIADA`: nome da empresa, como aparece no login e no rodapé
+   - `SICEI_LICENCIADA`: nome da empresa, como aparece no login e no rodapé. Se a empresa tiver logo, coloque o arquivo com fundo transparente em `public/licenciadas/<chave>.png`, em que a chave é o nome em minúsculas, sem acentos e com hífens (DDA Metalúrgica → `dda-metalurgica`), e registre o arquivo e o tamanho em `LOGOS_DAS_LICENCIADAS` (`src/lib/produto.ts`). A logo aparece só na tela de login; sem ela, o login mostra só a marca do SICEI.
    - `DATABASE_URL`: URL com pooling, usuário `sicei_<sigla>_app`
    - `DIRECT_URL`: URL direta, usuário `sicei_<sigla>_owner`
    - `APP_URL`: `https://sicei-<empresa>.vercel.app` (usado no QR das etiquetas e nos e-mails)
@@ -111,3 +111,10 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 | Ligar os avisos por e-mail | Parâmetros → E-mail corporativo para avisos |
 | Carga inicial da planilha | Importação (baixe o modelo CSV) |
 | O próprio Administrador foi bloqueado | No servidor, com acesso ao banco: `npm run admin:recuperar -- admin` (gera nova senha provisória e registra no log) |
+
+## Histórico do documento
+
+| Versão | Data | Mudança |
+|---|---|---|
+| 1.0 | 26/09/2026 | Primeira versão. |
+| 1.1 | 28/09/2026 | Seção 5: logo da licenciada na tela de login. |

@@ -176,7 +176,7 @@ export default async function Painel() {
       </div>
 
       <div
-        className={`grid gap-6 ${verHistorico ? 'min-[75rem]:grid-cols-[1fr_1.35fr]' : 'min-[75rem]:grid-cols-2'}`}
+        className={`grid gap-6 ${verHistorico ? 'min-[85rem]:grid-cols-[1fr_1.35fr]' : 'min-[85rem]:grid-cols-2'}`}
       >
         <Cartao titulo="Mais consumidos no mês">
           {r.top.length === 0 ? (

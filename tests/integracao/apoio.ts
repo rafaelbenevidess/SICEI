@@ -15,6 +15,9 @@ import { URL_DONO_TESTE } from './preparar'
 let contador = 0
 export const unico = (prefixo: string) => `${prefixo}-${Date.now().toString(36)}-${++contador}`
 
+/** Matrícula que ainda não existe (RN-21d: um login por matrícula). */
+export const novaMatricula = () => `M${Date.now().toString(36)}${++contador}`.toUpperCase()
+
 /** Cria um usuário direto no banco e devolve o Ator correspondente. */
 export async function criarAtor(perfil: Perfil, senha = 'SenhaDeTeste2026'): Promise<Ator> {
   const login = unico(`teste.${perfil.toLowerCase()}`)

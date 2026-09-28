@@ -429,7 +429,7 @@ export default async function Cadastros({
         })}
       />
       <div
-        className={`grid items-start gap-6 ${editar ? 'min-[75rem]:grid-cols-[minmax(0,1fr)_340px]' : ''}`}
+        className={`grid items-start gap-6 ${editar ? 'min-[96rem]:grid-cols-[minmax(0,1fr)_340px]' : ''}`}
       >
         <div className="min-w-0">
           {vazio && aba !== 'posicoes' ? <Vazio>Nenhum cadastro ainda.</Vazio> : tabela}
@@ -437,7 +437,7 @@ export default async function Cadastros({
         {editar && (
           <aside
             id="formulario"
-            className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[75rem]:sticky min-[75rem]:top-[88px]"
+            className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[96rem]:sticky min-[96rem]:top-[88px]"
           >
             <div className="mb-4 flex items-baseline justify-between gap-3">
               <h2 className="text-base font-semibold">{tituloForm}</h2>

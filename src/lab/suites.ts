@@ -64,6 +64,8 @@ import { validarMovimentacao } from '@/domain/schemas/movimentacao'
 import { casosFormularioMovimentacao } from '@/domain/schemas/movimentacao.casos'
 import { deveBloquear, problemasDaSenha } from '@/domain/senha'
 import { casosBloqueio, casosSenha } from '@/domain/senha.casos'
+import { formatarNomeProprio, matriculaValida, normalizarMatricula } from '@/domain/pessoa'
+import { casosMatricula, casosNomeProprio, casosSobrenome } from '@/domain/pessoa.casos'
 import {
   podeAgirSobreUsuario,
   podeCriarComPerfil,
@@ -707,6 +709,38 @@ export const SUITES: SuiteLab[] = [
           return erroComoResultado(e)
         }
       },
+    },
+  },
+  {
+    id: 'RF-02',
+    titulo: 'Nome com cara de nome',
+    regra:
+      'Nome digitado todo em maiúsculas ou todo em minúsculas é gravado com a inicial maiúscula e as partículas (da, de, dos) em minúsculas. Nome já misturado fica como está.',
+    casos: casos(casosNomeProprio),
+    executar: (e) => formatarNomeProprio(e as string),
+    formatar: (v) => String(v),
+  },
+  {
+    id: 'RF-02',
+    titulo: 'Sobrenome',
+    regra: 'O sobrenome continua o nome: a partícula do começo fica em minúsculas ("da Silva").',
+    casos: casos(casosSobrenome),
+    executar: (e) => formatarNomeProprio(e as string, { sobrenome: true }),
+    formatar: (v) => String(v),
+  },
+  {
+    id: 'RN-21d',
+    titulo: 'Matrícula do usuário',
+    regra:
+      'Sem espaços e em maiúsculas; de 1 a 20 letras, números, ponto, hífen ou barra. Cada matrícula tem um login só.',
+    casos: casos(casosMatricula),
+    executar: (e) => ({
+      matricula: normalizarMatricula(e as string),
+      valida: matriculaValida(e as string),
+    }),
+    formatar: (v) => {
+      const r = v as { matricula: string; valida: boolean }
+      return `${r.matricula || '(vazia)'}: ${r.valida ? 'aceita' : 'recusada'}`
     },
   },
   {

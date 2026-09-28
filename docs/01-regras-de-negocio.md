@@ -6,7 +6,7 @@
 | **Titular** | Benevides Soluções Industriais, dona do SICEI e responsável pelo contato comercial |
 | **Cliente** | DDA Metalúrgica (Santa Catarina), que usa o sistema sob licença. Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.6 (validada) |
+| **Versão** | 1.7 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
@@ -204,6 +204,8 @@ Só entram na sugestão os itens ativos em `ATENCAO`, `CRITICO` ou `ZERADO`. Jun
 
 **RN-21c. Administrador principal.** A conta criada na instalação é o Administrador principal, a do dono do sistema, e existe uma só. Nenhuma outra conta pode inativá-la, mudar o perfil dela ou redefinir a senha dela: um Administrador com a senha provisória do principal nas mãos entraria no lugar do dono. O principal troca a própria senha pela opção Senha e, se perder o acesso, a recuperação é feita pelo script de recuperação, por quem tem acesso ao banco. Desbloquear o principal é livre, porque só devolve o acesso a ele. Além disso, só o principal cria Administradores, promove alguém a Administrador e redefine a senha, muda o perfil ou inativa outro Administrador; os demais Administradores cuidam de Gestores, Almoxarifes e Consultas. Assim um Administrador mal-intencionado não toma a conta do dono nem cria um Administrador "reserva" para voltar depois de desligado. Toda tentativa recusada fica no log como "ação negada", e o banco recusa rebaixar, inativar ou apagar o principal mesmo por fora do sistema.
 
+**RN-21d. Um login por funcionário.** Ao criar o usuário, o Administrador informa a matrícula do funcionário, e a matrícula não se repete: se ela já tem login, mesmo inativo, o sistema aponta qual é e pede para reativar essa conta em vez de criar outra. Assim ninguém acumula dois logins e o histórico de cada pessoa fica num lugar só. A matrícula é gravada sem espaços e em maiúsculas. Contas criadas antes desta regra ficam sem matrícula até a primeira edição. Nome, sobrenome, setor e matrícula podem ser corrigidos depois pelo Administrador, seguindo a RN-21c; o login não muda (RN-21b). Nome digitado todo em maiúsculas ou todo em minúsculas é gravado como nome próprio ("LUCIANA DA SILVA" vira "Luciana da Silva").
+
 **RN-22. Senha e bloqueio.** Depois de 5 tentativas de login seguidas sem sucesso, a conta é bloqueada e só o Administrador desbloqueia. A senha criada pelo usuário precisa ter pelo menos 10 caracteres, não pode ser igual ao login e não pode repetir nenhuma das 3 últimas senhas dele. Sessões paradas expiram depois de um tempo definido nos parâmetros do sistema.
 
 **RN-23. Tudo o que importa vai para o log.** Além das movimentações (RN-09), o log de auditoria registra:
@@ -254,3 +256,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 1.4 | 27/09/2026 | RN-01: sugestão do próximo código e aviso de código já usado. RN-26: etiqueta pendente quando o item muda de posição, até ser impressa. |
 | 1.5 | 27/09/2026 | RN-01: o mesmo código escrito de outro jeito ("pst1" e PST-001) conta como repetido, e o código novo entra no padrão da sequência. RN-25: a posição pode ser digitada sem traços e sem zeros. |
 | 1.6 | 28/09/2026 | Nova RN-21c: Administrador principal protegido e hierarquia entre Administradores. RN-23: login inexistente não é gravado no log, só o tamanho do texto. |
+| 1.7 | 28/09/2026 | Nova RN-21d: matrícula obrigatória e única por login, edição dos dados do usuário e nome gravado como nome próprio. |

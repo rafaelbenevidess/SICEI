@@ -152,7 +152,9 @@ export default async function Auditoria({
                     <td>
                       <span
                         title={nomeDaAcao(l.acao)}
-                        className={`block font-mono text-xs font-semibold ${corDaAcao(l.acao)}`}
+                        // códigos longos sem espaço (MOVIMENTACAO_CONSUMO_PRODUCAO) podem quebrar:
+                        // assim a tabela cabe na tela em vez de rolar de lado
+                        className={`block font-mono text-xs font-semibold [overflow-wrap:anywhere] ${corDaAcao(l.acao)}`}
                       >
                         {l.acao}
                       </span>
@@ -162,7 +164,7 @@ export default async function Auditoria({
                       </span>
                     </td>
                     <td className="font-mono text-xs">{l.login}</td>
-                    <td className="max-w-md font-mono text-xs">
+                    <td className="max-w-sm font-mono text-xs [overflow-wrap:anywhere]">
                       {m.antes || m.depois ? (
                         <>
                           {m.antes ? (
@@ -181,8 +183,11 @@ export default async function Auditoria({
                         <span className="text-ink-3">—</span>
                       )}
                     </td>
-                    <td className="text-xs whitespace-nowrap text-ink-2">
-                      {l.ip ?? '—'} · {descreverDispositivo(l.userAgent)}
+                    <td className="text-xs text-ink-2">
+                      <span className="block font-mono whitespace-nowrap">{l.ip ?? '—'}</span>
+                      <span className="block whitespace-nowrap text-ink-3">
+                        {descreverDispositivo(l.userAgent)}
+                      </span>
                     </td>
                     <td className="font-mono text-xs whitespace-nowrap text-ink-3" title={l.hash}>
                       {hashCurto(l.hash)}

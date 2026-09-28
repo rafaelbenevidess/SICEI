@@ -86,6 +86,26 @@ export const casosHierarquia: CasoDeTeste<EntradaHierarquia, Decisao>[] = [
     esperado: ok,
   },
   {
+    descricao: 'outro Admin tenta editar o nome do principal → recusado',
+    entrada: { ator: OUTRO_ADMIN, alvo: PRINCIPAL, acao: 'editar-dados' },
+    esperado: nega(MOTIVO_PRINCIPAL),
+  },
+  {
+    descricao: 'o principal edita o próprio nome → permitido',
+    entrada: { ator: PRINCIPAL, alvo: PRINCIPAL, acao: 'editar-dados' },
+    esperado: ok,
+  },
+  {
+    descricao: 'Admin comum edita o nome de um Almoxarife → permitido',
+    entrada: { ator: OUTRO_ADMIN, alvo: ALMOXARIFE, acao: 'editar-dados' },
+    esperado: ok,
+  },
+  {
+    descricao: 'Admin comum edita o nome de outro Admin → recusado',
+    entrada: { ator: OUTRO_ADMIN, alvo: TERCEIRO_ADMIN, acao: 'editar-dados' },
+    esperado: nega(MOTIVO_SO_PRINCIPAL),
+  },
+  {
     descricao: 'Admin comum inativa a própria conta → recusado',
     entrada: { ator: OUTRO_ADMIN, alvo: OUTRO_ADMIN, acao: 'inativar' },
     esperado: nega('Você não pode inativar a sua própria conta.'),

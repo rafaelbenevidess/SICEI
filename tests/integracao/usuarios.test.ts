@@ -15,9 +15,10 @@ import {
   alterarSituacaoUsuario,
   criarUsuario,
   desbloquearUsuario,
+  editarUsuario,
   redefinirSenha,
 } from '@/server/services/usuarios'
-import { criarAtor, unico } from './apoio'
+import { criarAtor, novaMatricula, unico } from './apoio'
 
 let admin: Ator
 const origem = (
@@ -32,6 +33,7 @@ describe('RF-02 / RN-21 · Criação de usuário com login e senha gerados', () 
   it('gera nome.sobrenome e uma senha provisória de 12 caracteres; o banco guarda só o hash', async () => {
     const sobrenome = unico('Silva').replace(/[^a-z]/gi, '')
     const r = await criarUsuario(admin, {
+      matricula: novaMatricula(),
       nome: 'João',
       sobrenome: `da ${sobrenome}`,
       setor: 'Almoxarifado',
@@ -52,6 +54,7 @@ describe('RF-02 / RN-21 · Criação de usuário com login e senha gerados', () 
   it('critério do RF-02: homônimo recebe número, mesmo com o primeiro inativado', async () => {
     const sobrenome = unico('Lima').replace(/[^a-z]/gi, '')
     const a = await criarUsuario(admin, {
+      matricula: novaMatricula(),
       nome: 'Ana',
       sobrenome,
       setor: 'PCP',
@@ -59,6 +62,7 @@ describe('RF-02 / RN-21 · Criação de usuário com login e senha gerados', () 
     })
     await alterarSituacaoUsuario(admin, a.id, false)
     const b = await criarUsuario(admin, {
+      matricula: novaMatricula(),
       nome: 'Ana',
       sobrenome,
       setor: 'PCP',
@@ -70,7 +74,13 @@ describe('RF-02 / RN-21 · Criação de usuário com login e senha gerados', () 
   it('critério do RF-02: quem não é Admin não cria usuário', async () => {
     const gestor = await criarAtor('GESTOR')
     await expect(
-      criarUsuario(gestor, { nome: 'X', sobrenome: 'Y', setor: 'Z', perfil: 'ADMIN' }),
+      criarUsuario(gestor, {
+        matricula: novaMatricula(),
+        nome: 'X',
+        sobrenome: 'Y',
+        setor: 'Z',
+        perfil: 'ADMIN',
+      }),
     ).rejects.toBeInstanceOf(ErroDePermissao)
   })
 })
@@ -79,6 +89,7 @@ describe('RF-01 · Login, troca obrigatória e bloqueio', () => {
   it('primeiro acesso com a senha provisória pede troca; depois da troca, entra normal', async () => {
     const sobrenome = unico('Souza').replace(/[^a-z]/gi, '')
     const u = await criarUsuario(admin, {
+      matricula: novaMatricula(),
       nome: 'Maria',
       sobrenome,
       setor: 'Compras',
@@ -122,6 +133,7 @@ describe('RF-01 · Login, troca obrigatória e bloqueio', () => {
   it('RN-22: nova senha igual à atual (uma das 3 últimas) é recusada', async () => {
     const sobrenome = unico('Costa').replace(/[^a-z]/gi, '')
     const u = await criarUsuario(admin, {
+      matricula: novaMatricula(),
       nome: 'Rui',
       sobrenome,
       setor: 'Usinagem',
@@ -326,5 +338,84 @@ describe('RN-21a / RN-21b · Redefinição, inativação e sessões', () => {
       data: { ultimoUso: new Date(Date.now() - 31 * 60_000) },
     })
     expect(await validarToken(s.token)).toBeNull()
+  })
+})
+
+describe('RF-02 / RN-21d · Matrícula e edição de dados', () => {
+  it('a mesma matrícula não ganha um segundo login, nem com o primeiro inativado', async () => {
+    const matricula = novaMatricula()
+    const dados = {
+      nome: 'Carla',
+      sobrenome: unico('Mendes').replace(/[^a-z]/gi, ''),
+      setor: 'PCP',
+      perfil: 'CONSULTA',
+    }
+    const primeiro = await criarUsuario(admin, { ...dados, matricula })
+    await expect(
+      criarUsuario(admin, { ...dados, matricula: ` ${matricula.toLowerCase()} ` }),
+    ).rejects.toThrow(`A matrícula ${matricula} já é do login ${primeiro.login}`)
+    await alterarSituacaoUsuario(admin, primeiro.id, false)
+    await expect(criarUsuario(admin, { ...dados, matricula })).rejects.toThrow(
+      /está inativo. Reative essa conta/,
+    )
+  })
+
+  it('nome em caixa alta é gravado como nome próprio; o login não muda ao editar', async () => {
+    const r = await criarUsuario(admin, {
+      nome: 'LUCIANA',
+      sobrenome: 'DA SILVA RAFAEL',
+      setor: 'TI',
+      perfil: 'ALMOXARIFE',
+      matricula: novaMatricula(),
+    })
+    let u = await prisma.usuario.findUniqueOrThrow({ where: { id: r.id } })
+    expect(u).toMatchObject({ nome: 'Luciana', sobrenome: 'da Silva Rafael' })
+
+    const matricula = novaMatricula()
+    await editarUsuario(admin, r.id, {
+      nome: 'Luciana',
+      sobrenome: 'da Silva',
+      setor: 'Almoxarifado',
+      matricula,
+    })
+    u = await prisma.usuario.findUniqueOrThrow({ where: { id: r.id } })
+    expect(u).toMatchObject({
+      sobrenome: 'da Silva',
+      setor: 'Almoxarifado',
+      matricula,
+      login: r.login,
+    })
+    const log = await prisma.auditLog.findFirstOrThrow({
+      where: { acao: 'USUARIO_ALTERADO', entidadeId: r.id },
+      orderBy: { seq: 'desc' },
+    })
+    expect(log.antes).toMatchObject({ sobrenome: 'da Silva Rafael', setor: 'TI' })
+    expect(log.depois).toMatchObject({ sobrenome: 'da Silva', setor: 'Almoxarifado', matricula })
+  })
+
+  it('editar para a matrícula de outra pessoa é recusado', async () => {
+    const a = await criarUsuario(admin, {
+      nome: 'Um',
+      sobrenome: unico('Teste').replace(/[^a-z]/gi, ''),
+      setor: 'PCP',
+      perfil: 'CONSULTA',
+      matricula: novaMatricula(),
+    })
+    const outra = novaMatricula()
+    await criarUsuario(admin, {
+      nome: 'Dois',
+      sobrenome: unico('Teste').replace(/[^a-z]/gi, ''),
+      setor: 'PCP',
+      perfil: 'CONSULTA',
+      matricula: outra,
+    })
+    await expect(
+      editarUsuario(admin, a.id, {
+        nome: 'Um',
+        sobrenome: 'Teste',
+        setor: 'PCP',
+        matricula: outra,
+      }),
+    ).rejects.toThrow(`A matrícula ${outra} já é do login`)
   })
 })

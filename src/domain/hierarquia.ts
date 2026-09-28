@@ -8,7 +8,7 @@ import type { Perfil } from './tipos'
  */
 
 export type AcaoSobreUsuario =
-  'redefinir-senha' | 'desbloquear' | 'inativar' | 'reativar' | 'mudar-perfil'
+  'redefinir-senha' | 'desbloquear' | 'inativar' | 'reativar' | 'mudar-perfil' | 'editar-dados'
 
 export interface PessoaNaHierarquia {
   id: string
@@ -19,7 +19,7 @@ export interface PessoaNaHierarquia {
 export type Decisao = { ok: true } | { ok: false; motivo: string }
 
 export const MOTIVO_PRINCIPAL =
-  'O Administrador principal não pode ser inativado, ter o perfil mudado nem a senha redefinida por outra conta. Ele troca a própria senha pela opção Senha; se perder o acesso, a recuperação é feita pelo script de recuperação, com acesso ao banco.'
+  'O Administrador principal não pode ser inativado, editado, ter o perfil mudado nem a senha redefinida por outra conta. Ele troca a própria senha pela opção Senha; se perder o acesso, a recuperação é feita pelo script de recuperação, com acesso ao banco.'
 export const MOTIVO_SO_PRINCIPAL = 'Só o Administrador principal gerencia outros Administradores.'
 export const MOTIVO_CRIAR_ADMIN = 'Só o Administrador principal cria ou promove Administradores.'
 
@@ -38,6 +38,8 @@ export function podeAgirSobreUsuario(
   // desbloquear só devolve o acesso ao dono da conta: qualquer Administrador pode, inclusive
   // para o principal, que assim não depende do script depois de um bloqueio proposital
   if (acao === 'desbloquear') return { ok: true }
+  // nome, sobrenome, setor e matrícula da própria conta: qualquer um corrige
+  if (proprio && acao === 'editar-dados') return { ok: true }
   if (alvo.principal) return { ok: false, motivo: MOTIVO_PRINCIPAL }
   if (alvo.perfil === 'ADMIN' && !ator.principal && !proprio)
     return { ok: false, motivo: MOTIVO_SO_PRINCIPAL }

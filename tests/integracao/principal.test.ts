@@ -9,7 +9,7 @@ import {
   desbloquearUsuario,
   redefinirSenha,
 } from '@/server/services/usuarios'
-import { atorPrincipal, comoAplicacao, criarAtor } from './apoio'
+import { atorPrincipal, comoAplicacao, criarAtor, novaMatricula } from './apoio'
 
 let principal: Ator
 let adminComum: Ator
@@ -63,7 +63,13 @@ describe('RN-21c · Ninguém toma a conta do Administrador principal', () => {
 
 describe('RN-21c · Só o principal cuida de Administradores', () => {
   it('Admin comum não cria Administrador; o principal cria', async () => {
-    const dados = { nome: 'Novo', sobrenome: 'Administrador', setor: 'TI', perfil: 'ADMIN' }
+    const dados = {
+      nome: 'Novo',
+      sobrenome: 'Administrador',
+      setor: 'TI',
+      perfil: 'ADMIN',
+      matricula: novaMatricula(),
+    }
     await expect(criarUsuario(adminComum, dados)).rejects.toThrow(MOTIVO_CRIAR_ADMIN)
     const r = await criarUsuario(principal, dados)
     const u = await prisma.usuario.findUniqueOrThrow({ where: { id: r.id } })

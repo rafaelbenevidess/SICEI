@@ -130,9 +130,11 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
   await passarPeloAvisoDeAlertas(page)
   await page.goto('/admin/usuarios')
   const form = page.locator('form[aria-label="Novo usuário"]')
-  await form.locator('input[name=nome]').fill('Pedro')
-  await form.locator('input[name=sobrenome]').fill('da Consulta')
+  // digitado em caixa alta, gravado com cara de nome
+  await form.locator('input[name=nome]').fill('PEDRO')
+  await form.locator('input[name=sobrenome]').fill('DA CONSULTA')
   await form.locator('input[name=setor]').fill('Usinagem')
+  await form.locator('input[name=matricula]').fill('e2e-01')
   // o login aparece enquanto o Admin digita, antes de criar
   await expect(form.getByText('pedro.consulta')).toBeVisible()
   await form.getByRole('radio', { name: 'Consulta' }).click()
@@ -143,6 +145,27 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
   expect(senha).toHaveLength(12)
   await credenciais.getByRole('button', { name: 'Já repassei, concluir' }).click()
   await expect(credenciais).toHaveCount(0)
+  const linha = page.getByRole('row', { name: /Pedro da Consulta/ })
+  await expect(linha).toContainText('E2E-01')
+
+  // RN-21d: a mesma matrícula não ganha um segundo login
+  await form.locator('input[name=nome]').fill('Pedro')
+  await form.locator('input[name=sobrenome]').fill('Consulta')
+  await form.locator('input[name=setor]').fill('Usinagem')
+  await form.locator('input[name=matricula]').fill('E2E-01')
+  await form.getByRole('radio', { name: 'Consulta' }).click()
+  await form.getByRole('button', { name: 'Criar usuário' }).click()
+  await expect(
+    form.getByText(/A matrícula E2E-01 já é do login pedro\.consulta/).first(),
+  ).toBeVisible()
+
+  // RF-02: o Admin corrige o setor; o login não muda
+  await linha.getByRole('link', { name: 'Editar' }).click()
+  const edicao = page.locator('form[aria-label="Dados do usuário"]')
+  await edicao.locator('input[name=setor]').fill('PCP')
+  await edicao.getByRole('button', { name: 'Salvar dados' }).click()
+  await expect(page.getByText('Dados do usuário salvos. O login continua o mesmo.')).toBeVisible()
+  await expect(page.getByRole('row', { name: /Pedro da Consulta/ })).toContainText('pedro.consulta')
 
   const outra = await browser.newPage({ viewport: { width: 390, height: 844 } })
   await entrar(outra, 'pedro.consulta', senha)

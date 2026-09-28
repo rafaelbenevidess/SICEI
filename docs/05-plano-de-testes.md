@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.6 |
+| **Versão** | 1.7 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -38,6 +38,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-20 sugestão de compra | `estoque.test.ts` | — |
 | RN-21 / RN-21a / RN-21b usuários | `login.test.ts`, `senha.test.ts` | `usuarios.test.ts` (login gerado, homônimo, troca obrigatória, inativação derruba sessão) |
 | RN-21c Administrador principal | `hierarquia.test.ts` (casos em `hierarquia.casos.ts`, também no Laboratório) | `principal.test.ts` (senha, inativação e perfil do principal recusados e no log; só o principal cuida de Administradores; trigger recusa SQL direto) |
+| RN-21d matrícula e edição | `pessoa.test.ts` (casos em `pessoa.casos.ts`, também no Laboratório), `schemas/cadastros.test.ts` | `usuarios.test.ts` (matrícula repetida, mesmo com a conta inativa; nome em caixa alta formatado; edição sem mudar o login e com o log) |
 | RN-22 senha e bloqueio | `senha.test.ts` | `usuarios.test.ts` (5ª falha bloqueia, rate limit por IP) |
 | RN-23 login inexistente fora do log | `login.test.ts` (`loginParaRegistro`) | `usuarios.test.ts` (senha digitada no campo login não aparece no log) |
 | RN-25 posições | `posicao.test.ts` | `cadastros.test.ts` |
@@ -75,7 +76,7 @@ Automatizados com Playwright (`npm run test:e2e`), com os dados de demonstraçã
 3. Abrir `/p/A01-G01-C02` (URL do QR) → item com a faixa "lida pela câmera" → "Registrar saída" na barra fixa → 9999 unidades: "Saída recusada" e botão bloqueado → 2 unidades com o botão +, destino em botão, OP e quem retirou (achado pela matrícula 1045) → tela "Saída registrada" com "Ler outra etiqueta".
 4. Histórico filtrado pela OP → estornar com justificativa → a original aparece como estornada.
 5. Tocar em "Ler QR" na barra inferior → a câmera abre dentro do SICEI → a etiqueta de A01-G01-C02 leva ao item. A câmera é um vídeo gerado com o QR da etiqueta (`tests/e2e/camera.ts`), passado ao Chromium como câmera falsa; como o Chromium de teste não tem leitor nativo, o teste passa pelo jsQR, o mesmo caminho do iPhone.
-6. Criar usuário "Pedro da Consulta": o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê o pop-up de alertas, nem preços, nem o botão de saída, e não abre a gestão de usuários.
+6. Criar usuário "PEDRO" "DA CONSULTA" com matrícula: gravado como "Pedro da Consulta"; a mesma matrícula não cria um segundo login; Editar muda o setor sem mudar o login; o login aparece enquanto digita → senha provisória mostrada uma vez → "Já repassei" some com ela → o novo usuário troca a senha e, como Consulta, não vê o pop-up de alertas, nem preços, nem o botão de saída, e não abre a gestão de usuários.
 7. Auditoria → Verificar agora → três resultados (cadeia, movimentações, saldos) e o registro da conferência.
 8. Relatório de reposição → exportar CSV.
 9. `/testes` → Executar todos → todos os casos passam.
@@ -93,7 +94,7 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 7. Novo item a partir da aba Itens de Cadastros: código PST-007 já sugerido, PST-001 avisado como em uso e bloqueado, fabricante e fornecedor cadastrados na hora e já escolhidos, item gravado.
 8. O item novo vai para A04-G02-C01, digitada como "a4g2c1" no campo com busca → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
 9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02"; a busca do topo sugere o PST-002 para "pst2" e abre o item; o histórico acha a OP-E2E-1 por "ope2e1".
-10. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal.
+10. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal na página e sem tabela rolando de lado em 1366 px.
 
 Resultado da última execução: 20 de 20 passaram.
 
@@ -108,3 +109,4 @@ Resultado da última execução: 20 de 20 passaram.
 | 1.4 | 27/09/2026 | Busca tolerante e autocompletar ao registrar: testes de unidade, de componente e E2E. |
 | 1.5 | 27/09/2026 | A mesma busca em todos os campos: testes do campo de escolha com busca, das sugestões do topo, dos filtros de texto (integração), do código equivalente e da posição digitada; roteiros E2E atualizados. |
 | 1.6 | 28/09/2026 | Testes do Administrador principal (RN-21c) e do login inexistente fora do log. Cabeçalho de versão corrigido. |
+| 1.7 | 28/09/2026 | Testes da matrícula e da edição de usuários (RN-21d); E2E confere tabelas sem rolagem lateral em 1366 px. |

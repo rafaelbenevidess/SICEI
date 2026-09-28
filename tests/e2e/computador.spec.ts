@@ -233,11 +233,21 @@ test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page
     '/movimentacoes',
     '/relatorios',
     '/cadastros',
+    '/cadastros?aba=fornecedores',
+    '/cadastros?aba=posicoes',
+    '/relatorios?tipo=reposicao',
     '/admin/usuarios',
     '/admin/auditoria',
   ]) {
     await page.goto(caminho)
     const largura = await page.evaluate(() => document.documentElement.scrollWidth)
     expect(largura, caminho).toBeLessThanOrEqual(1366)
+    // nenhuma tabela rola de lado quando o conteúdo cabe na tela
+    const tabelasComRolagem = await page.evaluate(() =>
+      [...document.querySelectorAll('.overflow-x-auto')]
+        .filter((e) => (e as HTMLElement).offsetParent && e.scrollWidth > e.clientWidth + 1)
+        .map((e) => e.querySelector('table')?.getAttribute('aria-label')),
+    )
+    expect(tabelasComRolagem, caminho).toEqual([])
   }
 })

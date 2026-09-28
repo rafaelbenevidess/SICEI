@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.9 (validada) |
+| **Versão** | 1.10 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -23,7 +23,7 @@ Os requisitos estão classificados pelo método MoSCoW:
 | ID | Requisito | Prioridade | Regras |
 |---|---|---|---|
 | RF-01 | Autenticação com login gerado pelo sistema: entrar, sair, troca obrigatória da senha provisória, bloqueio após tentativas sem sucesso | Must | RN-21, RN-21a, RN-22 |
-| RF-02 | Gestão de usuários pelo Administrador: cadastrar (nome, sobrenome, setor, perfil) com login e senha gerados pelo sistema, redefinir senha, desbloquear, inativar | Must | RN-02, RN-21, RN-21a, RN-21b, RN-21c, RN-22 |
+| RF-02 | Gestão de usuários pelo Administrador: cadastrar (nome, sobrenome, setor, matrícula, perfil) com login e senha gerados pelo sistema, editar os dados, redefinir senha, desbloquear, inativar | Must | RN-02, RN-21, RN-21a, RN-21b, RN-21c, RN-21d, RN-22 |
 | RF-03 | Cadastro de pastilhas, com inativação e busca por código, descrição, ISO ou classe | Must | RN-01, RN-02, RN-03 |
 | RF-04 | Cadastro de fabricantes | Must | RN-02, RN-04 |
 | RF-05 | Cadastro de fornecedores e vínculo item ↔ fornecedor (vários por item, com código no fornecedor, lead time e preferencial) | Must | RN-02, RN-04, RN-05 |
@@ -78,6 +78,8 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 9. **Dado** um Administrador que não é o principal, **quando** tenta redefinir a senha, inativar ou mudar o perfil do Administrador principal, mesmo chamando o servidor direto, **então** a ação é recusada, nada muda e a tentativa fica no log como "ação negada". A tela nem mostra esses botões na linha do principal, que aparece com o selo "Principal" (RN-21c).
 10. **Dado** um Administrador que não é o principal, **quando** tenta criar um Administrador, promover alguém a Administrador ou mexer em outro Administrador, **então** a ação é recusada. Gestores, Almoxarifes e Consultas ele continua gerenciando normalmente.
 11. **Dado** o Administrador principal bloqueado por 5 tentativas erradas, **quando** outro Administrador clica em "Desbloquear", **então** a conta volta a entrar, sem mudar a senha.
+12. **Dado** a matrícula 1045 já ligada ao login `juliana.martins`, ativo ou inativo, **quando** o Administrador tenta criar outro usuário com a matrícula 1045, **então** a criação é recusada e a tela diz qual login já tem essa matrícula; se ele estiver inativo, orienta a reativar a conta (RN-21d).
+13. **Dado** um usuário cadastrado como "LUCIANA DA SILVA RAFAEL", **quando** o Administrador clica em Editar e salva, **então** o nome fica "Luciana da Silva Rafael", o login continua o mesmo e a mudança vai para o log com o antes e o depois. Nome digitado em caixa alta já na criação é gravado do mesmo jeito.
 
 ### RF-03. Cadastro de pastilhas
 1. **Dado** um código interno já usado, **quando** o Gestor tenta cadastrar outro item com ele, **então** o cadastro é recusado.
@@ -231,7 +233,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 | ID | Categoria | Requisito | Como medir |
 |---|---|---|---|
 | RNF-01 | Usabilidade | Interface em português, simples o bastante para um almoxarife novo usar sem treinamento formal. Registrar uma saída a partir do QR leva uma única tela. | Teste com usuários; contagem de passos |
-| RNF-02 | Compatibilidade | Funciona em computador e celular (a partir de 360 px de largura), nas versões atuais de Chrome, Edge, Firefox e Safari. | Testes em viewport de 360 px e 1366 px |
+| RNF-02 | Compatibilidade | Funciona em computador e celular (a partir de 360 px de largura), nas versões atuais de Chrome, Edge, Firefox e Safari. No computador, as tabelas usam a largura da tela e só rolam de lado quando o conteúdo realmente não cabe. | Testes em viewport de 360 px e 1366 px, incluindo nenhuma tabela com rolagem lateral em 1366 px |
 | RNF-03 | Desempenho | Consulta de saldo e listagens respondem em menos de 2 s (p95), com 30 usuários, até 5 mil itens e 1 milhão de movimentações. | Teste de carga com massa sintética |
 | RNF-04 | Confiabilidade | O saldo é sempre consistente: cada movimentação é uma transação completa, ou grava tudo ou não grava nada. Backup automático diário, guardado por 30 dias, com restauração testada. | Testes de concorrência; teste de restauração documentado |
 | RNF-05 | Segurança | HTTPS obrigatório. Senhas guardadas com hash forte (Argon2id), nunca em texto. Toda permissão conferida no servidor. Proteção contra as falhas do OWASP Top 10 (injeção, XSS, CSRF, controle de acesso quebrado etc.). Sessão com expiração. Limite de tentativas de login por IP. | Revisão de segurança e testes automatizados |
@@ -299,7 +301,7 @@ Toda regra de negócio está coberta por pelo menos um requisito.
 | RN-18 | RF-13 |
 | RN-19 | RF-13, RF-14, RF-26 |
 | RN-20 | RF-19 |
-| RN-21, RN-21a, RN-21b, RN-21c | RF-01, RF-02 |
+| RN-21, RN-21a, RN-21b, RN-21c, RN-21d | RF-01, RF-02 |
 | RN-22 | RF-01, RF-02, RF-26 |
 | RN-23 | RF-20, RF-21 |
 | RN-24 | RF-21, RNF-12 |
@@ -352,3 +354,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.7 | 27/09/2026 | RF-11, critério 4: busca que aceita o código escrito de qualquer jeito. RF-08, critério 9: autocompletar na escolha do item ao registrar. |
 | 1.8 | 27/09/2026 | A mesma tolerância em todos os campos que permitem: RF-11 (sugestões na busca do topo, campos de escolha com busca), RF-03 (código equivalente e padronizado), RF-15 e RF-21 (filtros de texto), RF-22 (posição digitada e filtro de etiquetas), RF-25 (código e posição na planilha). |
 | 1.9 | 28/09/2026 | RF-02, critérios 9 a 11: Administrador principal protegido e só ele gerencia Administradores (RN-21c). |
+| 1.10 | 28/09/2026 | RF-02, critérios 12 e 13: matrícula única e edição dos dados do usuário (RN-21d). RNF-02: tabelas sem rolagem lateral quando cabem na tela. |

@@ -10,6 +10,7 @@ import {
   alterarSituacaoUsuario,
   criarUsuario,
   desbloquearUsuario,
+  editarUsuario,
   redefinirSenha,
 } from '@/server/services/usuarios'
 import { dadosDoFormulario, executarAcao, type EstadoAcao } from '@/server/web/acao'
@@ -20,6 +21,14 @@ export async function acaoCriarUsuario(_: EstadoAcao, form: FormData): Promise<E
     const r = await criarUsuario(await atorDaAcao(), dadosDoFormulario(form))
     revalidatePath('/admin/usuarios')
     return { mensagem: 'Usuário criado.', dados: { login: r.login, senha: r.senhaProvisoria } }
+  })
+}
+
+export async function acaoEditarUsuario(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
+  return executarAcao(async () => {
+    await editarUsuario(await atorDaAcao(), String(form.get('id')), dadosDoFormulario(form))
+    revalidatePath('/admin/usuarios')
+    return { mensagem: 'Dados do usuário salvos. O login continua o mesmo.' }
   })
 }
 

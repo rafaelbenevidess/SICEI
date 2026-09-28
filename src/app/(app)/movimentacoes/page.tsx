@@ -118,7 +118,7 @@ export default async function PaginaMovimentacoes({
       {linhas.length === 0 ? (
         <Vazio>Nenhuma movimentação com esses filtros.</Vazio>
       ) : (
-        <div className="grid items-start gap-6 min-[75rem]:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid items-start gap-6 min-[96rem]:grid-cols-[minmax(0,1fr)_340px]">
           <div className="flex min-w-0 flex-col gap-4">
             <Tabela rotulo="Movimentações" larguraMinima={700}>
               <thead>
@@ -183,7 +183,7 @@ export default async function PaginaMovimentacoes({
           {sel && (
             <aside
               id="detalhe"
-              className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[75rem]:sticky min-[75rem]:top-[88px]"
+              className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[96rem]:sticky min-[96rem]:top-[88px]"
             >
               <PainelMovimentacao m={sel} perfil={u.perfil} />
             </aside>

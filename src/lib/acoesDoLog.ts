@@ -66,6 +66,7 @@ export const ACOES_DO_LOG: AcaoDoLog[] = [
   { acao: 'SENHA_REDEFINIDA', rotulo: 'Senha redefinida pelo Administrador', grupo: G.acesso },
   { acao: 'USUARIO_CRIADO', rotulo: 'Usuário criado', grupo: G.acesso },
   { acao: 'USUARIO_PERFIL_ALTERADO', rotulo: 'Perfil de usuário alterado', grupo: G.acesso },
+  { acao: 'USUARIO_ALTERADO', rotulo: 'Dados de usuário alterados', grupo: G.acesso },
   { acao: 'USUARIO_BLOQUEADO', rotulo: 'Usuário bloqueado', grupo: G.acesso },
   { acao: 'USUARIO_DESBLOQUEADO', rotulo: 'Usuário desbloqueado', grupo: G.acesso },
   { acao: 'USUARIO_INATIVADO', rotulo: 'Usuário inativado', grupo: G.acesso },

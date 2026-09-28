@@ -9,6 +9,7 @@ import {
   schemaItem,
   schemaLimites,
   schemaLogin,
+  schemaEdicaoUsuario,
   schemaNovoUsuario,
   schemaParametros,
   schemaPosicao,
@@ -107,14 +108,37 @@ describe('RF-06 / RF-27 / RF-28 · Destinos, colaboradores e posições', () => 
 })
 
 describe('RF-01 / RF-02 · Usuários e senhas', () => {
-  it('novo usuário precisa de nome, sobrenome, setor e perfil', () => {
+  it('novo usuário precisa de nome, sobrenome, setor, matrícula e perfil', () => {
     const r = validar(schemaNovoUsuario, {
       nome: 'João',
       sobrenome: '',
       setor: 'Almoxarifado',
       perfil: 'CHEFE',
     })
-    expect(!r.ok && Object.keys(r.erros).sort()).toEqual(['perfil', 'sobrenome'])
+    expect(!r.ok && Object.keys(r.erros).sort()).toEqual(['matricula', 'perfil', 'sobrenome'])
+  })
+  it('RN-21d: nome em caixa alta vira nome próprio e a matrícula é normalizada', () => {
+    const r = validar(schemaNovoUsuario, {
+      nome: 'LUCIANA',
+      sobrenome: 'DA SILVA RAFAEL',
+      setor: 'TI',
+      matricula: ' ab-12 ',
+      perfil: 'CONSULTA',
+    })
+    expect(r.ok && r.dados).toMatchObject({
+      nome: 'Luciana',
+      sobrenome: 'da Silva Rafael',
+      matricula: 'AB-12',
+    })
+  })
+  it('RN-21d: matrícula com símbolo é recusada', () => {
+    const r = validar(schemaEdicaoUsuario, {
+      nome: 'Ana',
+      sobrenome: 'Souza',
+      setor: 'PCP',
+      matricula: '10#45',
+    })
+    expect(!r.ok && Object.keys(r.erros)).toEqual(['matricula'])
   })
   it('login exige usuário e senha', () => {
     expect(validar(schemaLogin, { login: '', senha: '' }).ok).toBe(false)

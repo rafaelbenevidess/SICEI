@@ -310,12 +310,12 @@ async function demonstracao(admin: Ator) {
   await criarPosicao(admin, { armario: 4, gaveta: 2, compartimento: 1 })
 
   console.log('Dados de demonstração criados. Usuários de exemplo (senhas provisórias):')
-  for (const [nome, sobrenome, setor, perfil] of [
-    ['Maria', 'de Souza', 'Compras', 'GESTOR'],
-    ['João', 'da Silva', 'Almoxarifado', 'ALMOXARIFE'],
-    ['Pedro', 'Oliveira', 'Usinagem', 'CONSULTA'],
+  for (const [nome, sobrenome, setor, perfil, matricula] of [
+    ['Maria', 'de Souza', 'Compras', 'GESTOR', '2010'],
+    ['João', 'da Silva', 'Almoxarifado', 'ALMOXARIFE', '2011'],
+    ['Pedro', 'Oliveira', 'Usinagem', 'CONSULTA', '2012'],
   ] as const) {
-    const u = await criarUsuario(admin, { nome, sobrenome, setor, perfil })
+    const u = await criarUsuario(admin, { nome, sobrenome, setor, perfil, matricula })
     console.log(
       `   ${perfil.padEnd(10)} login: ${u.login.padEnd(14)} senha provisória: ${u.senhaProvisoria}`,
     )

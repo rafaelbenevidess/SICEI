@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.12 (para revisão) |
+| **Versão** | 1.13 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -273,6 +273,8 @@ A **conferência de saldo** (RN-09b) compara `item.saldo` com a soma das movimen
 - No banco: índice único parcial garante um só principal, e o trigger `usuario_proteger_principal` recusa rebaixar, inativar, apagar ou trocar a marca de principal, mesmo com SQL direto pelo usuário da aplicação. A troca de senha pelo script de recuperação continua possível.
 - Passar o principal para outra pessoa é tarefa de quem administra o banco, com o dono do banco (doc 06).
 
+**Matrícula e edição (RN-21d):** `usuario.matricula` tem índice único (várias contas antigas podem ficar sem). O service confere a matrícula antes de gravar e responde com o login que já a usa, inclusive inativo. `editarUsuario` muda nome, sobrenome, setor e matrícula, nunca o login, segue a hierarquia da RN-21c (ação `editar-dados`) e grava `USUARIO_ALTERADO` só com os campos que mudaram. O nome é formatado por `formatarNomeProprio` (`domain/pessoa.ts`) no schema do Zod, então a prévia da tela e o servidor usam a mesma regra.
+
 **Tentativas de login no log:** se o login digitado não existe, o log grava `{ loginInexistente: true, caracteres: n }` em vez do texto (`loginParaRegistro`, em `domain/login.ts`), porque às vezes é a própria senha digitada no campo errado e o log é imutável.
 
 ### 5.6 QR das posições (RN-26)
@@ -476,7 +478,9 @@ O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no serv
 | Marca | `components/Marca.tsx`, `components/SimboloSicei.tsx` | Ícone em SVG (redesenhado em vetor a partir do ícone original de 512 px, nítido em qualquer tamanho) e o nome "SICEI" escrito em texto na fonte da interface (Geist, peso 800), na cor do tema. O mesmo SVG é o ícone da aba (`app/icon.svg`); o `app/apple-icon.png` de 180 px é gerado dele. |
 | Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, gauge de nível, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
 
-Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, `min-[100rem]` = 1600 px), para respeitar o zoom do navegador.
+Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, `min-[85rem]` = 1360 px, `min-[96rem]` = 1536 px, `min-[100rem]` = 1600 px), para respeitar o zoom do navegador.
+
+**Tabelas sem rolagem lateral à toa (RNF-02).** A `Tabela` recebe uma largura mínima, mas ela só vale no celular (abaixo de 768 px), onde a tabela rola de lado para não espremer as colunas. No computador a tabela ocupa a largura disponível e só rola se o conteúdo não couber. Onde a tabela divide a tela com outro bloco, o bloco vai para o lado só quando sobra espaço: o painel de detalhe das movimentações e o formulário de Cadastros a partir de 1536 px, as duas colunas do painel a partir de 1360 px; abaixo disso ficam embaixo da tabela. Em Usuários o formulário fica sempre em cima, na largura toda. Um teste ponta a ponta confere, em 1366 px, que nenhuma tabela das telas principais rola de lado.
 
 ### 10.3 Celular (RNF-01, RNF-02)
 
@@ -538,3 +542,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.10 | 28/09/2026 | Logo da licenciada na tela de login, em SVG sem fundo, escolhida pelo nome da empresa (seção 7 e 10.2). |
 | 1.11 | 28/09/2026 | A licenciada passa a se chamar DDA Usinagem Industrial; no menu, o nome fica em maiúsculas, encaixado na altura do ícone. Endereço novo `sicei-ddausinagem.vercel.app`, com o antigo mantido (seção 7). |
 | 1.12 | 28/09/2026 | Administrador principal (RN-21c) na seção 5.5 e no A01; login inexistente fora do log. Cabeçalho de versão corrigido. |
+| 1.13 | 28/09/2026 | Matrícula e edição de usuários (5.5); tabelas sem largura mínima no computador e novos pontos de quebra (10.2). |

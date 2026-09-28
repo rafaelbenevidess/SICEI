@@ -9,7 +9,7 @@ import {
 import { gerarLogin, loginBase } from '@/domain/login'
 import { exigirPermissao } from '@/domain/permissoes'
 import { validar } from '@/domain/schemas/comum'
-import { schemaNovoUsuario } from '@/domain/schemas/cadastros'
+import { schemaEdicaoUsuario, schemaNovoUsuario } from '@/domain/schemas/cadastros'
 import { gerarSenhaProvisoria } from '@/domain/senha'
 import { PERFIS, type Perfil } from '@/domain/tipos'
 import { registrarAuditoria } from '../audit/registrar'
@@ -58,6 +58,22 @@ async function exigirHierarquia(
 }
 
 /**
+ * RN-21d: a matrícula é de um funcionário só. Se já tem login, inclusive inativo, a resposta
+ * aponta qual é, para o Admin reativar em vez de criar uma segunda conta.
+ */
+async function exigirMatriculaLivre(matricula: string, exceto?: string): Promise<void> {
+  const dono = await prisma.usuario.findUnique({
+    where: { matricula },
+    select: { id: true, login: true, ativo: true },
+  })
+  if (!dono || dono.id === exceto) return
+  const mensagem = dono.ativo
+    ? `A matrícula ${matricula} já é do login ${dono.login}. Cada funcionário tem um login só.`
+    : `A matrícula ${matricula} já é do login ${dono.login}, que está inativo. Reative essa conta em vez de criar outra.`
+  throw new ErroDeNegocio(mensagem, { matricula: mensagem })
+}
+
+/**
  * RF-02 / RN-21: o Admin informa nome, sobrenome, setor e perfil; o sistema gera login e senha provisória.
  * A senha em texto volta uma única vez, para ser mostrada ao Admin, e não é gravada em lugar nenhum.
  */
@@ -74,6 +90,7 @@ export async function criarUsuario(
     null,
     'criar-admin',
   )
+  await exigirMatriculaLivre(v.dados.matricula)
   let base: string
   try {
     base = loginBase(v.dados.nome, v.dados.sobrenome)
@@ -107,6 +124,7 @@ export async function criarUsuario(
           depois: {
             nome: u.nome,
             sobrenome: u.sobrenome,
+            matricula: u.matricula,
             login: u.login,
             setor: u.setor,
             perfil: u.perfil,
@@ -116,8 +134,10 @@ export async function criarUsuario(
         return { id: u.id, login, senhaProvisoria }
       })
     } catch (e) {
-      // dois cadastros simultâneos do mesmo nome: tenta de novo com o próximo número
       if (!ehViolacaoDeUnicidade(e)) throw e
+      // a mesma matrícula cadastrada ao mesmo tempo por outra pessoa: explica e para
+      await exigirMatriculaLivre(v.dados.matricula)
+      // dois cadastros simultâneos do mesmo nome: tenta de novo com o próximo número
     }
   }
   throw new ErroDeNegocio('Não foi possível gerar um login único. Tente novamente.')
@@ -228,4 +248,40 @@ export async function alterarPerfil(ator: Ator, usuarioId: string, perfil: strin
       ...origemDo(ator),
     })
   })
+}
+
+/**
+ * RF-02: corrige nome, sobrenome, setor e matrícula. O login não muda (RN-21b): ele identifica a
+ * pessoa em todo o histórico. Segue a hierarquia da RN-21c.
+ */
+export async function editarUsuario(
+  ator: Ator,
+  usuarioId: string,
+  entrada: unknown,
+): Promise<void> {
+  exigirPermissao(ator.perfil, 'usuarios:gerenciar')
+  const u = await alvoPermitido(ator, usuarioId, 'editar-dados')
+  const v = validar(schemaEdicaoUsuario, entrada)
+  if (!v.ok) throw new ErroDeNegocio('Confira os campos destacados.', v.erros)
+  await exigirMatriculaLivre(v.dados.matricula, u.id)
+  const campos = ['nome', 'sobrenome', 'setor', 'matricula'] as const
+  const mudou = campos.filter((c) => (u[c] ?? null) !== v.dados[c])
+  if (mudou.length === 0) return
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.usuario.update({ where: { id: u.id }, data: v.dados })
+      await registrarAuditoria(tx, {
+        acao: 'USUARIO_ALTERADO',
+        entidade: 'usuario',
+        entidadeId: u.id,
+        antes: Object.fromEntries(mudou.map((c) => [c, u[c]])),
+        depois: Object.fromEntries(mudou.map((c) => [c, v.dados[c]])),
+        ...origemDo(ator),
+      })
+    })
+  } catch (e) {
+    if (!ehViolacaoDeUnicidade(e)) throw e
+    await exigirMatriculaLivre(v.dados.matricula, u.id)
+    throw e
+  }
 }

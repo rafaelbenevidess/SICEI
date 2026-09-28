@@ -66,6 +66,8 @@ model Usuario {
   nome            String
   sobrenome       String
   login           String    @unique
+  /// RN-21d: um login por funcionário
+  matricula       String?   @unique
   setor           String
   perfil          Perfil
   ativo           Boolean   @default(true)

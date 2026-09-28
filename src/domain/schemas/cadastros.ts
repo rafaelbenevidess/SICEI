@@ -1,6 +1,7 @@
 /** Schemas dos cadastros (doc 01, seção 5.1; doc 02, RF-02 a RF-06, RF-12, RF-26 a RF-28). */
 import { z } from 'zod'
 import { cnpjValido, limparCnpj } from '../cnpj'
+import { formatarNomeProprio, matriculaValida, normalizarMatricula } from '../pessoa'
 import { lerCodigoDaPosicao } from '../posicao'
 import { PERFIS } from '../tipos'
 import {
@@ -100,12 +101,26 @@ export const schemaLimites = z
     path: ['estoqueMaximo'],
   })
 
-export const schemaNovoUsuario = z.object({
-  nome: textoObrigatorio('Informe o nome.', 60),
-  sobrenome: textoObrigatorio('Informe o sobrenome.', 80),
+/** Dados da pessoa (RF-02): nome com cara de nome e matrícula obrigatória (RN-21d). */
+const dadosDaPessoa = {
+  nome: textoObrigatorio('Informe o nome.', 60).transform((n) => formatarNomeProprio(n)),
+  sobrenome: textoObrigatorio('Informe o sobrenome.', 80).transform((s) =>
+    formatarNomeProprio(s, { sobrenome: true }),
+  ),
   setor: textoObrigatorio('Informe o setor.', 80),
+  matricula: textoObrigatorio('Informe a matrícula do funcionário.', 30)
+    .refine(matriculaValida, {
+      error: 'Matrícula com até 20 letras, números, ponto, hífen ou barra.',
+    })
+    .transform(normalizarMatricula),
+}
+
+export const schemaNovoUsuario = z.object({
+  ...dadosDaPessoa,
   perfil: z.enum(PERFIS, { error: 'Escolha o perfil.' }),
 })
+
+export const schemaEdicaoUsuario = z.object(dadosDaPessoa)
 
 export const schemaLogin = z.object({
   login: textoObrigatorio('Informe o login.', 80),

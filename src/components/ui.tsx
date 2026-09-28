@@ -1,6 +1,6 @@
 import { CircleCheck, Info, MapPin, TriangleAlert, type LucideIcon } from 'lucide-react'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { escalaDoNivel } from '@/domain/estoque'
 import { NOME_STATUS } from '@/lib/formatar'
 
@@ -91,9 +91,15 @@ export function Tabela({
   emCartao?: boolean
   larguraMinima?: number
 }) {
+  // A largura mínima só vale no celular, onde a tabela rola de lado para não espremer as
+  // colunas. No computador a tabela usa a largura que o conteúdo pede: só rola se não couber.
   const tabela = (
     <div className="overflow-x-auto">
-      <table aria-label={rotulo} className={ESTILO_TABELA} style={{ minWidth: larguraMinima }}>
+      <table
+        aria-label={rotulo}
+        className={`${ESTILO_TABELA} max-md:min-w-(--largura-minima)`}
+        style={{ '--largura-minima': `${larguraMinima}px` } as CSSProperties}
+      >
         {children}
       </table>
     </div>

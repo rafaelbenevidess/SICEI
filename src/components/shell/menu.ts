@@ -11,6 +11,7 @@ export type NomeIcone =
   | 'entrada'
   | 'saida'
   | 'relatorios'
+  | 'analise'
   | 'cadastros'
   | 'etiquetas'
   | 'usuarios'
@@ -78,6 +79,7 @@ export const MENU: GrupoMenu[] = [
         icone: 'relatorios',
         permissao: 'relatorios:ver',
       },
+      { href: '/analise', rotulo: 'Análise', icone: 'analise', permissao: 'relatorios:ver' },
       { href: '/cadastros', rotulo: 'Cadastros', icone: 'cadastros', permissao: 'cadastros:ver' },
       {
         href: '/cadastros/posicoes/etiquetas',

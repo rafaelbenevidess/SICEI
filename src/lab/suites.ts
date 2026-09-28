@@ -5,7 +5,10 @@
  */
 import { decidirAlerta, type NivelAlerta } from '@/domain/alertas'
 import {
+  afastarRotulos,
   chaveDoBalde,
+  compararNaEvolucao,
+  normalizarSelecao,
   escalaDoEixo,
   maioresEOutros,
   periodoAnterior,
@@ -15,6 +18,9 @@ import {
 } from '@/domain/analise'
 import {
   casosChaveDoBalde,
+  casosComparacao,
+  casosRotulos,
+  casosSelecao,
   casosEscala,
   casosMaioresEOutros,
   casosPeriodoAnterior,
@@ -22,6 +28,8 @@ import {
   casosVariacao as casosVariacaoDoConsumo,
   PARCELAS_DE_EXEMPLO,
 } from '@/domain/analise.casos'
+import { schemaFiltrosDaAnalise } from '@/domain/schemas/analise'
+import { casosFiltrosDaAnalise, resumirFiltros } from '@/domain/schemas/analise.casos'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
 import { buscarItens, buscarOpcoes } from '@/domain/busca'
@@ -1225,6 +1233,52 @@ export const SUITES: SuiteLab[] = [
       const r = v as { topo: number; passos: number[] }
       return `até ${br(r.topo)}: ${r.passos.map(br).join(', ')}`
     },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Itens escolhidos para a análise',
+    regra:
+      'A escolha vem como "PST-001,PST-004": sem espaços, vazios nem repetidos, na ordem em que foram escolhidos (é ela que dá as cores), no máximo 20.',
+    casos: casos(casosSelecao),
+    executar: (e) => normalizarSelecao(e as string),
+    formatar: (v) => ((v as string[]).length ? (v as string[]).join(', ') : 'nenhum'),
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Um traço por escolhido na evolução',
+    regra:
+      'De 2 a 4 escolhidos, sem nenhum em foco pelo clique, a evolução mostra um traço de cada. Com 1, ou com mais de 4, mostra a soma.',
+    casos: casos(casosComparacao),
+    executar: (e) => {
+      const { escolhidos, emFoco } = e as { escolhidos: number; emFoco: boolean }
+      return compararNaEvolucao(escolhidos, emFoco)
+    },
+    formatar: (v) => (v ? 'um traço por escolhido' : 'a soma'),
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Filtros da página de análise',
+    regra:
+      'O que vem na URL e não faz sentido vira o padrão (consumo, por item), sem erro. Período invertido é desvirado. Os filtros se somam.',
+    casos: casos(casosFiltrosDaAnalise),
+    executar: (e) => resumirFiltros(schemaFiltrosDaAnalise.parse(e)),
+    formatar: (v) => {
+      const r = v as { por: string; medida: string; de?: string; ate?: string; filtros: string }
+      const periodo = r.de ? `, ${r.de} a ${r.ate}` : ''
+      return `${r.medida} por ${r.por}${periodo}${r.filtros ? `; ${r.filtros}` : ''}`
+    },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Nomes na ponta das linhas sem se sobrepor',
+    regra:
+      'Cada nome fica na altura da sua linha, a pelo menos 14 px dos outros, sem passar do fim do gráfico: se passar, o grupo sobe.',
+    casos: casos(casosRotulos),
+    executar: (e) => {
+      const { ys, limite } = e as { ys: number[]; limite: number }
+      return afastarRotulos(ys, limite)
+    },
+    formatar: (v) => (v as number[]).join(', '),
   },
 ]
 

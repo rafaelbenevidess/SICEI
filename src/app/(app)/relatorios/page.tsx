@@ -1,13 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import {
-  ArrowLeftRight,
-  ChartLine,
-  CircleCheck,
-  Download,
-  FileChartColumn,
-  ShoppingCart,
-} from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { ArrowLeftRight, CircleCheck, Download, FileChartColumn, ShoppingCart } from 'lucide-react'
 import { BotaoImprimir } from '@/components/BotaoImprimir'
 import {
   Abas,
@@ -22,23 +16,18 @@ import {
 } from '@/components/ui'
 import { pode } from '@/domain/permissoes'
 import {
-  diasAtrasIso,
   formatarData,
   formatarMoeda,
   formatarNumero,
   hojeIso,
-  inicioDoDia,
   nomeDaPastilha,
 } from '@/lib/formatar'
 import { normalizarParametros, type ParametrosRelatorio } from '@/server/consultas/dadosRelatorio'
 import {
-  dadosDaAnalise,
   relatorioConsumo,
   relatorioMovimentacao,
   relatorioReposicao,
 } from '@/server/consultas/relatorios'
-import { periodoAnterior } from '@/domain/analise'
-import { PainelAnalitico } from './PainelAnalitico'
 import { lerParametros } from '@/server/parametros'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
 
@@ -54,7 +43,16 @@ export default async function PaginaRelatorios({
   searchParams: Promise<ParametrosRelatorio>
 }) {
   const u = await exigirPermissaoDaPagina('relatorios:ver')
-  const n = normalizarParametros(await searchParams)
+  const p = await searchParams
+  // a análise virou página própria (RF-17a): links antigos continuam funcionando
+  if (p.tipo === 'analise') {
+    const de = p.de ? `&de=${encodeURIComponent(p.de)}` : ''
+    const ate = p.ate ? `&ate=${encodeURIComponent(p.ate)}` : ''
+    redirect(
+      `/analise?por=${p.agrupar === 'destino' || p.agrupar === 'colaborador' ? p.agrupar : 'item'}${de}${ate}`,
+    )
+  }
+  const n = normalizarParametros(p)
   const verPrecos = pode(u.perfil, 'precos:ver')
   const csv = `/relatorios/csv?${new URLSearchParams({ tipo: n.tipo, de: n.deIso, ate: n.ateIso, agrupar: n.agrupar })}`
 
@@ -197,7 +195,7 @@ export default async function PaginaRelatorios({
   }
 
   const periodo = `de ${formatarData(n.de)} até ${formatarData(n.ate)}`
-  const agrupa = n.tipo === 'consumo' || n.tipo === 'analise'
+  const agrupa = n.tipo === 'consumo'
   const abas = (
     <Abas
       rotulo="Tipo de relatório"
@@ -228,15 +226,6 @@ export default async function PaginaRelatorios({
             </>
           ),
           ativo: false,
-        },
-        {
-          href: `/relatorios?tipo=analise&de=${n.deIso}&ate=${n.ateIso}&agrupar=${n.agrupar}`,
-          rotulo: (
-            <>
-              <ChartLine aria-hidden className="size-4" /> Análise
-            </>
-          ),
-          ativo: n.tipo === 'analise',
         },
       ]}
     />
@@ -269,19 +258,6 @@ export default async function PaginaRelatorios({
       <button type="submit" className="h-10 rounded-lg bg-ink px-5 text-sm font-medium text-bg">
         Gerar
       </button>
-      {n.tipo === 'analise' && (
-        <div className="flex flex-col gap-1.5 text-[13px] font-medium">
-          <span>Atalhos</span>
-          <Segmentado
-            rotulo="Período pronto"
-            opcoes={[7, 30, 90, 365].map((d) => ({
-              href: `/relatorios?tipo=analise&de=${diasAtrasIso(d - 1)}&ate=${hojeIso()}&agrupar=${n.agrupar}`,
-              rotulo: d === 365 ? '12 meses' : `${d} dias`,
-              ativo: n.ateIso === hojeIso() && n.deIso === diasAtrasIso(d - 1),
-            }))}
-          />
-        </div>
-      )}
     </form>
   )
   const acoes = (
@@ -292,28 +268,6 @@ export default async function PaginaRelatorios({
       </LinkBotao>
     </>
   )
-
-  if (n.tipo === 'analise') {
-    const anterior = periodoAnterior(n.deIso, n.ateIso)
-    const dados = await dadosDaAnalise(n.de, n.ate, inicioDoDia(anterior.deIso)!, n.agrupar)
-    const dimensao = { item: 'Item', destino: 'Destino', colaborador: 'Colaborador' }[n.agrupar]
-    return (
-      <Pagina
-        titulo="Relatórios"
-        descricao={`Painel de análise do consumo por ${dimensao.toLowerCase()}, ${periodo}.`}
-        acoes={acoes}
-      >
-        {abas}
-        {filtros}
-        <PainelAnalitico
-          // novo período ou agrupamento: o painel recomeça sem filtro
-          key={`${n.deIso}-${n.ateIso}-${n.agrupar}`}
-          dados={{ deIso: n.deIso, ateIso: n.ateIso, anterior, dimensao, ...dados }}
-        />
-        <p className="text-[13px] text-ink-3">{NOTA}</p>
-      </Pagina>
-    )
-  }
 
   if (n.tipo === 'movimentacao') {
     const linhas = await relatorioMovimentacao(n.de, n.ate)

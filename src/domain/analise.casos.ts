@@ -112,3 +112,79 @@ export const casosEscala: CasoDeTeste<number, { topo: number; passos: number[] }
     esperado: { topo: 1, passos: [0, 1] },
   },
 ]
+
+/** Entrada: o parâmetro "sel" da URL. Esperado: a lista de escolhidos. */
+export const casosSelecao: CasoDeTeste<string, string[]>[] = [
+  {
+    descricao: '"PST-001,PST-004" → os dois, na ordem em que foram escolhidos',
+    entrada: 'PST-001,PST-004',
+    esperado: ['PST-001', 'PST-004'],
+  },
+  {
+    descricao: '" PST-004 , ,PST-001,PST-004" → sem espaços, vazios nem repetidos',
+    entrada: ' PST-004 , ,PST-001,PST-004',
+    esperado: ['PST-004', 'PST-001'],
+  },
+  { descricao: 'vazio → nenhum escolhido (análise de todos)', entrada: '', esperado: [] },
+  {
+    descricao: '25 códigos → só os 20 primeiros',
+    entrada: Array.from({ length: 25 }, (_, i) => `PST-${String(i + 1).padStart(3, '0')}`).join(
+      ',',
+    ),
+    esperado: Array.from({ length: 20 }, (_, i) => `PST-${String(i + 1).padStart(3, '0')}`),
+  },
+]
+
+/** Entrada: quantos escolhidos e se um deles está em foco. Esperado: um traço por escolhido? */
+export const casosComparacao: CasoDeTeste<{ escolhidos: number; emFoco: boolean }, boolean>[] = [
+  {
+    descricao: 'nenhum escolhido → soma de todos',
+    entrada: { escolhidos: 0, emFoco: false },
+    esperado: false,
+  },
+  {
+    descricao: '1 escolhido → a linha dele, com o período anterior',
+    entrada: { escolhidos: 1, emFoco: false },
+    esperado: false,
+  },
+  {
+    descricao: '2 escolhidos → um traço para cada',
+    entrada: { escolhidos: 2, emFoco: false },
+    esperado: true,
+  },
+  {
+    descricao: '4 escolhidos → um traço para cada',
+    entrada: { escolhidos: 4, emFoco: false },
+    esperado: true,
+  },
+  {
+    descricao: '5 escolhidos → a soma (mais de 4 cores não se distinguem)',
+    entrada: { escolhidos: 5, emFoco: false },
+    esperado: false,
+  },
+  {
+    descricao: '3 escolhidos com um em foco pelo clique → só a linha do que está em foco',
+    entrada: { escolhidos: 3, emFoco: true },
+    esperado: false,
+  },
+]
+
+/** Entrada: altura da ponta de cada linha e o limite de baixo. Esperado: altura dos rótulos. */
+export const casosRotulos: CasoDeTeste<{ ys: number[]; limite: number }, number[]>[] = [
+  {
+    descricao: 'pontas longe umas das outras → cada rótulo na altura da sua linha',
+    entrada: { ys: [20, 80, 150], limite: 200 },
+    esperado: [20, 80, 150],
+  },
+  {
+    descricao: 'duas pontas a 4 px → a de baixo desce até ficar a 14 px',
+    entrada: { ys: [100, 104], limite: 200 },
+    esperado: [100, 114],
+  },
+  {
+    descricao:
+      'três linhas terminando em zero (no limite, 200) → empilhadas para cima: 172, 186, 200',
+    entrada: { ys: [200, 200, 200], limite: 200 },
+    esperado: [172, 186, 200],
+  },
+]

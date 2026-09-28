@@ -153,3 +153,60 @@ export function escalaDoEixo(maximo: number, intervalos = 5): { topo: number; pa
     passos.push(Math.round(k * passo * 1000) / 1000)
   return { topo, passos }
 }
+
+/** Quantos itens (ou destinos, ou colaboradores) a análise personalizada aceita de uma vez. */
+export const LIMITE_DA_SELECAO = 20
+/** Até quantos escolhidos a evolução mostra lado a lado, um traço para cada. */
+export const LINHAS_NA_COMPARACAO = 4
+
+/**
+ * A seleção vem da URL como "PST-001,PST-004". Tira espaços, vazios e repetidos, mantém a
+ * ordem em que foram escolhidos (é ela que define as cores) e corta no limite.
+ */
+export function normalizarSelecao(
+  valor: string | string[] | undefined,
+  limite = LIMITE_DA_SELECAO,
+): string[] {
+  const partes = (Array.isArray(valor) ? valor.join(',') : (valor ?? '')).split(',')
+  const vistos = new Set<string>()
+  for (const p of partes) {
+    const chave = p.trim()
+    if (chave && !vistos.has(chave)) vistos.add(chave)
+    if (vistos.size === limite) break
+  }
+  return [...vistos]
+}
+
+/** Os escolhidos que não tiveram consumo no período entram com zero, para aparecerem no ranking. */
+export function completarSelecao(
+  parcelas: Parcela[],
+  escolhidos: { chave: string; nome: string }[],
+): Parcela[] {
+  const faltam = escolhidos.filter((e) => !parcelas.some((p) => p.chave === e.chave))
+  return [...parcelas, ...faltam.map((e) => ({ chave: e.chave, nome: e.nome, total: 0 }))]
+}
+
+/**
+ * De 2 a 4 escolhidos, sem um deles em foco pelo clique, a evolução mostra um traço por
+ * escolhido. Com um só, ou com mais de 4, mostra a soma, comparada com o período anterior.
+ */
+export function compararNaEvolucao(escolhidos: number, emFoco: boolean): boolean {
+  return !emFoco && escolhidos >= 2 && escolhidos <= LINHAS_NA_COMPARACAO
+}
+
+/**
+ * Altura dos rótulos na ponta das linhas da comparação: cada um fica na altura da sua linha,
+ * mas afastado pelo menos `minimo` px dos outros e sem passar do limite de baixo (se passar,
+ * o grupo sobe). Três linhas terminando em zero viram três rótulos empilhados, todos visíveis.
+ */
+export function afastarRotulos(ys: number[], limite = Infinity, minimo = 14): number[] {
+  const ordem = ys.map((y, i) => ({ y, i })).sort((a, b) => a.y - b.y || a.i - b.i)
+  for (let k = 1; k < ordem.length; k++) ordem[k].y = Math.max(ordem[k].y, ordem[k - 1].y + minimo)
+  for (let k = ordem.length - 1; k >= 0; k--) {
+    const teto = k === ordem.length - 1 ? limite : ordem[k + 1].y - minimo
+    ordem[k].y = Math.min(ordem[k].y, teto)
+  }
+  const r = Array<number>(ys.length)
+  for (const o of ordem) r[o.i] = o.y
+  return r
+}

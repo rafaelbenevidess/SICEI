@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.11 (validada) |
+| **Versão** | 1.12 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -40,7 +40,7 @@ Os requisitos estão classificados pelo método MoSCoW:
 | RF-15 | Histórico de movimentações com filtros por período, item, tipo, usuário, destino, colaborador e OP | Must | RN-09 |
 | RF-16 | Painel geral: itens em alerta, consumo do mês, itens mais consumidos, últimas movimentações | Must | RN-17 |
 | RF-17 | Relatório de consumo por item, destino, colaborador e período | Must | RN-16 |
-| RF-17a | Painel de análise do consumo, com gráficos interativos e filtro por clique | Should | RN-09, RN-12, RN-17 |
+| RF-17a | Análise personalizada: página própria com filtros combináveis, comparação lado a lado e gráficos interativos | Should | RN-09, RN-12, RN-17, RN-23 |
 | RF-18 | Relatório de movimentação | Must | RN-09 |
 | RF-19 | Relatório de necessidade de reposição (sugestão de compra) | Must | RN-03, RN-15, RN-16, RN-20 |
 | RF-20 | Exportar relatórios em CSV e PDF | Should | RN-23 |
@@ -175,17 +175,21 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 ### RF-17. Relatório de consumo
 1. **Dado** um período e um agrupamento (item, destino ou colaborador), **quando** o Gestor gera o relatório, **então** vê as quantidades consumidas, sem contar as saídas estornadas, e o consumo médio diário de cada item.
 
-### RF-17a. Painel de análise
-Complementa o RF-17: o relatório em tabela continua sendo a leitura rápida, e a aba Análise mostra o mesmo consumo em gráficos, para acompanhar a evolução.
+### RF-17a. Análise personalizada
+Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o relatório em tabela continua sendo a leitura rápida, e a Análise serve para investigar o consumo com a combinação de filtros que o Gestor quiser.
 
-1. **Dado** um período e um agrupamento, **quando** o Gestor abre a aba Análise, **então** vê quatro números (consumo no período, média por dia, maior consumo num só dia, semana ou mês, e itens em alerta agora) e os gráficos de evolução, ranking, composição, dia da semana × hora e entradas × saídas.
-2. **Dado** o consumo do período e o do período anterior do mesmo tamanho, **quando** o painel abre, **então** o gráfico de evolução mostra os dois e o número do consumo traz a variação em %. Sem consumo no período anterior, o painel diz que não há base para comparar em vez de mostrar um percentual.
-3. **Dado** um período de até 45 dias, **quando** o painel monta os gráficos, **então** agrupa por dia; até 200 dias, por semana (a partir da segunda-feira); acima disso, por mês.
-4. **Dado** o ranking, **quando** o Gestor clica numa barra, **então** os números e os gráficos de consumo passam a mostrar só aquele item, destino ou colaborador, com um aviso "Filtrando por" e o botão "Tirar o filtro". Clicar de novo na mesma barra também tira o filtro. As cores seguem o item, não a posição no ranking.
-5. **Dado** mais de 4 itens no gráfico de composição, **quando** o painel abre, **então** os 4 maiores têm cor própria e o resto soma em "Outros", em cinza.
-6. **Dado** qualquer gráfico, **quando** o usuário passa o mouse ou usa as setas do teclado, **então** vê o valor de cada ponto; e cada gráfico tem "Ver dados em tabela" com os mesmos números (RNF-10).
-7. **Dado** uma saída estornada, **quando** o painel soma o consumo, **então** ela não conta (RN-12). As horas são as de Brasília.
-8. **Dado** os atalhos "7 dias", "30 dias", "90 dias" e "12 meses", **quando** o Gestor clica num deles, **então** o painel recarrega com o período terminando hoje.
+1. **Dado** o menu de Gestor ou Administrador, **quando** ele abre Gestão, **então** vê "Análise" logo depois de "Relatórios". O endereço antigo da aba (`/relatorios?tipo=analise`) leva à página nova.
+2. **Dado** a página, **quando** o Gestor monta a análise, **então** escolhe o período (ou um atalho de 7, 30, 90 dias ou 12 meses), o que medir (consumo na produção, perdas e quebras, ou os dois somados), por onde comparar (item, destino, colaborador, aplicação ou fabricante) e, em qualquer combinação, os itens, destinos, colaboradores, aplicações e fabricantes que entram. Cada filtro aceita vários valores, escolhidos com a mesma busca tolerante do RF-11, até 20 por filtro. Filtro vazio vale para todos.
+3. **Dado** mais de um filtro, **quando** a análise é aplicada, **então** os filtros se somam: itens escolhidos e um destino mostram só as retiradas daqueles itens naquele destino. A linha "Filtros:" acima dos números diz o que está aplicado, também no PDF.
+4. **Dado** a análise aplicada, **quando** a página abre, **então** mostra quatro números (total no período com a variação sobre o período anterior do mesmo tamanho, média por dia, pico num só dia, semana ou mês, e itens em alerta agora) e os gráficos de evolução, ranking, composição, dia da semana × hora, entradas × saídas e uma tabela de detalhe com o total, o anterior, a variação, a média por dia, a parte do total e o número de retiradas de cada um. Sem nada no período anterior, o painel diz que não há base para comparar em vez de mostrar um percentual.
+5. **Dado** de 2 a 4 escolhidos na dimensão comparada, **quando** a análise abre, **então** a evolução mostra um traço de cada um, com o nome na ponta e na legenda. Com um só, ou com mais de 4, mostra a soma comparada com o período anterior. As cores seguem a ordem da escolha, e os escolhidos sem nada no período aparecem com zero.
+6. **Dado** um período de até 45 dias, **quando** o painel monta os gráficos, **então** agrupa por dia; até 200 dias, por semana (a partir da segunda-feira); acima disso, por mês.
+7. **Dado** o ranking, **quando** o Gestor clica numa barra, **então** os números e os gráficos de consumo põem aquele em foco, com o aviso "Em foco" e o botão "Tirar o foco". Clicar de novo na mesma barra também tira o foco. Sem escolhidos, os 4 maiores têm cor própria e o resto soma em "Outros", em cinza.
+8. **Dado** filtros de destino ou colaborador, **quando** o gráfico de entradas e saídas é montado, **então** ele usa só os filtros de item, aplicação e fabricante e diz isso no subtítulo, porque compra não tem destino. Os itens em alerta também contam só os itens dos filtros.
+9. **Dado** qualquer gráfico, **quando** o usuário passa o mouse ou usa as setas do teclado, **então** vê o valor de cada ponto; e cada gráfico tem "Ver dados em tabela" com os mesmos números (RNF-10).
+10. **Dado** uma saída estornada, **quando** o painel soma, **então** ela não conta (RN-12). As horas são as de Brasília. Perda sem destino ou sem colaborador aparece como "Sem destino" ou "Sem colaborador".
+11. **Dado** a análise na tela, **quando** o Gestor clica em "Exportar CSV", **então** recebe `sicei-analise-<data>.csv` com o total de cada dia e de cada um, com os mesmos filtros, e a exportação fica no log com os filtros usados (RN-23).
+12. **Dado** um parâmetro estranho na URL (dimensão ou medida desconhecida, data em outro formato, período invertido), **quando** a página abre, **então** usa o padrão ou desvira o período, sem erro.
 
 ### RF-18. Relatório de movimentação
 1. **Dado** um período, **quando** o Gestor gera o relatório, **então** vê para cada item o saldo inicial, as entradas, as saídas e o saldo final, e o saldo final bate com o saldo atual quando o período termina hoje.
@@ -278,7 +282,7 @@ O RNF-09 (interoperabilidade com ERP) saiu junto com os RF-23 e RF-24.
 | Saldo e painel (RF-11, RF-16) | ✅ | ✅ | ✅ | ✅ |
 | Alertas (RF-13) | ✅ | ✅ (marca ciente) | 👁️ | 👁️ |
 | Histórico de movimentações (RF-15) | ✅ | ✅ | ✅ | ❌ |
-| Relatórios, painel de análise e exportação (RF-17 a RF-20, RF-17a) | ✅ | ✅ | ❌ | ❌ |
+| Relatórios, análise e exportação (RF-17 a RF-20, RF-17a) | ✅ | ✅ | ❌ | ❌ |
 | Log de auditoria e conferências (RF-21) | ✅ | ✅ | ❌ | ❌ |
 | Imprimir etiquetas QR (RF-22) | ✅ | ✅ | ✅ | ❌ |
 
@@ -316,7 +320,7 @@ Toda regra de negócio está coberta por pelo menos um requisito.
 | RN-20 | RF-19 |
 | RN-21, RN-21a, RN-21b, RN-21c, RN-21d | RF-01, RF-02 |
 | RN-22 | RF-01, RF-02, RF-26 |
-| RN-23 | RF-20, RF-21 |
+| RN-23 | RF-17a, RF-20, RF-21 |
 | RN-24 | RF-21, RNF-12 |
 | RN-25 | RF-11, RF-28 |
 | RN-26 | RF-22 |
@@ -369,3 +373,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.9 | 28/09/2026 | RF-02, critérios 9 a 11: Administrador principal protegido e só ele gerencia Administradores (RN-21c). |
 | 1.10 | 28/09/2026 | RF-02, critérios 12 e 13: matrícula única e edição dos dados do usuário (RN-21d). RNF-02: tabelas sem rolagem lateral quando cabem na tela. |
 | 1.11 | 28/09/2026 | Novo RF-17a: painel de análise dos relatórios, com gráficos interativos, comparação com o período anterior e filtro por clique no ranking. O relatório em tabela do RF-17 continua como está. |
+| 1.12 | 28/09/2026 | RF-17a reescrito: a análise vira página própria em Gestão ("Análise"), com medida (consumo, perdas ou os dois), dimensão de comparação (item, destino, colaborador, aplicação, fabricante), filtros de vários valores em qualquer combinação, comparação lado a lado de 2 a 4 escolhidos, tabela de detalhe e CSV com os filtros. |

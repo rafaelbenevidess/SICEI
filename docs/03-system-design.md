@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.14 (para revisão) |
+| **Versão** | 1.15 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -52,7 +52,7 @@ Versões conferidas em setembro de 2026, sempre na última versão estável.
 | Autenticação | **Sessão própria guardada no banco** + **Argon2id** (`@node-rs/argon2`) | O login não usa e-mail, e o sistema precisa derrubar sessões na hora em que alguém é inativado (RN-21b). Uma sessão em tabela resolve os dois com pouco código. |
 | Validação | **Zod 4** | O mesmo schema valida o formulário no navegador e os dados no servidor. |
 | Interface | **Tailwind CSS 4** com tokens próprios (tema claro e escuro), fonte **Geist** e ícones **lucide-react** | Os componentes são do próprio projeto (`components/ui.tsx` e `components/formulario.tsx`), feitos a partir do design do SICEI (seção 10). Sem biblioteca de componentes: menos dependências e controle total de acessibilidade. |
-| Gráficos | Barras em HTML e CSS no painel; SVG próprio (`components/graficos.tsx`) no painel de análise | O painel (RF-16) só precisa do consumo diário do mês. O painel de análise (RF-17a) tem cinco tipos de gráfico com dica, teclado e filtro por clique, feitos em SVG e HTML sem biblioteca (seção 10.7, ADR-14). |
+| Gráficos | Barras em HTML e CSS no painel; SVG próprio (`components/graficos.tsx`) na Análise | O painel (RF-16) só precisa do consumo diário do mês. A Análise (RF-17a) tem seis tipos de gráfico com dica, teclado e foco por clique, feitos em SVG e HTML sem biblioteca (seção 10.7, ADR-14). |
 | QR | **qrcode** (gerar) + leitor nativo do navegador ou **jsQR** (ler) | O `qrcode` gera o QR das etiquetas no servidor. Na tela "Ler QR", o navegador que tem leitor nativo (`BarcodeDetector`, Chrome no Android) usa o dele; os outros, como o Safari do iPhone, usam o jsQR, em JavaScript puro, baixado só quando precisa (RF-22, ADR-13). |
 | CSV | **Papa Parse** | Leitura da planilha na importação (RF-25) e geração dos CSV exportados (RF-20). |
 | PDF | Página de impressão com CSS `@media print` | Relatórios e etiquetas saem pelo "Imprimir → Salvar como PDF" do navegador, sem biblioteca nem serviço extra. |
@@ -386,7 +386,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 | `domain/auditoria.ts` | Sim | Hash encadeado e verificação da cadeia (RN-09a) | Sim, com demonstração de adulteração |
 | `domain/schemas/` (Zod) | Sim | Campos obrigatórios por tipo de movimentação, formatos, limites (RN-10, RN-11) | Sim |
 | `domain/importacao.ts` | Sim | Validação linha a linha do CSV (RF-25) | Não, só no relatório |
-| `domain/analise.ts` | Sim | Agrupamento por dia, semana ou mês, período anterior, variação, maiores e "Outros", mapa de calor, eixo em números redondos (RF-17a) | Sim |
+| `domain/analise.ts` e `domain/schemas/analise.ts` | Sim | Agrupamento por dia, semana ou mês, período anterior, variação, maiores e "Outros", escolhidos, comparação lado a lado, mapa de calor, eixo, nomes na ponta das linhas, filtros da URL (RF-17a) | Sim |
 | Componentes de interface | Sim, com Testing Library | Selo de status com texto e cor (RNF-10), formulário de saída exigindo os campos, tabela de fornecedores escondendo preço do perfil Consulta | Não, só no relatório |
 | `server/services/` | Em parte | A parte de decisão já está coberta pelo `domain/`. O que depende do banco vai para a integração | Não |
 | Lock de linha, triggers, permissões do banco, sessão, e-mail | Não é possível em unidade | Dependem do PostgreSQL ou da rede: cobertos por integração e E2E | Não |
@@ -397,7 +397,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 |---|---|---|---|
 | Unidade | Vitest 5 (+ Testing Library para componentes) | Tudo da tabela 9.1 marcado com "Sim". Os exemplos numéricos do documento 01 viram testes. | Toda RN com pelo menos um teste; ≥ 90% de cobertura de linhas em `domain/` |
 | Integração | Vitest + PostgreSQL real | Services com banco de verdade: saídas concorrentes (RN-08), estorno duplo (RN-12), trigger de imutabilidade e detecção de adulteração no banco (RN-09a), alerta único por item (RN-18), inativação derrubando sessões (RN-21b), cada ação testada com cada perfil | Todos os critérios de aceite do documento 02 com regra no servidor |
-| Ponta a ponta | Playwright, em dois projetos: celular (360 px) e computador (1366 px) | Celular: primeiro acesso com a checklist da senha; saída pela etiqueta QR com barra fixa e confirmação; estorno; criar usuário com a prévia do login; Consulta sem preços; verificação de integridade; relatório de reposição. Computador: tema escuro guardado; compra com fornecedor cadastrado na hora; parâmetros com aviso e histórico; antes → depois no log; importação com prévia; CSV de itens e movimentações; painel de análise filtrando pelo clique no ranking; nenhuma tela com rolagem horizontal | Fluxos principais do MVP nas duas larguras |
+| Ponta a ponta | Playwright, em dois projetos: celular (360 px) e computador (1366 px) | Celular: primeiro acesso com a checklist da senha; saída pela etiqueta QR com barra fixa e confirmação; estorno; criar usuário com a prévia do login; Consulta sem preços; verificação de integridade; relatório de reposição. Computador: tema escuro guardado; compra com fornecedor cadastrado na hora; parâmetros com aviso e histórico; antes → depois no log; importação com prévia; CSV de itens e movimentações; análise com itens escolhidos, foco pelo clique e CSV; nenhuma tela com rolagem horizontal | Fluxos principais do MVP nas duas larguras |
 | Estático | ESLint, `tsc`, Prettier | Estilo e tipos | Sem erros |
 
 **CI (GitHub Actions)**, em todo push e pull request: instalar, rodar lint, typecheck, testes de unidade e integração (PostgreSQL como serviço), build, e2e. Só entra na branch principal o que passar.
@@ -508,28 +508,33 @@ O fluxo principal no celular começa na etiqueta. Na tela "Ler QR" (`/p`, na bar
 
 Várias telas mostram o resultado antes de enviar, usando as mesmas funções puras de `domain/`: o saldo e o status depois da movimentação, a conversão de caixas, o login que será gerado, a checklist da senha, a situação do CNPJ e os limites dos parâmetros. A prévia só ajuda quem digita. O servidor valida tudo de novo e é quem decide (RN-08, RNF-05).
 
-### 10.7 Painel de análise (RF-17a)
+### 10.7 Análise personalizada (RF-17a)
 
-A aba Análise de Relatórios mostra o consumo em gráficos, ao lado das tabelas do RF-17 a RF-19, que continuam como leitura rápida.
+A página `/analise`, em Gestão no menu, é um painel no estilo de uma ferramenta de BI. Os filtros ficam no endereço (`/analise?itens=PST-001,PST-004&por=destino&medida=perdas`), então a análise pode ser guardada nos favoritos, repassada e impressa como está.
 
 | Parte | Onde | O que faz |
 |---|---|---|
-| Consulta | `server/consultas/relatorios.ts`, `dadosDaAnalise` | Quatro leituras agregadas: consumo por dia e chave (item, destino ou colaborador) desde o início do período anterior, consumo por dia da semana e hora, entradas e saídas por dia (pelo efeito no saldo, inclui ajustes e estornos) e itens ativos por status. Saída estornada não conta como consumo (RN-12). Datas e horas convertidas para `America/Sao_Paulo` no SQL. |
-| Contas | `domain/analise.ts` | Tudo o que o painel calcula: dia, semana ou mês conforme o tamanho do período, séries no tempo, período anterior, variação, maiores e "Outros", matriz 7 × 24 e o eixo. Funções puras, com casos no Laboratório. |
-| Tela | `app/(app)/relatorios/PainelAnalitico.tsx` | Componente de cliente. Recebe os dados agregados e recalcula tudo no navegador quando o Gestor clica no ranking, sem ir ao servidor. |
-| Gráficos | `components/graficos.tsx` | Linha com área (período atual e anterior), ranking em barras horizontais que são botões, colunas empilhadas, entradas × saídas num eixo simétrico, mapa de calor e minilinha. Medem a própria largura (`ResizeObserver`) e desenham em SVG. |
+| Filtros | `domain/schemas/analise.ts` | Schema Zod dos parâmetros da URL: período, medida (consumo, perdas ou os dois), dimensão de comparação e os cinco filtros de vários valores. O que não faz sentido vira o padrão, sem erro; período invertido é desvirado. Também monta a URL dos atalhos e do CSV só com o que foge do padrão. |
+| Consulta | `server/consultas/analise.ts` | `dadosDaAnalise`: quatro leituras agregadas no banco. Total por dia e chave (com o número de retiradas) desde o início do período anterior, total por dia da semana e hora, entradas e saídas por dia (pelo efeito no saldo) e itens ativos por status. Os filtros viram condições `= ANY(array)` parametrizadas; a dimensão escolhe a expressão da chave num `switch` fechado, sem texto do usuário no SQL. Saída estornada não conta (RN-12). Datas e horas em `America/Sao_Paulo`. `opcoesDaAnalise` lista os valores dos filtros, inclusive os inativos, que ainda têm histórico (RN-02). |
+| Contas | `domain/analise.ts` | Tudo o que o painel calcula: dia, semana ou mês, séries no tempo, período anterior, variação, maiores e "Outros", escolhidos sem consumo com zero, quando comparar lado a lado, matriz 7 × 24, eixo e a posição dos nomes na ponta das linhas. Funções puras, com casos no Laboratório. |
+| Tela | `app/(app)/analise/page.tsx` e `PainelAnalitico.tsx` | A página monta o formulário (GET) e passa os dados agregados ao painel, componente de cliente que recalcula tudo no navegador quando o Gestor põe um item em foco pelo ranking, sem ir ao servidor. |
+| Escolha de vários | `components/formulario.tsx`, `SelecaoMultipla` | Combobox com a busca do RF-11 (`buscarOpcoes`), os escolhidos como etiquetas com "×", lista que fica aberta para marcar vários, Enter e Backspace pelo teclado. Envia um campo só, com os valores separados por vírgula. |
+| Gráficos | `components/graficos.tsx` | Linha com área (período atual e anterior), comparação de 2 a 4 linhas com o nome na ponta, ranking em barras que são botões, colunas empilhadas, entradas × saídas num eixo simétrico, mapa de calor e minilinha. Medem a própria largura (`ResizeObserver`) e desenham em SVG. |
+| CSV | `app/(app)/analise/csv/route.ts` | Total de cada dia e de cada um, com os filtros da tela; a exportação fica no log com os filtros (RN-23). |
+
+Os filtros de destino e colaborador não valem para entradas e saídas, porque compra não tem destino; o subtítulo do gráfico avisa. Os itens em alerta contam só os itens dos filtros de item, aplicação e fabricante.
 
 Regras visuais, seguidas em todos os gráficos:
 
 - Paleta categórica fixa em `globals.css` (`--serie-1` a `--serie-4`: azul, laranja, verde-água e amarelo), com tons próprios para o tema escuro e cinza para "Outros". A paleta foi conferida com um validador de daltonismo (distância entre cores vizinhas nos três tipos de daltonismo) nos dois fundos. O amarelo e o verde-água têm pouco contraste no fundo claro, por isso toda série tem legenda escrita e tabela.
-- A cor segue o item, não a posição: os 4 maiores do período ficam com as mesmas cores com ou sem filtro. Do quinto em diante, tudo soma em "Outros".
+- A cor segue o item, não a posição. Com escolhidos, os 4 primeiros na ordem da escolha têm cor própria; sem escolhidos, os 4 maiores do período. Com ou sem foco, ninguém muda de cor. Do quinto em diante, tudo soma em "Outros".
 - Intensidade (mapa de calor) usa uma só cor, do claro ao escuro (`--calor-1` a `--calor-7`), invertida no tema escuro.
 - Um eixo só por gráfico, com topo em número redondo (`escalaDoEixo`). Linhas de 2 px, barras de no máximo 24 px com ponta arredondada, 2 px de fundo entre partes empilhadas, grade clara só na horizontal.
 - Texto sempre nas cores de texto do tema, nunca na cor da série.
 - Acessibilidade (RNF-10): os gráficos em SVG têm `role="img"` com descrição, dica ao passar o mouse, navegação pelas setas do teclado e "Ver dados em tabela" com os mesmos números. O mapa de calor é uma grade (`role="grid"`) em que cada célula com consumo recebe foco pelo Tab e diz o dia, a hora e a quantidade. O ranking é uma lista de botões com `aria-pressed`.
-- Impressão: o botão "Tirar o filtro", o link de alertas e as tabelas recolhidas saem do PDF (`nao-imprimir`); os cartões não quebram no meio da página.
+- Impressão: o formulário de filtros, o botão "Tirar o foco", o link de alertas e as tabelas recolhidas saem do PDF (`nao-imprimir`); a linha "Filtros:" e a tabela de detalhe ficam. Os cartões não quebram no meio da página.
 
-O filtro vale para o ranking, os números, a evolução, a composição e o mapa de calor. O gráfico de entradas e saídas mostra sempre o estoque inteiro, e o subtítulo diz isso.
+O foco pelo clique vale para os números, a evolução, a composição e o mapa de calor.
 
 ## 11. Decisões de arquitetura (ADRs)
 
@@ -569,3 +574,4 @@ O filtro vale para o ranking, os números, a evolução, a composição e o mapa
 | 1.12 | 28/09/2026 | Administrador principal (RN-21c) na seção 5.5 e no A01; login inexistente fora do log. Cabeçalho de versão corrigido. |
 | 1.13 | 28/09/2026 | Matrícula e edição de usuários (5.5); tabelas sem largura mínima no computador e novos pontos de quebra (10.2). |
 | 1.14 | 28/09/2026 | Painel de análise dos relatórios (RF-17a): consulta, contas em `domain/analise.ts`, gráficos em SVG próprio e regras visuais (10.7), ADR-14. Linha de gráficos da stack atualizada e `domain/analise.ts` na tabela 9.1. |
+| 1.15 | 28/09/2026 | A análise vira a página `/analise` em Gestão (10.7): filtros combináveis na URL com schema Zod, consulta própria (`consultas/analise.ts`) com arrays parametrizados, `SelecaoMultipla`, comparação lado a lado, tabela de detalhe e CSV com os filtros. |

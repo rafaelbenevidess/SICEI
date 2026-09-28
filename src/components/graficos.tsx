@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { escalaDoEixo } from '@/domain/analise'
+import { afastarRotulos, escalaDoEixo } from '@/domain/analise'
 import { formatarNumero } from '@/lib/formatar'
 
 export const COR_SERIE = ['var(--serie-1)', 'var(--serie-2)', 'var(--serie-3)', 'var(--serie-4)']
@@ -324,6 +324,160 @@ export function GraficoLinha({
 }
 
 /**
+ * Comparação de 2 a 4 séries no tempo: um traço de 2 px por série, na cor dela, com o nome
+ * na ponta (além da legenda). A dica lista todas, da maior para a menor.
+ */
+export function GraficoComparacao({
+  rotulos,
+  series,
+  unidade = 'un.',
+  altura = 240,
+}: {
+  rotulos: string[]
+  series: { nome: string; cor: string; valores: number[] }[]
+  unidade?: string
+  altura?: number
+}) {
+  const { ref, largura } = useLargura()
+  const { ativo, setAtivo, aoTeclar } = useFoco(rotulos.length)
+  const direita = 76
+  const escala = escalaDoEixo(Math.max(1, ...series.flatMap((s) => s.valores)))
+  const util = largura - MARGEM.esquerda - direita
+  const alturaPlot = altura - MARGEM.topo - ALTURA_EIXO_X
+  const x = (i: number) =>
+    MARGEM.esquerda + (rotulos.length <= 1 ? util / 2 : (i / (rotulos.length - 1)) * util)
+  const y = (v: number) => MARGEM.topo + alturaPlot - (v / escala.topo) * alturaPlot
+  const caminho = (serie: number[]) =>
+    serie.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join('')
+  const visiveis = rotulosVisiveis(rotulos.length, util)
+  const ultimo = rotulos.length - 1
+  const yRotulos = afastarRotulos(
+    series.map((s) => y(s.valores[ultimo] ?? 0)),
+    MARGEM.topo + alturaPlot,
+  )
+
+  return (
+    <div ref={ref} className="relative">
+      <svg
+        width={largura}
+        height={altura}
+        role="img"
+        aria-label={`Comparação de ${series.map((s) => s.nome).join(', ')}: ${rotulos.length} pontos, de ${rotulos[0]} a ${rotulos[ultimo]}. Use as setas para percorrer.`}
+        tabIndex={0}
+        onKeyDown={aoTeclar}
+        onBlur={() => setAtivo(null)}
+        onPointerLeave={() => setAtivo(null)}
+        onPointerMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect()
+          const px = e.clientX - r.left - MARGEM.esquerda
+          const i = Math.round((px / Math.max(1, util)) * (rotulos.length - 1))
+          setAtivo(Math.min(ultimo, Math.max(0, i)))
+        }}
+        className="block touch-none outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      >
+        {escala.passos.map((p) => (
+          <g key={p}>
+            <line
+              x1={MARGEM.esquerda}
+              x2={MARGEM.esquerda + util}
+              y1={y(p)}
+              y2={y(p)}
+              stroke="var(--line)"
+              strokeWidth={1}
+            />
+            <text
+              x={MARGEM.esquerda - 8}
+              y={y(p)}
+              dy="0.32em"
+              textAnchor="end"
+              className="fill-ink-3 text-[11px] tabular-nums"
+            >
+              {formatarNumero(p)}
+            </text>
+          </g>
+        ))}
+        {rotulos.map((r, i) =>
+          visiveis.has(i) ? (
+            <text
+              key={r + i}
+              x={x(i)}
+              y={altura - 6}
+              textAnchor={ancora(i, rotulos.length)}
+              className="fill-ink-3 text-[11px]"
+            >
+              {r}
+            </text>
+          ) : null,
+        )}
+        {series.map((s) => (
+          <path
+            key={s.nome}
+            d={caminho(s.valores)}
+            fill="none"
+            stroke={s.cor}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+        {ativo !== null && (
+          <line
+            x1={x(ativo)}
+            x2={x(ativo)}
+            y1={MARGEM.topo}
+            y2={MARGEM.topo + alturaPlot}
+            stroke="var(--line-2)"
+            strokeWidth={1}
+          />
+        )}
+        {series.map((s, k) => (
+          <g key={s.nome}>
+            {[ultimo, ...(ativo !== null && ativo !== ultimo ? [ativo] : [])].map((i) => (
+              <circle
+                key={i}
+                cx={x(i)}
+                cy={y(s.valores[i] ?? 0)}
+                r={4}
+                fill={s.cor}
+                stroke="var(--surface)"
+                strokeWidth={2}
+              />
+            ))}
+            <text
+              x={x(ultimo) + 10}
+              y={yRotulos[k]}
+              dy="0.32em"
+              className="fill-ink-2 text-[11px] font-medium"
+            >
+              {s.nome}
+            </text>
+          </g>
+        ))}
+      </svg>
+      {ativo !== null && (
+        <Dica
+          x={x(ativo)}
+          y={Math.min(...series.map((s) => y(s.valores[ativo] ?? 0)))}
+          largura={largura}
+        >
+          <p className="mb-1 text-ink-3">{rotulos[ativo]}</p>
+          {[...series]
+            .sort((a, b) => (b.valores[ativo] ?? 0) - (a.valores[ativo] ?? 0))
+            .map((s) => (
+              <LinhaDaDica
+                key={s.nome}
+                cor={s.cor}
+                valor={`${num(s.valores[ativo] ?? 0)} ${unidade}`}
+                nome={s.nome}
+              />
+            ))}
+        </Dica>
+      )}
+    </div>
+  )
+}
+
+/**
  * Ranking em barras horizontais. Cada barra é um botão: clicar filtra o painel inteiro por
  * aquele item (como num painel de BI); clicar de novo tira o filtro.
  */
@@ -333,7 +487,15 @@ export function GraficoRanking({
   aoSelecionar,
   unidade = 'un.',
 }: {
-  linhas: { chave: string; nome: string; total: number; filtravel: boolean }[]
+  /** rotulo em destaque e detalhe embaixo; cor da barra quando o item tem cor própria */
+  linhas: {
+    chave: string
+    rotulo: string
+    detalhe?: string
+    total: number
+    filtravel: boolean
+    cor?: string
+  }[]
   selecionado: string | null
   aoSelecionar: (chave: string | null) => void
   unidade?: string
@@ -349,10 +511,12 @@ export function GraficoRanking({
         const conteudo = (
           <>
             <span className="min-w-0 text-left">
-              <span className="block truncate text-[13px] font-medium text-ink">{l.chave}</span>
-              <span className="block truncate text-xs text-ink-3" title={l.nome}>
-                {l.nome}
-              </span>
+              <span className="block truncate text-[13px] font-medium text-ink">{l.rotulo}</span>
+              {l.detalhe && (
+                <span className="block truncate text-xs text-ink-3" title={l.detalhe}>
+                  {l.detalhe}
+                </span>
+              )}
             </span>
             <span className="flex items-center gap-2">
               <span className="h-4 flex-1">
@@ -361,7 +525,7 @@ export function GraficoRanking({
                   style={{
                     width: `${(l.total / maximo) * 100}%`,
                     minWidth: 2,
-                    background: l.filtravel ? (apagado ? COR_CINZA : 'var(--serie-1)') : COR_CINZA,
+                    background: l.filtravel && !apagado ? (l.cor ?? 'var(--serie-1)') : COR_CINZA,
                   }}
                 />
               </span>
@@ -382,7 +546,7 @@ export function GraficoRanking({
                 type="button"
                 aria-pressed={ativo}
                 onClick={() => aoSelecionar(ativo ? null : l.chave)}
-                title={ativo ? 'Tirar o filtro' : `Filtrar o painel por ${l.chave}`}
+                title={ativo ? 'Tirar o filtro' : `Filtrar o painel por ${l.rotulo}`}
                 className={`${classe} cursor-pointer hover:bg-surface-2`}
               >
                 {conteudo}

@@ -16,7 +16,8 @@ A DDA controla as pastilhas em planilhas preenchidas à mão. Entrada e saída �
 - Registra entrada por compra (com nota fiscal e preço), saída para a produção (com destino, ordem de produção e quem retirou), devolução, perda, inventário e estorno. O saldo nunca fica negativo, nem com duas saídas ao mesmo tempo.
 - Guarda todos os fornecedores de cada item, com o último preço de cada um e o histórico de preços.
 - Avisa no painel e por e-mail quando um item chega ao ponto de reposição, e sugere quanto comprar. Ao entrar, Gestor e Administrador veem um pop-up com os alertas ainda sem ciente.
-- Gera relatórios de consumo, movimentação e reposição, com exportação em CSV e impressão em PDF, e um painel de análise com gráficos interativos (evolução do consumo, ranking que filtra o painel com um clique, horários de retirada, entradas e saídas).
+- Gera relatórios de consumo, movimentação e reposição, com exportação em CSV e impressão em PDF.
+- Tem uma página de Análise para investigar o consumo e as perdas: período, filtros de itens, destinos, colaboradores, aplicações e fabricantes em qualquer combinação, comparação lado a lado, gráficos interativos (evolução, ranking com foco pelo clique, horários de retirada, entradas e saídas) e tabela de detalhe.
 - Imprime etiquetas QR para as gavetas. A tela "Ler QR" abre a câmera de qualquer celular (Android ou iPhone) dentro do próprio SICEI, lê a etiqueta, abre o item e a saída é registrada numa tela só.
 - Acha o que foi digitado de qualquer jeito: "pst1", "Pst 001" e "PST-1" são o PST-001, "a1g3c4" é a posição A01-G03-C04 e o CNPJ pode ir só com números. Vale na busca do topo (com sugestões), nas listas de fornecedor, fabricante, colaborador, destino e posição, nos filtros do histórico e do log, no Ler QR e na importação. O código de item novo entra no padrão da sequência, e o mesmo código escrito de outro jeito é recusado.
 - Tema claro e escuro, e telas pensadas para o celular do almoxarife e para o computador do escritório.
@@ -31,9 +32,9 @@ Next.js 16 com React 19 e TypeScript, PostgreSQL 17 com Prisma 7, Tailwind 4 e Z
 
 | Tipo | Quantidade | O que cobre |
 |---|---|---|
-| Unitários | 755 | Regras de negócio, validações, telas e componentes (99% das linhas) |
-| Integração | 100 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash, filtros de busca |
-| Ponta a ponta | 21 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV, painel de análise |
+| Unitários | 800 | Regras de negócio, validações, telas e componentes (99% das linhas) |
+| Integração | 107 | Serviços contra PostgreSQL real: concorrência, estorno, triggers, permissões, cadeia de hash, filtros de busca |
+| Ponta a ponta | 21 | Fluxos no navegador, no celular (360 px) e no computador (1366 px): troca de senha, leitura do QR pela câmera, saída pela etiqueta, estorno, usuários, compra com fornecedor novo, parâmetros, importação, CSV, análise personalizada |
 
 ```bash
 npm test                  # unitários
@@ -64,10 +65,10 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 | # | Documento | Versão |
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.7 |
-| 02 | [Requisitos](docs/02-requisitos.md) | 1.11 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.14 |
+| 02 | [Requisitos](docs/02-requisitos.md) | 1.12 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.15 |
 | 04 | [Segurança](docs/04-seguranca.md) | 1.6 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.8 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.9 |
 | 06 | [Operação](docs/06-operacao.md) | 1.2 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).

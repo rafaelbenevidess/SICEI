@@ -12,7 +12,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react'
-import { ChevronDown, Eye, EyeOff } from 'lucide-react'
+import { Check, ChevronDown, Eye, EyeOff, X } from 'lucide-react'
 import { buscarOpcoes, pontuarTexto } from '@/domain/busca'
 import type { EstadoAcao } from '@/server/web/acao'
 import { classeBotao, type VarianteBotao } from './ui'
@@ -465,6 +465,231 @@ export function SelecaoComBusca({
         </span>
       )}
     </div>
+  )
+}
+
+/** Quantas opções a lista mostra de uma vez; o resto aparece digitando. */
+const OPCOES_NA_LISTA = 60
+
+/**
+ * RF-17a: escolha de vários valores com a mesma busca tolerante do SelecaoComBusca. Os
+ * escolhidos viram etiquetas com "×"; a lista fica aberta para marcar vários seguidos. Envia
+ * um campo só, com os valores separados por vírgula, na ordem em que foram escolhidos.
+ */
+export function SelecaoMultipla({
+  nome,
+  rotulo,
+  opcoes,
+  padrao = [],
+  limite = 20,
+  placeholder = 'Todos',
+}: {
+  nome: string
+  rotulo: string
+  opcoes: OpcaoComBusca[]
+  padrao?: string[]
+  limite?: number
+  placeholder?: string
+}) {
+  const id = `multipla-${nome}-${useId()}`
+  const [escolhidos, setEscolhidos] = useState<string[]>(padrao)
+  const [texto, setTexto] = useState('')
+  const [aberto, setAberto] = useState(false)
+  const [ativo, setAtivo] = useState(0)
+  const campo = useRef<HTMLInputElement>(null)
+  const lista = buscarOpcoes(texto, opcoes).slice(0, OPCOES_NA_LISTA)
+  const indice = Math.min(ativo, Math.max(lista.length - 1, 0))
+  const idOpcao = (i: number) => `${id}-opcao-${i}`
+  const cheio = escolhidos.length >= limite
+  const rotuloDe = (v: string) => opcoes.find((o) => o.valor === v)?.rotulo ?? v
+
+  useEffect(() => {
+    const form = campo.current?.form
+    if (!form) return
+    const limpar = () => {
+      setEscolhidos(padrao)
+      setTexto('')
+    }
+    form.addEventListener('reset', limpar)
+    return () => form.removeEventListener('reset', limpar)
+  }, [padrao])
+
+  const alternar = (v: string) =>
+    setEscolhidos((atual) =>
+      atual.includes(v)
+        ? atual.filter((x) => x !== v)
+        : atual.length >= limite
+          ? atual
+          : [...atual, v],
+    )
+
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium">
+      <label htmlFor={id}>{rotulo}</label>
+      <input type="hidden" name={nome} value={escolhidos.join(',')} />
+      <div className="relative">
+        <div
+          className="flex min-h-10 w-full flex-wrap items-center gap-1 rounded-lg border border-line-2 bg-surface px-1.5 py-1 focus-within:border-accent"
+          onClick={() => campo.current?.focus()}
+        >
+          {escolhidos.map((v) => (
+            <span
+              key={v}
+              className="inline-flex max-w-full items-center gap-1 rounded-md bg-accent-soft py-0.5 pr-0.5 pl-2 text-xs font-medium text-accent-ink"
+            >
+              <span className="truncate">{rotuloDe(v)}</span>
+              <button
+                type="button"
+                aria-label={`Tirar ${rotuloDe(v)}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  alternar(v)
+                }}
+                className="grid size-5 place-items-center rounded hover:bg-surface"
+              >
+                <X aria-hidden className="size-3" />
+              </button>
+            </span>
+          ))}
+          <input
+            ref={campo}
+            id={id}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={aberto}
+            aria-controls={`${id}-lista`}
+            aria-activedescendant={aberto && lista.length ? idOpcao(indice) : undefined}
+            aria-describedby={`${id}-contagem`}
+            autoComplete="off"
+            spellCheck={false}
+            value={texto}
+            placeholder={escolhidos.length ? '' : placeholder}
+            onFocus={() => setAberto(true)}
+            onClick={() => setAberto(true)}
+            onChange={(e) => {
+              setTexto(e.target.value)
+              setAtivo(0)
+              setAberto(true)
+            }}
+            onBlur={() => {
+              setAberto(false)
+              setTexto('')
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                if (!aberto) setAberto(true)
+                else setAtivo(Math.min(indice + 1, lista.length - 1))
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                setAtivo(Math.max(indice - 1, 0))
+              } else if (e.key === 'Enter' && aberto) {
+                e.preventDefault()
+                if (lista[indice]) alternar(lista[indice].valor)
+              } else if (e.key === 'Backspace' && texto === '' && escolhidos.length) {
+                alternar(escolhidos[escolhidos.length - 1])
+              } else if (e.key === 'Escape') {
+                setTexto('')
+                setAberto(false)
+              }
+            }}
+            className="h-8 min-w-24 flex-1 bg-transparent px-1.5 text-base font-normal text-ink outline-none placeholder:text-ink-3 sm:text-sm"
+          />
+        </div>
+        <span id={`${id}-contagem`} className="sr-only">
+          {escolhidos.length
+            ? `${escolhidos.length} escolhidos: ${escolhidos.map(rotuloDe).join(', ')}`
+            : `Nenhum escolhido: vale ${placeholder.toLowerCase()}`}
+        </span>
+        {aberto && (
+          <ul
+            id={`${id}-lista`}
+            role="listbox"
+            aria-label={rotulo}
+            aria-multiselectable
+            className="absolute inset-x-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-lg border border-line bg-surface py-1 shadow-pop"
+          >
+            {cheio && (
+              <li className="px-3 py-2 text-xs font-normal text-ink-3">
+                Limite de {limite} escolhidos. Tire um para escolher outro.
+              </li>
+            )}
+            {lista.length === 0 ? (
+              <li className="px-3 py-2.5 text-[13px] font-normal text-ink-3">
+                Nada com “{texto.trim()}”.
+              </li>
+            ) : (
+              lista.map((o, i) => {
+                const marcado = escolhidos.includes(o.valor)
+                return (
+                  <li
+                    key={o.valor}
+                    id={idOpcao(i)}
+                    role="option"
+                    aria-selected={marcado}
+                    aria-disabled={!marcado && cheio ? true : undefined}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      alternar(o.valor)
+                    }}
+                    onMouseEnter={() => setAtivo(i)}
+                    className={`flex cursor-pointer items-center gap-2.5 px-3 py-2 font-normal ${i === indice ? 'bg-accent-soft' : ''} ${!marcado && cheio ? 'opacity-50' : ''}`}
+                  >
+                    <span
+                      aria-hidden
+                      className={`grid size-4 shrink-0 place-items-center rounded border ${marcado ? 'border-accent bg-accent text-bg' : 'border-line-2'}`}
+                    >
+                      {marcado && <Check className="size-3" />}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm">{o.rotulo}</span>
+                      {o.detalhe && (
+                        <span className="block truncate text-xs text-ink-3">{o.detalhe}</span>
+                      )}
+                    </span>
+                  </li>
+                )
+              })
+            )}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Escolha única em segmentos (como as abas pequenas), dentro de um formulário GET. */
+export function EscolhaSegmentada({
+  nome,
+  rotulo,
+  opcoes,
+  padrao,
+}: {
+  nome: string
+  rotulo: string
+  opcoes: { valor: string; rotulo: string }[]
+  padrao: string
+}) {
+  return (
+    <fieldset className="flex min-w-0 flex-col gap-1.5">
+      <legend className="mb-1.5 text-[13px] font-medium">{rotulo}</legend>
+      <div className="inline-flex max-w-full flex-wrap gap-0.5 self-start rounded-[9px] bg-surface-3 p-[3px]">
+        {opcoes.map((o) => (
+          <label key={o.valor} className="cursor-pointer">
+            <input
+              type="radio"
+              name={nome}
+              value={o.valor}
+              defaultChecked={o.valor === padrao}
+              className="peer sr-only"
+            />
+            <span className="inline-flex h-[34px] items-center rounded-[7px] px-3 text-[13px] font-medium whitespace-nowrap text-ink-2 peer-checked:bg-surface peer-checked:text-ink peer-checked:shadow-cartao peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40 hover:text-ink">
+              {o.rotulo}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   )
 }
 

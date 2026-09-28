@@ -9,14 +9,13 @@ import {
   NOME_STATUS,
 } from '@/lib/formatar'
 import {
-  dadosDaAnalise,
   relatorioConsumo,
   relatorioMovimentacao,
   relatorioReposicao,
   type Agrupamento,
 } from './relatorios'
 
-export type TipoRelatorio = 'consumo' | 'movimentacao' | 'reposicao' | 'analise'
+export type TipoRelatorio = 'consumo' | 'movimentacao' | 'reposicao'
 
 export interface ParametrosRelatorio {
   tipo?: string
@@ -27,7 +26,7 @@ export interface ParametrosRelatorio {
 
 export function normalizarParametros(p: ParametrosRelatorio) {
   const tipo: TipoRelatorio =
-    p.tipo === 'movimentacao' || p.tipo === 'reposicao' || p.tipo === 'analise' ? p.tipo : 'consumo'
+    p.tipo === 'movimentacao' || p.tipo === 'reposicao' ? p.tipo : 'consumo'
   const deIso = p.de && inicioDoDia(p.de) ? p.de : diasAtrasIso(30)
   const ateIso = p.ate && fimDoDia(p.ate) ? p.ate : hojeIso()
   const agrupar: Agrupamento =
@@ -54,22 +53,6 @@ export async function montarRelatorio(p: ParametrosRelatorio, verPrecos: boolean
         l.movimentacoes,
         formatarNumero(l.mediaDiaria),
       ]),
-    }
-  }
-  if (n.tipo === 'analise') {
-    // o CSV do painel traz o consumo dia a dia do período, sem o anterior, para outros
-    // gráficos numa planilha
-    const dados = await dadosDaAnalise(n.de, n.ate, n.de, n.agrupar)
-    const nomeChave = { item: 'Código', destino: 'Destino', colaborador: 'Matrícula / nome' }[
-      n.agrupar
-    ]
-    return {
-      ...n,
-      titulo: 'Consumo por dia',
-      cabecalho: ['Dia', nomeChave, 'Descrição', 'Quantidade consumida'],
-      linhas: dados.porDia
-        .sort((a, b) => a.dia.localeCompare(b.dia) || a.chave.localeCompare(b.chave))
-        .map((l) => [l.dia, l.chave, l.nome, l.quantidade]),
     }
   }
   if (n.tipo === 'movimentacao') {

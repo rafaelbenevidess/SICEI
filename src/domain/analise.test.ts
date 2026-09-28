@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  afastarRotulos,
   baldesDoPeriodo,
+  compararNaEvolucao,
+  completarSelecao,
+  normalizarSelecao,
   chaveDoBalde,
   diasNoPeriodo,
   escalaDoEixo,
@@ -13,6 +17,9 @@ import {
 } from './analise'
 import {
   casosChaveDoBalde,
+  casosComparacao,
+  casosRotulos,
+  casosSelecao,
   casosEscala,
   casosMaioresEOutros,
   casosPeriodoAnterior,
@@ -93,5 +100,37 @@ describe('RF-17a · Mapa de calor e eixo', () => {
   })
   it.each(casosEscala)('$descricao', ({ entrada, esperado }) => {
     expect(escalaDoEixo(entrada)).toEqual(esperado)
+  })
+})
+
+describe('RF-17a · Análise personalizada', () => {
+  it.each(casosSelecao)('$descricao', ({ entrada, esperado }) => {
+    expect(normalizarSelecao(entrada)).toEqual(esperado)
+  })
+  it('sem o parâmetro, ou com ele repetido na URL, também funciona', () => {
+    expect(normalizarSelecao(undefined)).toEqual([])
+    expect(normalizarSelecao(['PST-001', 'PST-002,PST-001'])).toEqual(['PST-001', 'PST-002'])
+  })
+  it.each(casosComparacao)('$descricao', ({ entrada, esperado }) => {
+    expect(compararNaEvolucao(entrada.escolhidos, entrada.emFoco)).toBe(esperado)
+  })
+  it('escolhido sem consumo no período entra no ranking com zero; os outros ficam iguais', () => {
+    const r = completarSelecao(
+      [{ chave: 'PST-001', nome: 'CNMG', total: 48 }],
+      [
+        { chave: 'PST-001', nome: 'CNMG' },
+        { chave: 'PST-003', nome: 'DNMG' },
+      ],
+    )
+    expect(r).toEqual([
+      { chave: 'PST-001', nome: 'CNMG', total: 48 },
+      { chave: 'PST-003', nome: 'DNMG', total: 0 },
+    ])
+  })
+})
+
+describe('RF-17a · Rótulos na ponta das linhas', () => {
+  it.each(casosRotulos)('$descricao', ({ entrada, esperado }) => {
+    expect(afastarRotulos(entrada.ys, entrada.limite)).toEqual(esperado)
   })
 })

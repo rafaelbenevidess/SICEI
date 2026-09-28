@@ -21,8 +21,19 @@ describe('Menu lateral · Itens por perfil', () => {
     expect(m[2].itens.map((i) => i.rotulo)).toEqual(['Cadastros', 'Etiquetas QR'])
   })
 
-  it('Administrador vê os 14 itens', () => {
-    expect(menuDoPerfil('ADMIN').flatMap((g) => g.itens)).toHaveLength(14)
+  it('Administrador vê os 15 itens', () => {
+    expect(menuDoPerfil('ADMIN').flatMap((g) => g.itens)).toHaveLength(15)
+  })
+
+  it('RF-17a: Análise fica em Gestão, logo depois de Relatórios, para Gestor e Administrador', () => {
+    for (const perfil of ['GESTOR', 'ADMIN'] as const) {
+      const gestao = menuDoPerfil(perfil).find((g) => g.titulo === 'Gestão')!
+      const rotulos = gestao.itens.map((i) => i.rotulo)
+      expect(rotulos.indexOf('Análise')).toBe(rotulos.indexOf('Relatórios') + 1)
+    }
+    expect(menuDoPerfil('ALMOXARIFE').flatMap((g) => g.itens.map((i) => i.rotulo))).not.toContain(
+      'Análise',
+    )
   })
 })
 
@@ -33,6 +44,7 @@ describe('Menu lateral · Item ativo', () => {
     ['/itens/abc/editar', '/itens'],
     ['/relatorios', '/relatorios'],
     ['/relatorios?tipo=consumo', '/relatorios'],
+    ['/analise?itens=PST-001', '/analise'],
     ['/relatorios?tipo=reposicao', '/relatorios?tipo=reposicao'],
     ['/cadastros?aba=fornecedores', '/cadastros'],
     ['/cadastros/posicoes/etiquetas', '/cadastros/posicoes/etiquetas'],

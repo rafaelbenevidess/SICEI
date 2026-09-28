@@ -224,27 +224,47 @@ test('RF-20 / RN-23: itens e movimentações exportam CSV', async ({ page }) => 
   }
 })
 
-test('RF-17a: painel de análise filtra os gráficos ao clicar no ranking', async ({ page }) => {
+test('RF-17a: Análise no menu, com itens escolhidos lado a lado, foco pelo clique e CSV', async ({
+  page,
+}) => {
   await entrarComoAdmin(page)
-  await page.goto('/relatorios')
-  await page.getByRole('link', { name: 'Análise' }).click()
-  await expect(page.getByRole('region', { name: 'Evolução do consumo' })).toBeVisible()
-  await expect(page.getByRole('img').first()).toBeVisible()
-  // o seed consome 48 un. do PST-001, o maior do ranking
-  const ranking = page.getByRole('region', { name: 'Consumo por item' })
-  const primeiro = ranking.getByRole('button').first()
-  await expect(primeiro).toContainText('PST-001')
-  await primeiro.click()
-  await expect(page.getByRole('status')).toContainText('Filtrando por PST-001')
-  await expect(page.getByRole('region', { name: 'Evolução do consumo · PST-001' })).toBeVisible()
-  await page.getByRole('button', { name: 'Tirar o filtro' }).click()
+  // o endereço antigo da aba de Relatórios leva à página nova
+  await page.goto('/relatorios?tipo=analise')
+  await expect(page).toHaveURL(/\/analise/)
+  await page.goto('/painel')
+  await page.getByRole('link', { name: 'Análise', exact: true }).first().click()
+  await expect(page.getByRole('heading', { name: 'Análise' })).toBeVisible()
+
+  // escolhe dois itens digitando de qualquer jeito e aplica
+  const itens = page.getByRole('combobox', { name: 'Itens', exact: true })
+  await itens.fill('pst1')
+  await page.getByRole('option', { name: /PST-001/ }).click()
+  await itens.fill('apmt')
+  await page.getByRole('option', { name: /PST-004/ }).click()
+  await page.getByRole('button', { name: 'Aplicar' }).click()
+  await expect(page).toHaveURL(/itens=PST-001%2CPST-004/)
+  await expect(page.getByText('Filtros: Itens: PST-001, PST-004.')).toBeVisible()
+
+  // um traço por item e o ranking só com os dois
+  await expect(page.getByRole('region', { name: 'Evolução, lado a lado' })).toBeVisible()
+  const ranking = page.getByRole('region', { name: 'Por item', exact: true })
+  await expect(ranking.getByRole('button')).toHaveCount(2)
+  await ranking.getByRole('button', { name: /PST-004/ }).click()
+  await expect(page.getByRole('status')).toContainText('Em foco: PST-004')
+  await page.getByRole('button', { name: 'Tirar o foco' }).click()
   await expect(page.getByRole('status')).toHaveCount(0)
-  // atalho de período recarrega o painel com o novo intervalo
-  await page.getByRole('link', { name: '90 dias' }).click()
-  await expect(page).toHaveURL(/tipo=analise/)
-  await expect(page.getByRole('region', { name: 'Evolução do consumo' })).toContainText(
-    'por semana',
-  )
+
+  // comparar por colaborador mantém o filtro de itens
+  await page.getByText('Colaborador', { exact: true }).first().click()
+  await page.getByRole('button', { name: 'Aplicar' }).click()
+  await expect(page.getByRole('region', { name: 'Por colaborador', exact: true })).toBeVisible()
+  await expect(page.getByText('Filtros: Itens: PST-001, PST-004.')).toBeVisible()
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', { name: 'Exportar CSV' }).click(),
+  ])
+  expect(download.suggestedFilename()).toMatch(/^sicei-analise-\d{4}-\d{2}-\d{2}\.csv$/)
 })
 
 test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page }) => {
@@ -259,7 +279,7 @@ test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page
     '/cadastros?aba=fornecedores',
     '/cadastros?aba=posicoes',
     '/relatorios?tipo=reposicao',
-    '/relatorios?tipo=analise',
+    '/analise',
     '/admin/usuarios',
     '/admin/auditoria',
   ]) {

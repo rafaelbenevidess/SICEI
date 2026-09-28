@@ -65,6 +65,16 @@ import { casosFormularioMovimentacao } from '@/domain/schemas/movimentacao.casos
 import { deveBloquear, problemasDaSenha } from '@/domain/senha'
 import { casosBloqueio, casosSenha } from '@/domain/senha.casos'
 import {
+  podeAgirSobreUsuario,
+  podeCriarComPerfil,
+  type Decisao as DecisaoHierarquia,
+} from '@/domain/hierarquia'
+import {
+  casosCriarComPerfil,
+  casosHierarquia,
+  type EntradaHierarquia,
+} from '@/domain/hierarquia.casos'
+import {
   PERFIS,
   STATUS_ITEM,
   type CasoDeTeste,
@@ -105,6 +115,11 @@ export interface SuiteLab {
 }
 
 // ---------- utilitários ----------
+
+function formatarHierarquia(v: unknown): string {
+  const d = v as DecisaoHierarquia
+  return d.ok ? 'permitido' : `recusado: ${d.motivo}`
+}
 
 /** Compara dois valores pelo JSON canônico (mesma comparação para número, objeto e lista). */
 export function iguais(a: unknown, b: unknown): boolean {
@@ -693,6 +708,32 @@ export const SUITES: SuiteLab[] = [
         }
       },
     },
+  },
+  {
+    id: 'RN-21c',
+    titulo: 'Administrador principal',
+    regra:
+      'Ninguém inativa, rebaixa ou redefine a senha do Administrador principal pelo sistema; só ele gerencia, cria ou promove outros Administradores. Desbloquear é livre, porque só devolve o acesso ao dono.',
+    casos: casos(casosHierarquia),
+    executar: (e) => {
+      const { ator, alvo, acao, novoPerfil } = e as EntradaHierarquia
+      return podeAgirSobreUsuario(ator, alvo, acao, novoPerfil)
+    },
+    formatar: formatarHierarquia,
+  },
+  {
+    id: 'RN-21c',
+    titulo: 'Quem cria Administradores',
+    regra: 'Um Administrador novo só pode ser criado pelo Administrador principal.',
+    casos: casos(casosCriarComPerfil),
+    executar: (e) => {
+      const { ator, perfil } = e as {
+        ator: Parameters<typeof podeCriarComPerfil>[0]
+        perfil: Perfil
+      }
+      return podeCriarComPerfil(ator, perfil)
+    },
+    formatar: formatarHierarquia,
   },
   {
     id: 'RN-22',

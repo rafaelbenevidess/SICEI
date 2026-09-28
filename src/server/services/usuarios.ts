@@ -1,4 +1,11 @@
 import 'server-only'
+import {
+  podeAgirSobreUsuario,
+  podeCriarComPerfil,
+  type AcaoSobreUsuario,
+  type Decisao,
+  type PessoaNaHierarquia,
+} from '@/domain/hierarquia'
 import { gerarLogin, loginBase } from '@/domain/login'
 import { exigirPermissao } from '@/domain/permissoes'
 import { validar } from '@/domain/schemas/comum'
@@ -9,6 +16,7 @@ import { registrarAuditoria } from '../audit/registrar'
 import { hashDeSenha } from '../auth/hash'
 import type { Ator } from '../contexto'
 import { prisma } from '../db'
+
 import { ehViolacaoDeUnicidade, ErroDeNegocio, exigirUuid, naoEncontrado } from '../erros'
 
 const origemDo = (ator: Ator) => ({
@@ -16,6 +24,38 @@ const origemDo = (ator: Ator) => ({
   ip: ator.ip,
   userAgent: ator.userAgent,
 })
+
+/** Perfil e marca de principal do ator, lidos do banco (a sessão não é a fonte da verdade). */
+async function pessoaDoAtor(ator: Ator): Promise<PessoaNaHierarquia> {
+  const u = await prisma.usuario.findUnique({
+    where: { id: ator.usuarioId },
+    select: { id: true, perfil: true, principal: true },
+  })
+  return u ?? { id: ator.usuarioId, perfil: ator.perfil, principal: false }
+}
+
+/**
+ * RN-21c: recusa a ação e deixa a tentativa no log. Um Administrador tentando mexer no principal
+ * por fora da tela (a tela nem mostra os botões) é um sinal que o dono do sistema precisa ver.
+ */
+async function exigirHierarquia(
+  ator: Ator,
+  decisao: Decisao,
+  alvo: { id: string; login: string } | null,
+  acao: AcaoSobreUsuario | 'criar-admin',
+): Promise<void> {
+  if (decisao.ok) return
+  await prisma.$transaction((tx) =>
+    registrarAuditoria(tx, {
+      acao: 'ACAO_NEGADA',
+      entidade: 'usuario',
+      entidadeId: alvo?.id ?? null,
+      depois: { acao, alvo: alvo?.login ?? null, motivo: decisao.motivo },
+      ...origemDo(ator),
+    }),
+  )
+  throw new ErroDeNegocio(decisao.motivo)
+}
 
 /**
  * RF-02 / RN-21: o Admin informa nome, sobrenome, setor e perfil; o sistema gera login e senha provisória.
@@ -28,6 +68,12 @@ export async function criarUsuario(
   exigirPermissao(ator.perfil, 'usuarios:gerenciar')
   const v = validar(schemaNovoUsuario, entrada)
   if (!v.ok) throw new ErroDeNegocio('Confira os campos destacados.', v.erros)
+  await exigirHierarquia(
+    ator,
+    podeCriarComPerfil(await pessoaDoAtor(ator), v.dados.perfil),
+    null,
+    'criar-admin',
+  )
   let base: string
   try {
     base = loginBase(v.dados.nome, v.dados.sobrenome)
@@ -84,13 +130,26 @@ async function buscarUsuario(id: string) {
   return u
 }
 
+/** Busca o alvo e confere a hierarquia (RN-21c) antes de qualquer mudança. */
+async function alvoPermitido(
+  ator: Ator,
+  usuarioId: string,
+  acao: AcaoSobreUsuario,
+  novoPerfil?: Perfil,
+) {
+  const u = await buscarUsuario(usuarioId)
+  const decisao = podeAgirSobreUsuario(await pessoaDoAtor(ator), u, acao, novoPerfil)
+  await exigirHierarquia(ator, decisao, u, acao)
+  return u
+}
+
 /** RN-21a: nova senha provisória, desbloqueio e troca obrigatória; as sessões abertas caem. */
 export async function redefinirSenha(
   ator: Ator,
   usuarioId: string,
 ): Promise<{ login: string; senhaProvisoria: string }> {
   exigirPermissao(ator.perfil, 'usuarios:gerenciar')
-  const u = await buscarUsuario(usuarioId)
+  const u = await alvoPermitido(ator, usuarioId, 'redefinir-senha')
   const senhaProvisoria = gerarSenhaProvisoria()
   const senhaHash = await hashDeSenha(senhaProvisoria)
   await prisma.$transaction(async (tx) => {
@@ -114,7 +173,7 @@ export async function redefinirSenha(
 
 export async function desbloquearUsuario(ator: Ator, usuarioId: string): Promise<void> {
   exigirPermissao(ator.perfil, 'usuarios:gerenciar')
-  const u = await buscarUsuario(usuarioId)
+  const u = await alvoPermitido(ator, usuarioId, 'desbloquear')
   await prisma.$transaction(async (tx) => {
     await tx.usuario.update({ where: { id: u.id }, data: { falhasLogin: 0, bloqueadoEm: null } })
     await registrarAuditoria(tx, {
@@ -128,16 +187,17 @@ export async function desbloquearUsuario(ator: Ator, usuarioId: string): Promise
   })
 }
 
-/** RN-21b: inativar derruba as sessões na hora. O Admin não pode inativar a si mesmo. */
+/**
+ * RN-21b: inativar derruba as sessões na hora. O Admin não pode inativar a si mesmo, e o
+ * principal não pode ser inativado por ninguém (RN-21c).
+ */
 export async function alterarSituacaoUsuario(
   ator: Ator,
   usuarioId: string,
   ativo: boolean,
 ): Promise<void> {
   exigirPermissao(ator.perfil, 'usuarios:gerenciar')
-  const u = await buscarUsuario(usuarioId)
-  if (u.id === ator.usuarioId)
-    throw new ErroDeNegocio('Você não pode inativar a sua própria conta.')
+  const u = await alvoPermitido(ator, usuarioId, ativo ? 'reativar' : 'inativar')
   await prisma.$transaction(async (tx) => {
     await tx.usuario.update({ where: { id: u.id }, data: { ativo } })
     if (!ativo) await tx.sessao.deleteMany({ where: { usuarioId: u.id } })
@@ -155,9 +215,7 @@ export async function alterarSituacaoUsuario(
 export async function alterarPerfil(ator: Ator, usuarioId: string, perfil: string): Promise<void> {
   exigirPermissao(ator.perfil, 'usuarios:gerenciar')
   if (!(PERFIS as readonly string[]).includes(perfil)) throw new ErroDeNegocio('Perfil inválido.')
-  const u = await buscarUsuario(usuarioId)
-  if (u.id === ator.usuarioId)
-    throw new ErroDeNegocio('Você não pode alterar o seu próprio perfil.')
+  const u = await alvoPermitido(ator, usuarioId, 'mudar-perfil', perfil as Perfil)
   await prisma.$transaction(async (tx) => {
     await tx.usuario.update({ where: { id: u.id }, data: { perfil: perfil as Perfil } })
     await tx.sessao.deleteMany({ where: { usuarioId: u.id } })

@@ -70,6 +70,7 @@ export const ACOES_DO_LOG: AcaoDoLog[] = [
   { acao: 'USUARIO_DESBLOQUEADO', rotulo: 'Usuário desbloqueado', grupo: G.acesso },
   { acao: 'USUARIO_INATIVADO', rotulo: 'Usuário inativado', grupo: G.acesso },
   { acao: 'USUARIO_REATIVADO', rotulo: 'Usuário reativado', grupo: G.acesso },
+  { acao: 'ACAO_NEGADA', rotulo: 'Ação negada sobre Administrador', grupo: G.acesso },
 
   { acao: 'PARAMETROS_ALTERADOS', rotulo: 'Parâmetros alterados', grupo: G.sistema },
   { acao: 'CONFERENCIA_INTEGRIDADE', rotulo: 'Verificação de integridade', grupo: G.sistema },

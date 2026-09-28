@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { gerarLogin, loginBase, normalizarParte, previaDoLogin } from './login'
-import { casosLogin } from './login.casos'
+import { gerarLogin, loginBase, loginParaRegistro, normalizarParte, previaDoLogin } from './login'
+import { casosLogin, casosLoginNoRegistro } from './login.casos'
 
 describe('RN-21 · Geração de login', () => {
   it.each(casosLogin)('$descricao', ({ entrada, esperado }) => {
@@ -42,5 +42,11 @@ describe('RF-02 · Prévia do login na tela de novo usuário', () => {
       login: 'maria.souza2',
       nota: 'maria.souza já existe ou existiu: recebe o próximo número livre.',
     })
+  })
+})
+
+describe('RN-23 · O que o log guarda de uma tentativa de login', () => {
+  it.each(casosLoginNoRegistro)('$descricao', ({ entrada, esperado }) => {
+    expect(loginParaRegistro(entrada.digitado, entrada.existe)).toEqual(esperado)
   })
 })

@@ -150,6 +150,21 @@ describe('RF-01 · Login, troca obrigatória e bloqueio', () => {
     )
   })
 
+  it('RN-23: senha digitada no campo login não fica gravada no log imutável', async () => {
+    const digitado = `Senha-Secreta-${Date.now()}`
+    await expect(entrar({ login: digitado, senha: 'x' }, origem())).rejects.toThrow(
+      MENSAGEM_LOGIN_INVALIDO,
+    )
+    const registro = await prisma.auditLog.findFirstOrThrow({
+      where: { acao: 'LOGIN_FALHOU' },
+      orderBy: { seq: 'desc' },
+    })
+    expect(JSON.stringify(registro.depois)).not.toContain(digitado.toLowerCase())
+    expect(registro.depois).toMatchObject({ loginInexistente: true, caracteres: digitado.length })
+    const tentativa = await prisma.tentativaLogin.findFirstOrThrow({ orderBy: { id: 'desc' } })
+    expect(tentativa.login).toBe('(login inexistente)')
+  })
+
   it('critério do RF-01: a 5ª falha seguida bloqueia; só o Admin desbloqueia', async () => {
     const u = await criarAtor('ALMOXARIFE', 'SenhaCorreta2026')
     for (let i = 0; i < 4; i++) {

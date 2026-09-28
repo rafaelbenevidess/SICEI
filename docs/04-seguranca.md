@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 04, Segurança |
-| **Versão** | 1.3 |
+| **Versão** | 1.6 |
 | **Base** | [03, System Design, seção 6](03-system-design.md#6-segurança) |
 
 ## 1. Controles implementados
@@ -68,7 +68,7 @@ Feita com a skill `code-review` sobre `src/`, `prisma/`, `scripts/` e `tests/`. 
 
 - **Estilos inline no CSP** (`style-src 'unsafe-inline'`): o Next.js e o React usam atributos `style`, que não aceitam nonce. Scripts continuam restritos ao nonce, que é o que barra XSS.
 - **Laboratório de testes público** (`/testes`): roda só funções puras no navegador, sem acesso ao banco e sem dados do estoque.
-- **Bloqueio proposital de contas**: como os logins seguem o padrão `nome.sobrenome`, alguém pode bloquear a conta de outra pessoa errando a senha 5 vezes. É o preço da regra RN-22, que exige desbloqueio pelo Administrador. O limite por IP reduz o alcance, e o bloqueio do próprio Administrador tem saída pelo script `npm run admin:recuperar` (doc 06).
+- **Bloqueio proposital de contas**: como os logins seguem o padrão `nome.sobrenome`, alguém pode bloquear a conta de outra pessoa errando a senha 5 vezes. É o preço da regra RN-22, que exige desbloqueio pelo Administrador. O limite por IP reduz o alcance. O principal pode ser desbloqueado por qualquer outro Administrador (RN-21c) e, sem nenhum, pelo script `npm run admin:recuperar` (doc 06).
 - **Mensagem de conta bloqueada revela que o login existe**: é exigência do critério 3 do RF-01 (orientar o usuário a procurar o Administrador). A resposta não revela se a senha estava certa.
 - **Backup com dados pessoais**: o dump contém nomes e logins, então precisa ficar em local privado (doc 06).
 
@@ -93,7 +93,24 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | Logo da licenciada no login | SVG desenhado no próprio código, sem arquivo externo nem nova exceção no `proxy.ts`. A escolha vem de uma lista fixa (`LogoDaLicenciada.tsx`), pela variável do servidor; nenhum texto do usuário escolhe o que é desenhado. | `src/components/licenciadas/` |
 | Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
 
-## 6. Histórico do documento
+## 6. Revisão de segurança dos Administradores (28/09/2026)
+
+Pedido do dono do sistema: impedir que um Administrador mal-intencionado tome o sistema. A revisão olhou a gestão de usuários, o login, a sessão e o log.
+
+| # | Achado | Correção | Teste |
+|---|---|---|---|
+| 1 | Qualquer Administrador podia **redefinir a senha do admin**, receber a provisória na tela e entrar como o dono. Também podia inativá-lo ou rebaixá-lo a Consulta. | RN-21c: Administrador principal. Nenhuma conta redefine a senha, inativa ou rebaixa o principal. | unitário, laboratório e integração |
+| 2 | Um Administrador podia criar outro Administrador "reserva" e voltar por ele depois de desligado, ou tomar a conta de outro Administrador redefinindo a senha. | Só o principal cria, promove e gerencia Administradores. | unitário, laboratório e integração |
+| 3 | A proteção dependia só do código: um erro futuro ou SQL direto com o usuário da aplicação rebaixaria o principal. | Índice único (um só principal) e trigger no banco que recusa rebaixar, inativar, apagar ou trocar a marca de principal. | integração com SQL direto pelo usuário da aplicação |
+| 4 | Tentativas recusadas não deixavam rastro. | `ACAO_NEGADA` no log, com ação, alvo e motivo; aparece em vermelho na auditoria. | integração |
+| 5 | Com login inexistente, o texto digitado ia inteiro para o log imutável. Quem digita a senha no campo de login por engano deixava a senha gravada para sempre, visível a Admin e Gestor. | Login inexistente é gravado só como tamanho do texto. Registros antigos não podem ser apagados (RN-09a). | unitário e integração |
+
+**Recomendações que dependem de decisão:**
+- Tirar `SEED_SENHA_ADMIN` e `SEED_DEMO` das variáveis de produção na Vercel. Eles só servem na primeira instalação; se o banco for recriado, o `admin` nasceria com uma senha conhecida e com dados de demonstração.
+- Verificação em duas etapas (código no celular) para o Administrador principal.
+- Guardar fora do sistema, de tempos em tempos, o hash do último registro do log (por exemplo, no e-mail do dono). Quem tem a senha do dono do banco pode reescrever a cadeia inteira; com a âncora de fora, a adulteração aparece.
+
+## 7. Histórico do documento
 
 | Versão | Data | Mudança |
 |---|---|---|
@@ -103,3 +120,4 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | 1.3 | 27/09/2026 | O que o IP do log representa; pop-up de alertas, cadastro rápido no novo item e registro da impressão de etiquetas na revisão (seção 5). |
 | 1.4 | 27/09/2026 | Sugestões da busca do topo, filtros de texto tolerantes e campo de escolha com busca na revisão (seção 5). |
 | 1.5 | 28/09/2026 | Logo da licenciada no login na revisão (seção 5). |
+| 1.6 | 28/09/2026 | Seção 6: revisão de segurança dos Administradores (principal protegido, hierarquia, trigger, ação negada no log, login inexistente fora do log) e recomendações. Cabeçalho de versão corrigido. |

@@ -1,3 +1,4 @@
+import type { loginParaRegistro } from './login'
 import type { CasoDeTeste } from './tipos'
 
 export const casosLogin: CasoDeTeste<
@@ -38,5 +39,27 @@ export const casosLogin: CasoDeTeste<
     descricao: 'maiúsculas e espaços extras: "  ANA  " + " LIMA " → ana.lima',
     entrada: { nome: '  ANA  ', sobrenome: ' LIMA ', existentes: [] },
     esperado: 'ana.lima',
+  },
+]
+
+/** RN-23. Entrada: o que foi digitado no campo login e se ele existe. Esperado: o que vai para o log. */
+export const casosLoginNoRegistro: CasoDeTeste<
+  { digitado: string; existe: boolean },
+  ReturnType<typeof loginParaRegistro>
+>[] = [
+  {
+    descricao: 'login que existe ("joao.silva") → gravado como é',
+    entrada: { digitado: 'joao.silva', existe: true },
+    esperado: { login: 'joao.silva' },
+  },
+  {
+    descricao: 'senha digitada no campo login ("Tr0caDeTurno!") → não grava o texto, só o tamanho',
+    entrada: { digitado: 'Tr0caDeTurno!', existe: false },
+    esperado: { loginInexistente: true, caracteres: 13 },
+  },
+  {
+    descricao: 'login com erro de digitação ("joao.silv") → também não grava o texto',
+    entrada: { digitado: 'joao.silv', existe: false },
+    esperado: { loginInexistente: true, caracteres: 9 },
   },
 ]

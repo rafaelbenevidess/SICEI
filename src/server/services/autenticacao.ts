@@ -6,6 +6,7 @@ import {
   excedeuLimiteDoIp,
   problemasDaSenha,
 } from '@/domain/senha'
+import { loginParaRegistro } from '@/domain/login'
 import { validar } from '@/domain/schemas/comum'
 import { schemaLogin, schemaTrocaSenha } from '@/domain/schemas/cadastros'
 import { registrarAuditoria } from '../audit/registrar'
@@ -40,14 +41,17 @@ export async function entrar(
   if (excedeuLimiteDoIp(tentativas)) throw new ErroDeNegocio(MENSAGEM_MUITAS_TENTATIVAS)
 
   const usuario = await prisma.usuario.findUnique({ where: { login } })
+  // RN-23: texto que não é login de ninguém (às vezes a própria senha) não vai para o log
+  const registro = loginParaRegistro(login, usuario !== null)
+  const loginGravado = 'login' in registro ? registro.login : '(login inexistente)'
   const falhar = async (mensagem: string, usuarioId: string | null, extra: object = {}) => {
     await prisma.$transaction(async (tx) => {
-      await tx.tentativaLogin.create({ data: { ip, login, sucesso: false } })
+      await tx.tentativaLogin.create({ data: { ip, login: loginGravado, sucesso: false } })
       await registrarAuditoria(tx, {
         acao: 'LOGIN_FALHOU',
         entidade: 'usuario',
         entidadeId: usuarioId,
-        depois: { login, ...extra },
+        depois: { ...registro, ...extra },
         usuarioId,
         ...origem,
       })

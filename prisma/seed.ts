@@ -56,6 +56,8 @@ async function administrador(): Promise<Ator> {
         login: 'admin',
         setor: 'TI',
         perfil: 'ADMIN',
+        // RN-21c: a conta da instalação é o Administrador principal
+        principal: true,
         senhaHash,
       },
     })
@@ -64,7 +66,7 @@ async function administrador(): Promise<Ator> {
       acao: 'USUARIO_CRIADO',
       entidade: 'usuario',
       entidadeId: u.id,
-      depois: { login: u.login, perfil: u.perfil, origem: 'instalação' },
+      depois: { login: u.login, perfil: u.perfil, principal: true, origem: 'instalação' },
       usuarioId: null,
       ip: null,
       userAgent: 'seed',

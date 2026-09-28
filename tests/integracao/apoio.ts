@@ -35,6 +35,43 @@ export async function criarAtor(perfil: Perfil, senha = 'SenhaDeTeste2026'): Pro
   return { usuarioId: u.id, login, perfil, ip: '127.0.0.1', userAgent: 'vitest' }
 }
 
+/**
+ * O Administrador principal (RN-21c). O banco de teste começa vazio: o primeiro teste que
+ * pedir cria o principal; os outros usam o mesmo (o índice só aceita um).
+ */
+export async function atorPrincipal(): Promise<Ator> {
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    const existente = await prisma.usuario.findFirst({ where: { principal: true } })
+    if (existente) {
+      return {
+        usuarioId: existente.id,
+        login: existente.login,
+        perfil: 'ADMIN',
+        ip: '127.0.0.1',
+        userAgent: 'vitest',
+      }
+    }
+    try {
+      const senhaHash = await hashDeSenha('SenhaDeTeste2026')
+      await prisma.usuario.create({
+        data: {
+          nome: 'Dono',
+          sobrenome: 'Principal',
+          login: unico('dono.principal'),
+          setor: 'TI',
+          perfil: 'ADMIN',
+          principal: true,
+          senhaHash,
+          deveTrocarSenha: false,
+        },
+      })
+    } catch {
+      // outro arquivo de teste criou ao mesmo tempo: busca de novo
+    }
+  }
+  throw new Error('Não foi possível obter o Administrador principal de teste.')
+}
+
 /** CNPJ válido gerado a partir de um número (para cadastros únicos em cada teste). */
 export function cnpjValidoAleatorio(): string {
   const base = String(Math.floor(Math.random() * 1e12)).padStart(12, '0')

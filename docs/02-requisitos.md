@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.7 (validada) |
+| **Versão** | 1.9 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -23,7 +23,7 @@ Os requisitos estão classificados pelo método MoSCoW:
 | ID | Requisito | Prioridade | Regras |
 |---|---|---|---|
 | RF-01 | Autenticação com login gerado pelo sistema: entrar, sair, troca obrigatória da senha provisória, bloqueio após tentativas sem sucesso | Must | RN-21, RN-21a, RN-22 |
-| RF-02 | Gestão de usuários pelo Administrador: cadastrar (nome, sobrenome, setor, perfil) com login e senha gerados pelo sistema, redefinir senha, desbloquear, inativar | Must | RN-02, RN-21, RN-21a, RN-21b, RN-22 |
+| RF-02 | Gestão de usuários pelo Administrador: cadastrar (nome, sobrenome, setor, perfil) com login e senha gerados pelo sistema, redefinir senha, desbloquear, inativar | Must | RN-02, RN-21, RN-21a, RN-21b, RN-21c, RN-22 |
 | RF-03 | Cadastro de pastilhas, com inativação e busca por código, descrição, ISO ou classe | Must | RN-01, RN-02, RN-03 |
 | RF-04 | Cadastro de fabricantes | Must | RN-02, RN-04 |
 | RF-05 | Cadastro de fornecedores e vínculo item ↔ fornecedor (vários por item, com código no fornecedor, lead time e preferencial) | Must | RN-02, RN-04, RN-05 |
@@ -75,6 +75,9 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 6. **Dado** um usuário bloqueado ou que esqueceu a senha, **quando** o Administrador redefine a senha, **então** uma nova senha provisória é gerada, a conta é desbloqueada, a troca volta a ser obrigatória e tudo fica no log.
 7. **Dado** um usuário que não é Administrador, **quando** tenta acessar a gestão de usuários, **então** o acesso é negado pelo servidor, e não só escondido na tela.
 8. **Dado** o Administrador digitando "Maria Aparecida" e "de Souza" com `maria.souza` já existente, **quando** ainda não enviou o formulário, **então** a tela já mostra o login `maria.souza2` e o motivo do número. O login definitivo é o que o servidor gerar.
+9. **Dado** um Administrador que não é o principal, **quando** tenta redefinir a senha, inativar ou mudar o perfil do Administrador principal, mesmo chamando o servidor direto, **então** a ação é recusada, nada muda e a tentativa fica no log como "ação negada". A tela nem mostra esses botões na linha do principal, que aparece com o selo "Principal" (RN-21c).
+10. **Dado** um Administrador que não é o principal, **quando** tenta criar um Administrador, promover alguém a Administrador ou mexer em outro Administrador, **então** a ação é recusada. Gestores, Almoxarifes e Consultas ele continua gerenciando normalmente.
+11. **Dado** o Administrador principal bloqueado por 5 tentativas erradas, **quando** outro Administrador clica em "Desbloquear", **então** a conta volta a entrar, sem mudar a senha.
 
 ### RF-03. Cadastro de pastilhas
 1. **Dado** um código interno já usado, **quando** o Gestor tenta cadastrar outro item com ele, **então** o cadastro é recusado.
@@ -296,7 +299,7 @@ Toda regra de negócio está coberta por pelo menos um requisito.
 | RN-18 | RF-13 |
 | RN-19 | RF-13, RF-14, RF-26 |
 | RN-20 | RF-19 |
-| RN-21, RN-21a, RN-21b | RF-01, RF-02 |
+| RN-21, RN-21a, RN-21b, RN-21c | RF-01, RF-02 |
 | RN-22 | RF-01, RF-02, RF-26 |
 | RN-23 | RF-20, RF-21 |
 | RN-24 | RF-21, RNF-12 |
@@ -348,3 +351,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.6 | 27/09/2026 | RF-13, critério 5: o pop-up aparece só no login; depois de VER não volta até o próximo login, e ver os alertas não obriga a dar ciente. |
 | 1.7 | 27/09/2026 | RF-11, critério 4: busca que aceita o código escrito de qualquer jeito. RF-08, critério 9: autocompletar na escolha do item ao registrar. |
 | 1.8 | 27/09/2026 | A mesma tolerância em todos os campos que permitem: RF-11 (sugestões na busca do topo, campos de escolha com busca), RF-03 (código equivalente e padronizado), RF-15 e RF-21 (filtros de texto), RF-22 (posição digitada e filtro de etiquetas), RF-25 (código e posição na planilha). |
+| 1.9 | 28/09/2026 | RF-02, critérios 9 a 11: Administrador principal protegido e só ele gerencia Administradores (RN-21c). |

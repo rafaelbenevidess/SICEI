@@ -76,3 +76,16 @@ export function previaDoLogin(
         : `${base} já existe ou existiu: recebe o próximo número livre.`,
   }
 }
+
+/**
+ * RN-23: o que o log guarda de uma tentativa de login. Login existente é gravado como é. Texto
+ * que não é login de ninguém não é gravado: muita gente digita a senha no campo errado, e o log
+ * é imutável (RN-09a), então ela ficaria lá para sempre. Fica só o tamanho, que basta para ver
+ * um ataque de força bruta junto com o IP.
+ */
+export function loginParaRegistro(
+  digitado: string,
+  existe: boolean,
+): { login: string } | { loginInexistente: true; caracteres: number } {
+  return existe ? { login: digitado } : { loginInexistente: true, caracteres: digitado.length }
+}

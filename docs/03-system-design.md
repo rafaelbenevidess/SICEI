@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.7 (para revisão) |
+| **Versão** | 1.12 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -265,7 +265,15 @@ A **conferência de saldo** (RN-09b) compara `item.saldo` com a soma das movimen
 - **Inativação (RN-21b):** o service apaga todas as sessões do usuário na mesma transação, e a próxima requisição dele já cai no login.
 - O `proxy.ts` do Next.js 16 só faz a checagem rápida (existe cookie? se não, vai para o login). A validação de verdade acontece no servidor, a cada página e a cada Action.
 
-**Seed:** a instalação cria o usuário `admin` com uma senha provisória mostrada no terminal e `deve_trocar_senha = true`.
+**Seed:** a instalação cria o usuário `admin` com uma senha provisória mostrada no terminal e `deve_trocar_senha = true`. Ele é o Administrador principal (`usuario.principal = true`).
+
+**Administrador principal (RN-21c):**
+- A regra é a função pura `podeAgirSobreUsuario` (`domain/hierarquia.ts`), com os casos em `hierarquia.casos.ts`, também no Laboratório.
+- Os services de usuário leem do banco se o ator é o principal (a sessão não é a fonte da verdade) e conferem a regra antes de redefinir senha, desbloquear, inativar, reativar ou mudar perfil, e antes de criar um Administrador. A recusa grava `ACAO_NEGADA` no log, com a ação, o alvo e o motivo.
+- No banco: índice único parcial garante um só principal, e o trigger `usuario_proteger_principal` recusa rebaixar, inativar, apagar ou trocar a marca de principal, mesmo com SQL direto pelo usuário da aplicação. A troca de senha pelo script de recuperação continua possível.
+- Passar o principal para outra pessoa é tarefa de quem administra o banco, com o dono do banco (doc 06).
+
+**Tentativas de login no log:** se o login digitado não existe, o log grava `{ loginInexistente: true, caracteres: n }` em vez do texto (`loginParaRegistro`, em `domain/login.ts`), porque às vezes é a própria senha digitada no campo errado e o log é imutável.
 
 ### 5.6 QR das posições (RN-26)
 
@@ -291,7 +299,7 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revis
 
 | Risco | Como o SICEI se protege |
 |---|---|
-| A01 Controle de acesso quebrado | Matriz de permissões em `domain/permissoes.ts`, conferida em todo service no servidor. A tela esconder um botão não conta como proteção. Testes de integração tentam cada ação com cada perfil. |
+| A01 Controle de acesso quebrado | Matriz de permissões em `domain/permissoes.ts`, conferida em todo service no servidor. A tela esconder um botão não conta como proteção. Testes de integração tentam cada ação com cada perfil. Entre Administradores vale a hierarquia da RN-21c, garantida no service e no banco. |
 | A02 Falhas de criptografia | HTTPS obrigatório com HSTS. Senhas com Argon2id. Tokens de sessão guardados só como hash. |
 | A03 Injeção | Prisma parametriza as consultas. O SQL manual usa só template com parâmetros (`$queryRaw`\`...${x}\``), nunca concatenação. Toda entrada passa pelo Zod. |
 | A04 Design inseguro | Regras críticas garantidas também no banco (`CHECK`, índices únicos, triggers), não só no código. |
@@ -529,3 +537,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.9 | 27/09/2026 | Marca em vetor: ícone em SVG e o nome SICEI em texto, no lugar das imagens recortadas (10.2). |
 | 1.10 | 28/09/2026 | Logo da licenciada na tela de login, em SVG sem fundo, escolhida pelo nome da empresa (seção 7 e 10.2). |
 | 1.11 | 28/09/2026 | A licenciada passa a se chamar DDA Usinagem Industrial; no menu, o nome fica em maiúsculas, encaixado na altura do ícone. Endereço novo `sicei-ddausinagem.vercel.app`, com o antigo mantido (seção 7). |
+| 1.12 | 28/09/2026 | Administrador principal (RN-21c) na seção 5.5 e no A01; login inexistente fora do log. Cabeçalho de versão corrigido. |

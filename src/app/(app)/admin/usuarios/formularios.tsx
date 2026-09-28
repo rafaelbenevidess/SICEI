@@ -81,7 +81,14 @@ function Credenciais({ flutuante = false }: { flutuante?: boolean }) {
 }
 
 /** RF-02 / RN-21: o Admin informa nome e sobrenome; o sistema gera login e senha. */
-export function FormNovoUsuario({ logins }: { logins: string[] }) {
+export function FormNovoUsuario({
+  logins,
+  podeCriarAdmin = true,
+}: {
+  logins: string[]
+  /** RN-21c: só o Administrador principal cria Administradores */
+  podeCriarAdmin?: boolean
+}) {
   const [nome, setNome] = useState('')
   const [sobrenome, setSobrenome] = useState('')
   const [perfil, setPerfil] = useState('')
@@ -128,7 +135,7 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
           aria-label="Perfil"
           className="grid grid-cols-2 gap-2 @3xl:grid-cols-4"
         >
-          {OPCOES_PERFIL.map((o) => (
+          {OPCOES_PERFIL.filter((o) => podeCriarAdmin || o.valor !== 'ADMIN').map((o) => (
             <button
               key={o.valor}
               type="button"
@@ -141,6 +148,11 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
             </button>
           ))}
         </div>
+        {!podeCriarAdmin && (
+          <p className="mt-2 text-xs text-ink-3">
+            Administradores novos só são criados pelo Administrador principal.
+          </p>
+        )}
       </fieldset>
       <div className="grid items-end gap-4 @3xl:grid-cols-[minmax(0,1fr)_220px]">
         <div className="rounded-[10px] bg-surface-2 px-4 py-3">
@@ -161,20 +173,42 @@ export function FormNovoUsuario({ logins }: { logins: string[] }) {
   )
 }
 
+export interface PodeNoUsuario {
+  redefinirSenha: boolean
+  desbloquear: boolean
+  mudarPerfil: boolean
+  situacao: boolean
+}
+
+/**
+ * Ações da linha do usuário. O que aparece segue a hierarquia (RN-21c), mas é só conforto:
+ * quem decide é o servidor, que também grava no log a tentativa recusada.
+ */
 export function AcoesUsuario({
   id,
   ativo,
   bloqueado,
   perfil,
+  pode,
+  podePromoverAdmin,
+  aviso,
 }: {
   id: string
   ativo: boolean
   bloqueado: boolean
   perfil: string
+  pode: PodeNoUsuario
+  podePromoverAdmin: boolean
+  /** por que as ações estão escondidas (ex.: Administrador principal) */
+  aviso?: string
 }) {
+  const perfis = OPCOES_PERFIL.filter(
+    (o) => podePromoverAdmin || o.valor !== 'ADMIN' || o.valor === perfil,
+  )
   return (
     <div className="flex items-center justify-end gap-1 whitespace-nowrap">
-      {ativo && (
+      {aviso && <span className="text-[13px] text-ink-3">{aviso}</span>}
+      {ativo && pode.redefinirSenha && (
         <FormAcao
           acao={acaoRedefinirSenha}
           className="contents"
@@ -188,7 +222,7 @@ export function AcoesUsuario({
           <Credenciais flutuante />
         </FormAcao>
       )}
-      {bloqueado && (
+      {bloqueado && pode.desbloquear && (
         <FormAcao acao={acaoDesbloquear} className="contents">
           <Oculto nome="id" valor={id} />
           <BotaoEnviar variante="textoAcento" pequeno>
@@ -197,31 +231,35 @@ export function AcoesUsuario({
           </BotaoEnviar>
         </FormAcao>
       )}
-      <details className="relative">
-        <summary className={`${classeBotao('fantasma', true)} cursor-pointer list-none`}>
-          Perfil
-        </summary>
-        <div className="absolute right-0 z-10 mt-1 w-60 rounded-xl border border-line bg-surface p-3 shadow-pop">
-          <FormAcao acao={acaoPerfil} className="flex flex-col gap-2">
-            <Oculto nome="id" valor={id} />
-            <Selecao nome="perfil" rotulo="Mudar perfil" opcoes={OPCOES_PERFIL} padrao={perfil} />
-            <BotaoEnviar variante="secundario" pequeno>
-              Salvar perfil
-            </BotaoEnviar>
-          </FormAcao>
-        </div>
-      </details>
-      <FormAcao
-        acao={acaoSituacaoUsuario}
-        className="contents"
-        confirmar={ativo ? 'Inativar? As sessões abertas caem na hora.' : undefined}
-      >
-        <Oculto nome="id" valor={id} />
-        <Oculto nome="ativo" valor={String(!ativo)} />
-        <BotaoEnviar variante={ativo ? 'textoPerigo' : 'textoAcento'} pequeno>
-          {ativo ? 'Inativar' : 'Reativar'}
-        </BotaoEnviar>
-      </FormAcao>
+      {pode.mudarPerfil && (
+        <details className="relative">
+          <summary className={`${classeBotao('fantasma', true)} cursor-pointer list-none`}>
+            Perfil
+          </summary>
+          <div className="absolute right-0 z-10 mt-1 w-60 rounded-xl border border-line bg-surface p-3 shadow-pop">
+            <FormAcao acao={acaoPerfil} className="flex flex-col gap-2">
+              <Oculto nome="id" valor={id} />
+              <Selecao nome="perfil" rotulo="Mudar perfil" opcoes={perfis} padrao={perfil} />
+              <BotaoEnviar variante="secundario" pequeno>
+                Salvar perfil
+              </BotaoEnviar>
+            </FormAcao>
+          </div>
+        </details>
+      )}
+      {pode.situacao && (
+        <FormAcao
+          acao={acaoSituacaoUsuario}
+          className="contents"
+          confirmar={ativo ? 'Inativar? As sessões abertas caem na hora.' : undefined}
+        >
+          <Oculto nome="id" valor={id} />
+          <Oculto nome="ativo" valor={String(!ativo)} />
+          <BotaoEnviar variante={ativo ? 'textoPerigo' : 'textoAcento'} pequeno>
+            {ativo ? 'Inativar' : 'Reativar'}
+          </BotaoEnviar>
+        </FormAcao>
+      )}
     </div>
   )
 }

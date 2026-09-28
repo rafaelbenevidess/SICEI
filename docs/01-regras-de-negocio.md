@@ -6,7 +6,7 @@
 | **Titular** | Benevides Soluções Industriais, dona do SICEI e responsável pelo contato comercial |
 | **Cliente** | DDA Metalúrgica (Santa Catarina), que usa o sistema sob licença. Trabalho acadêmico baseado na demanda da empresa |
 | **Documento** | 01, Regras de Negócio |
-| **Versão** | 1.4 (validada) |
+| **Versão** | 1.6 (validada) |
 | **Próximo documento** | [02, Requisitos](02-requisitos.md) |
 
 ## 1. Problema
@@ -202,11 +202,14 @@ Só entram na sugestão os itens ativos em `ATENCAO`, `CRITICO` ou `ZERADO`. Jun
 
 **RN-21b. Login único e desligamento.** O login não se repete e não é reaproveitado, nem depois que o usuário é inativado, para que o histórico nunca fique ambíguo. Quando um funcionário sai da empresa, o Administrador inativa a conta e todas as sessões abertas daquela pessoa são encerradas na hora.
 
+**RN-21c. Administrador principal.** A conta criada na instalação é o Administrador principal, a do dono do sistema, e existe uma só. Nenhuma outra conta pode inativá-la, mudar o perfil dela ou redefinir a senha dela: um Administrador com a senha provisória do principal nas mãos entraria no lugar do dono. O principal troca a própria senha pela opção Senha e, se perder o acesso, a recuperação é feita pelo script de recuperação, por quem tem acesso ao banco. Desbloquear o principal é livre, porque só devolve o acesso a ele. Além disso, só o principal cria Administradores, promove alguém a Administrador e redefine a senha, muda o perfil ou inativa outro Administrador; os demais Administradores cuidam de Gestores, Almoxarifes e Consultas. Assim um Administrador mal-intencionado não toma a conta do dono nem cria um Administrador "reserva" para voltar depois de desligado. Toda tentativa recusada fica no log como "ação negada", e o banco recusa rebaixar, inativar ou apagar o principal mesmo por fora do sistema.
+
 **RN-22. Senha e bloqueio.** Depois de 5 tentativas de login seguidas sem sucesso, a conta é bloqueada e só o Administrador desbloqueia. A senha criada pelo usuário precisa ter pelo menos 10 caracteres, não pode ser igual ao login e não pode repetir nenhuma das 3 últimas senhas dele. Sessões paradas expiram depois de um tempo definido nos parâmetros do sistema.
 
 **RN-23. Tudo o que importa vai para o log.** Além das movimentações (RN-09), o log de auditoria registra:
 
-- login, logout e tentativas sem sucesso;
+- login, logout e tentativas sem sucesso. Se o login digitado não existe, o log guarda só o tamanho do texto, não o texto: muita gente digita a senha no campo de login por engano, e o log não pode ser apagado;
+- ações recusadas sobre Administradores (RN-21c);
 - criação, alteração, inativação e reativação de qualquer cadastro, com o valor anterior e o novo (por exemplo, "estoque mínimo: 20 → 30");
 - mudança de posição de um item;
 - criação de usuário, geração e redefinição de senha, bloqueio e desbloqueio;
@@ -250,3 +253,4 @@ Os pontos que estavam em aberto na versão 0.1 foram respondidos assim:
 | 1.3 | 27/09/2026 | RN-26: a etiqueta pode ser lida dentro do SICEI, pela tela "Ler QR", com a câmera de qualquer celular, ou digitada quando estiver apagada. |
 | 1.4 | 27/09/2026 | RN-01: sugestão do próximo código e aviso de código já usado. RN-26: etiqueta pendente quando o item muda de posição, até ser impressa. |
 | 1.5 | 27/09/2026 | RN-01: o mesmo código escrito de outro jeito ("pst1" e PST-001) conta como repetido, e o código novo entra no padrão da sequência. RN-25: a posição pode ser digitada sem traços e sem zeros. |
+| 1.6 | 28/09/2026 | Nova RN-21c: Administrador principal protegido e hierarquia entre Administradores. RN-23: login inexistente não é gravado no log, só o tamanho do texto. |

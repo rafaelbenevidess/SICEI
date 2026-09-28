@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 06, Operação (instalação, execução, testes, publicação, backup) |
-| **Versão** | 1.1 |
+| **Versão** | 1.2 |
 | **Base** | [03, System Design](03-system-design.md) |
 
 ## 1. Pré-requisitos
@@ -110,7 +110,8 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 | Conferir se alguém mexeu no banco | Auditoria → Verificar agora |
 | Ligar os avisos por e-mail | Parâmetros → E-mail corporativo para avisos |
 | Carga inicial da planilha | Importação (baixe o modelo CSV) |
-| O próprio Administrador foi bloqueado | No servidor, com acesso ao banco: `npm run admin:recuperar -- admin` (gera nova senha provisória e registra no log) |
+| O Administrador principal foi bloqueado | Outro Administrador clica em "Desbloquear" na tela de usuários. Sem outro Administrador, ou se o principal esqueceu a senha: no servidor, com acesso ao banco, `npm run admin:recuperar -- admin` (gera nova senha provisória e registra no log) |
+| Passar o posto de Administrador principal para outra pessoa | Só pelo banco, com o usuário dono (`sicei_<sigla>_owner`), numa transação: `ALTER TABLE usuario DISABLE TRIGGER usuario_proteger_principal;` tirar a marca do atual e pôr na do novo (`UPDATE usuario SET principal = ...`), `ALTER TABLE usuario ENABLE TRIGGER usuario_proteger_principal;`. O sistema não oferece isso na tela de propósito (RN-21c) |
 
 ## Histórico do documento
 
@@ -118,3 +119,4 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 |---|---|---|
 | 1.0 | 26/09/2026 | Primeira versão. |
 | 1.1 | 28/09/2026 | Seção 5: logo da licenciada na tela de login; a DDA passa a aparecer como DDA Usinagem Industrial. Seção 5: como trocar o endereço sem perder as etiquetas impressas. |
+| 1.2 | 28/09/2026 | Seção 7: desbloqueio do Administrador principal e como passar o posto de principal pelo banco (RN-21c). |

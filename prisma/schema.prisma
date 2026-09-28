@@ -69,6 +69,8 @@ model Usuario {
   setor           String
   perfil          Perfil
   ativo           Boolean   @default(true)
+  /// RN-21c: o Administrador principal (um só, protegido por trigger no banco)
+  principal       Boolean   @default(false)
   deveTrocarSenha Boolean   @default(true) @map("deve_trocar_senha")
   senhaHash       String    @map("senha_hash")
   falhasLogin     Int       @default(0) @map("falhas_login")

@@ -18,7 +18,7 @@ const campo =
 
 /** Cor da ação: falhas em vermelho, movimentações em azul. */
 function corDaAcao(acao: string): string {
-  if (/FALHOU|BLOQUE|ADULTER/.test(acao)) return 'text-crit-ink'
+  if (/FALHOU|BLOQUE|ADULTER|NEGADA/.test(acao)) return 'text-crit-ink'
   if (acao.startsWith('MOVIMENTACAO')) return 'text-accent-ink'
   return 'text-ink'
 }

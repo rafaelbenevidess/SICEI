@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.4 |
+| **Versão** | 1.6 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -37,7 +37,9 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-18 / RN-19 alertas | `alertas.test.ts` | `movimentacoes.test.ts` (um alerta por item, escala, fecha, outbox de e-mail) |
 | RN-20 sugestão de compra | `estoque.test.ts` | — |
 | RN-21 / RN-21a / RN-21b usuários | `login.test.ts`, `senha.test.ts` | `usuarios.test.ts` (login gerado, homônimo, troca obrigatória, inativação derruba sessão) |
+| RN-21c Administrador principal | `hierarquia.test.ts` (casos em `hierarquia.casos.ts`, também no Laboratório) | `principal.test.ts` (senha, inativação e perfil do principal recusados e no log; só o principal cuida de Administradores; trigger recusa SQL direto) |
 | RN-22 senha e bloqueio | `senha.test.ts` | `usuarios.test.ts` (5ª falha bloqueia, rate limit por IP) |
+| RN-23 login inexistente fora do log | `login.test.ts` (`loginParaRegistro`) | `usuarios.test.ts` (senha digitada no campo login não aparece no log) |
 | RN-25 posições | `posicao.test.ts` | `cadastros.test.ts` |
 | RF-03 próximo código | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório) | E2E do novo item |
 | RN-26 etiqueta pendente | `schemas/cadastros.test.ts` (códigos mandados para a impressora) | `cadastros.test.ts` (troca marca a nova e limpa a antiga; impressão limpa e vai para o log; Consulta não registra) |
@@ -105,3 +107,4 @@ Resultado da última execução: 20 de 20 passaram.
 | 1.3 | 27/09/2026 | Testes do pop-up de alertas, do próximo código, da etiqueta pendente e do catálogo de ações; E2E com 19 fluxos. |
 | 1.4 | 27/09/2026 | Busca tolerante e autocompletar ao registrar: testes de unidade, de componente e E2E. |
 | 1.5 | 27/09/2026 | A mesma busca em todos os campos: testes do campo de escolha com busca, das sugestões do topo, dos filtros de texto (integração), do código equivalente e da posição digitada; roteiros E2E atualizados. |
+| 1.6 | 28/09/2026 | Testes do Administrador principal (RN-21c) e do login inexistente fora do log. Cabeçalho de versão corrigido. |

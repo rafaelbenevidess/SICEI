@@ -224,7 +224,7 @@ test('RF-20 / RN-23: itens e movimentações exportam CSV', async ({ page }) => 
   }
 })
 
-test('RF-17a: Análise no menu, com itens escolhidos lado a lado, foco pelo clique e CSV', async ({
+test('RF-17a / RF-20: Análise no menu, com itens escolhidos lado a lado, foco, CSV e impressão', async ({
   page,
 }) => {
   await entrarComoAdmin(page)
@@ -265,6 +265,27 @@ test('RF-17a: Análise no menu, com itens escolhidos lado a lado, foco pelo cliq
     page.getByRole('link', { name: 'Exportar CSV' }).click(),
   ])
   expect(download.suggestedFilename()).toMatch(/^sicei-analise-\d{4}-\d{2}-\d{2}\.csv$/)
+
+  // RF-20: impressa, sai como na tela (no mesmo teste: o limite de logins por IP vale para a suíte)
+  await page.goto('/analise?itens=PST-001,PST-004')
+  await expect(page.getByRole('region', { name: 'Evolução, lado a lado' })).toBeVisible()
+  await page.emulateMedia({ media: 'print' })
+  const r = await page.evaluate(() => {
+    const barra = document.querySelector('[aria-pressed] [style*="background"]') as HTMLElement
+    const graficos = [...document.querySelectorAll('svg[role="img"]')].map(
+      (s) => (s as SVGElement).getBoundingClientRect().right,
+    )
+    return {
+      conteudo: document.querySelector('main')!.getBoundingClientRect().width,
+      cor: getComputedStyle(barra).printColorAdjust,
+      passaDaPagina: graficos.some((d) => d > document.documentElement.clientWidth),
+    }
+  })
+  // sem a coluna do menu, o conteúdo ocupa a página inteira
+  expect(r.conteudo).toBeGreaterThan(1000)
+  // o navegador mantém as cores das barras (senão o ranking e o mapa de calor saem em branco)
+  expect(r.cor).toBe('exact')
+  expect(r.passaDaPagina).toBe(false)
 })
 
 test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page }) => {

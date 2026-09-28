@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { afastarRotulos, escalaDoEixo } from '@/domain/analise'
 import { formatarNumero } from '@/lib/formatar'
 
@@ -18,7 +19,12 @@ export const COR_CINZA = 'var(--serie-cinza)'
 
 const num = (v: number) => formatarNumero(Math.round(v * 10) / 10)
 
-/** Largura real do contêiner, para o SVG desenhar em pixels de verdade (texto sem distorção). */
+/**
+ * Largura real do contêiner, para o SVG desenhar em pixels de verdade (texto sem distorção).
+ * Ao imprimir, mede de novo já com a largura da folha: o navegador troca para a mídia de
+ * impressão antes de montar as páginas, e o flushSync redesenha na hora. Se isso não
+ * acontecer (salvar em PDF por outro caminho), o viewBox do SVG escala o desenho para caber.
+ */
 function useLargura(inicial = 640) {
   const ref = useRef<HTMLDivElement>(null)
   const [largura, setLargura] = useState(inicial)
@@ -27,13 +33,28 @@ function useLargura(inicial = 640) {
     if (!el) return
     const medir = () => setLargura(Math.max(240, Math.floor(el.getBoundingClientRect().width)))
     medir()
-    // navegador antigo (ou jsdom nos testes): fica com a primeira medida
-    if (typeof ResizeObserver === 'undefined') return
-    const obs = new ResizeObserver(medir)
-    obs.observe(el)
-    return () => obs.disconnect()
+    const aoImprimir = () => flushSync(medir)
+    const impressao = typeof window.matchMedia === 'function' ? window.matchMedia('print') : null
+    impressao?.addEventListener('change', aoImprimir)
+    window.addEventListener('beforeprint', aoImprimir)
+    window.addEventListener('afterprint', aoImprimir)
+    // navegador antigo (ou jsdom nos testes): sem ResizeObserver, fica com a primeira medida
+    const obs = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(medir)
+    obs?.observe(el)
+    return () => {
+      obs?.disconnect()
+      impressao?.removeEventListener('change', aoImprimir)
+      window.removeEventListener('beforeprint', aoImprimir)
+      window.removeEventListener('afterprint', aoImprimir)
+    }
   }, [])
   return { ref, largura }
+}
+
+/** Posição do ponteiro em unidades do desenho (o SVG pode estar escalado pelo viewBox). */
+function xNoDesenho(e: { clientX: number; currentTarget: Element }, largura: number): number {
+  const r = e.currentTarget.getBoundingClientRect()
+  return ((e.clientX - r.left) * largura) / Math.max(1, r.width)
 }
 
 /** Dica flutuante: o valor em destaque e o nome em segundo plano. */
@@ -211,8 +232,9 @@ export function GraficoLinha({
   return (
     <div ref={ref} className="relative">
       <svg
-        width={largura}
-        height={altura}
+        viewBox={`0 0 ${largura} ${altura}`}
+        width="100%"
+        style={{ height: 'auto' }}
         role="img"
         aria-label={`${nomeAtual}: ${rotulos.length} pontos, de ${rotulos[0]} a ${rotulos[ultimo]}. Use as setas para percorrer.`}
         tabIndex={0}
@@ -220,8 +242,7 @@ export function GraficoLinha({
         onBlur={() => setAtivo(null)}
         onPointerLeave={() => setAtivo(null)}
         onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect()
-          const px = e.clientX - r.left - MARGEM.esquerda
+          const px = xNoDesenho(e, largura) - MARGEM.esquerda
           const i = Math.round((px / Math.max(1, util)) * (rotulos.length - 1))
           setAtivo(Math.min(ultimo, Math.max(0, i)))
         }}
@@ -360,8 +381,9 @@ export function GraficoComparacao({
   return (
     <div ref={ref} className="relative">
       <svg
-        width={largura}
-        height={altura}
+        viewBox={`0 0 ${largura} ${altura}`}
+        width="100%"
+        style={{ height: 'auto' }}
         role="img"
         aria-label={`Comparação de ${series.map((s) => s.nome).join(', ')}: ${rotulos.length} pontos, de ${rotulos[0]} a ${rotulos[ultimo]}. Use as setas para percorrer.`}
         tabIndex={0}
@@ -369,8 +391,7 @@ export function GraficoComparacao({
         onBlur={() => setAtivo(null)}
         onPointerLeave={() => setAtivo(null)}
         onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect()
-          const px = e.clientX - r.left - MARGEM.esquerda
+          const px = xNoDesenho(e, largura) - MARGEM.esquerda
           const i = Math.round((px / Math.max(1, util)) * (rotulos.length - 1))
           setAtivo(Math.min(ultimo, Math.max(0, i)))
         }}
@@ -592,8 +613,9 @@ export function GraficoEmpilhado({
   return (
     <div ref={ref} className="relative">
       <svg
-        width={largura}
-        height={altura}
+        viewBox={`0 0 ${largura} ${altura}`}
+        width="100%"
+        style={{ height: 'auto' }}
         role="img"
         aria-label={`Composição do consumo em ${rotulos.length} períodos. Use as setas para percorrer.`}
         tabIndex={0}
@@ -601,8 +623,7 @@ export function GraficoEmpilhado({
         onBlur={() => setAtivo(null)}
         onPointerLeave={() => setAtivo(null)}
         onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect()
-          const i = Math.floor((e.clientX - r.left - MARGEM.esquerda) / banda)
+          const i = Math.floor((xNoDesenho(e, largura) - MARGEM.esquerda) / banda)
           setAtivo(i >= 0 && i < rotulos.length ? i : null)
         }}
         className="block touch-none outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
@@ -745,8 +766,9 @@ export function GraficoFluxo({
   return (
     <div ref={ref} className="relative">
       <svg
-        width={largura}
-        height={altura}
+        viewBox={`0 0 ${largura} ${altura}`}
+        width="100%"
+        style={{ height: 'auto' }}
         role="img"
         aria-label={`Entradas e saídas do estoque em ${rotulos.length} períodos. Use as setas para percorrer.`}
         tabIndex={0}
@@ -754,8 +776,7 @@ export function GraficoFluxo({
         onBlur={() => setAtivo(null)}
         onPointerLeave={() => setAtivo(null)}
         onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect()
-          const i = Math.floor((e.clientX - r.left - MARGEM.esquerda) / banda)
+          const i = Math.floor((xNoDesenho(e, largura) - MARGEM.esquerda) / banda)
           setAtivo(i >= 0 && i < rotulos.length ? i : null)
         }}
         className="block touch-none outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
@@ -912,7 +933,7 @@ export function MapaDeCalor({ matriz, unidade = 'un.' }: { matriz: number[][]; u
               </strong>
             </>
           ) : (
-            'Passe o mouse ou use Tab para ver cada hora.'
+            <span className="nao-imprimir">Passe o mouse ou use Tab para ver cada hora.</span>
           )}
         </p>
         <span className="flex items-center gap-1.5">

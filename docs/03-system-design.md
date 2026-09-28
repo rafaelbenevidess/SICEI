@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.16 (para revisão) |
+| **Versão** | 1.17 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -532,7 +532,7 @@ Regras visuais, seguidas em todos os gráficos:
 - Um eixo só por gráfico, com topo em número redondo (`escalaDoEixo`). Linhas de 2 px, barras de no máximo 24 px com ponta arredondada, 2 px de fundo entre partes empilhadas, grade clara só na horizontal.
 - Texto sempre nas cores de texto do tema, nunca na cor da série.
 - Acessibilidade (RNF-10): os gráficos em SVG têm `role="img"` com descrição, dica ao passar o mouse, navegação pelas setas do teclado e "Ver dados em tabela" com os mesmos números. O mapa de calor é uma grade (`role="grid"`) em que cada célula com consumo recebe foco pelo Tab e diz o dia, a hora e a quantidade. O ranking é uma lista de botões com `aria-pressed`.
-- Impressão: o formulário de filtros, o botão "Tirar o foco", o link de alertas e as tabelas recolhidas saem do PDF (`nao-imprimir`); a linha "Filtros:" e a tabela de detalhe ficam. Os cartões não quebram no meio da página.
+- Impressão (RF-20): o formulário de filtros, o botão "Tirar o foco", o link de alertas, as dicas de uso e as tabelas recolhidas saem do PDF (`nao-imprimir`); a linha "Filtros:" e a tabela de detalhe ficam. Os cartões não quebram no meio da página. No papel, `print-color-adjust: exact` mantém as cores das barras, do mapa de calor e das legendas (blocos HTML coloridos, que o navegador apagaria como fundo), o tema escuro não vale (as variáveis dele ficam em `@media screen`) e a moldura vira um bloco simples, sem a coluna do menu. Os gráficos se ajustam à folha de dois jeitos: medem a largura de novo quando o navegador passa para a mídia de impressão (`matchMedia('print')` e `beforeprint`, com `flushSync`) e, se isso não acontecer, o `viewBox` do SVG escala o desenho.
 
 O foco pelo clique vale para os números, a evolução, a composição e o mapa de calor.
 
@@ -576,3 +576,4 @@ O foco pelo clique vale para os números, a evolução, a composição e o mapa 
 | 1.14 | 28/09/2026 | Painel de análise dos relatórios (RF-17a): consulta, contas em `domain/analise.ts`, gráficos em SVG próprio e regras visuais (10.7), ADR-14. Linha de gráficos da stack atualizada e `domain/analise.ts` na tabela 9.1. |
 | 1.15 | 28/09/2026 | A análise vira a página `/analise` em Gestão (10.7): filtros combináveis na URL com schema Zod, consulta própria (`consultas/analise.ts`) com arrays parametrizados, `SelecaoMultipla`, comparação lado a lado, tabela de detalhe e CSV com os filtros. |
 | 1.16 | 28/09/2026 | Paleta da análise com 8 cores validadas (10.7): até 8 itens com cor própria em todos os gráficos, inclusive o ranking, e comparação lado a lado até 8. |
+| 1.17 | 28/09/2026 | Impressão da Análise (10.7): cores mantidas no papel, sempre no tema claro, moldura sem a coluna do menu e gráficos na largura da folha. |

@@ -433,10 +433,10 @@ export function PainelAnalitico({ dados }: { dados: DadosDoPainel }) {
         titulo={`Detalhe por ${unidadeDaDimensao}`}
         subtitulo={`${dados.medida.titulo} de cada ${unidadeDaDimensao}, comparado com os ${dias} dias anteriores.`}
       >
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto print:overflow-visible">
           <table
             aria-label={`Detalhe por ${unidadeDaDimensao}`}
-            className="w-full min-w-[40rem] text-left text-[13px] tabular-nums"
+            className="w-full min-w-[40rem] text-left text-[13px] tabular-nums print:min-w-0 print:text-xs"
           >
             <thead className="text-xs text-ink-3">
               <tr className="border-b border-line">

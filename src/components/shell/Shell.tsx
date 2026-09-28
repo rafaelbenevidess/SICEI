@@ -186,7 +186,7 @@ export function Shell({
   )
 
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[252px_minmax(0,1fr)]">
+    <div className="min-h-dvh md:grid md:grid-cols-[252px_minmax(0,1fr)] print:block">
       <aside className="nao-imprimir sticky top-0 hidden h-dvh border-r border-line bg-surface md:block">
         {menu}
       </aside>

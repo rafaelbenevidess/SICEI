@@ -65,32 +65,72 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 | # | Documento | Versão |
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.7 |
-| 02 | [Requisitos](docs/02-requisitos.md) | 1.13 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.16 |
+| 02 | [Requisitos](docs/02-requisitos.md) | 1.14 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.17 |
 | 04 | [Segurança](docs/04-seguranca.md) | 1.6 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.10 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.11 |
 | 06 | [Operação](docs/06-operacao.md) | 1.2 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).
 
 ## Uso de IA e autoria
 
-Este projeto foi feito com o Claude Code, assistente de programação da Anthropic. Os commits feitos pelo assistente trazem a linha `Co-Authored-By: Claude`.
+Este projeto foi feito com o Claude Code, assistente de programação da Anthropic. Os commits feitos pelo assistente trazem a linha `Co-Authored-By: Claude`. O autor definiu o que o sistema faz, aprovou cada etapa antes da seguinte, testou o sistema publicado e pediu as correções listadas abaixo. O assistente escreveu os documentos, o código e os testes a partir dessas decisões.
 
-Decisões do autor:
+### Decisões do autor
 
 - O problema, o escopo e as regras de negócio: vários fornecedores por item com histórico de preços, rastreabilidade total de cada movimentação, retenção de 7 anos, controle só por quantidade, nota fiscal obrigatória.
-- Tirar do escopo a API pública e a integração com ERP.
-- Login gerado pelo Administrador a partir do nome e sobrenome, sem e-mail.
-- Endereçamento em três níveis (armário, gaveta, compartimento) e saída com destino, ordem de produção e colaborador.
+- As respostas às dúvidas de negócio levantadas nos requisitos: controle por unidade, localização exata de cada pastilha, saída com destino, ordem de produção e quem retirou, 10 a 30 usuários, etiqueta QR gerada pelo sistema, aviso por e-mail, importação da planilha atual, perfil Consulta sem ver preços.
+- Tirar do escopo a API pública e a integração com ERP (RF-23 e RF-24), por ser um trabalho acadêmico.
+- Login sem e-mail: o Administrador informa nome e sobrenome, o sistema gera o login e uma senha provisória, trocada no primeiro acesso.
+- Endereçamento em três níveis (armário, gaveta, compartimento).
 - Stack Next.js com PostgreSQL, publicação na Vercel e no Neon.
-- Testes unitários em todo o sistema, com um laboratório na web para o professor executar e criar testes.
-- O SICEI como produto próprio, licenciado por empresa, com uma instalação para cada cliente.
+- Testes unitários em todo o sistema, publicados na web para o professor executar e criar os próprios casos.
+- O nome SICEI (o projeto começou como SIMI) e o SICEI como produto próprio, licenciado por empresa, com uma instalação para cada cliente.
 - O design da interface: as telas, o tema escuro, a versão de celular e a marca, entregues como protótipo em `design_handoff_sicei/`.
 
-Feito pelo assistente, a partir dessas decisões: a redação dos documentos, o código (incluindo a implementação do design do autor), os testes, a integração contínua, a publicação e as revisões de código e de segurança.
+### Correções e pedidos do autor, na ordem em que vieram
 
-Como o autor acompanhou: aprovou cada etapa (regras, requisitos, system design) antes de a próxima começar, respondeu às dúvidas de negócio levantadas no caminho, testou o sistema publicado e pediu as mudanças de nome, licença e modelo de instalação.
+Planejamento
+
+- Fez o assistente voltar ao começo: primeiro as regras de negócio e os requisitos, depois o system design.
+- Pediu que os testes unitários fossem visíveis na web e, em seguida, que todo o sistema tivesse teste unitário onde fosse possível. Daí saíram o Laboratório de testes (`/testes`) e os casos de teste escritos como dados.
+
+Publicação e identidade
+
+- Apontou o erro de tipos do `@testing-library/jest-dom/vitest` no ambiente local, corrigido na configuração.
+- Pediu uma explicação mais clara sobre o usuário do banco usado em produção. O texto foi reescrito no doc 06: a aplicação usa um usuário sem permissão de alterar movimentações e o log.
+- Renomeou o projeto para SICEI, pediu um titular fictício, trocou o endereço para `sicei-ddametalurgica.vercel.app` e depois para `sicei-ddausinagem.vercel.app`, e renomeou os usuários do banco. Clonou o repositório e publicou com os próprios commits.
+
+Interface
+
+- Pediu a implementação do design que criou.
+- Leitura do QR pela câmera de qualquer celular, dentro do SICEI, em vez de depender da câmera nativa.
+- Cadastro de fabricante e fornecedor na hora de criar um item, com o próximo código interno já sugerido; aba Itens em Cadastros; aviso de etiqueta não impressa ao mudar o item de posição; filtro de ação da auditoria em lista.
+- Questionou o IP gravado na auditoria. A resposta: um sistema web só recebe o IP público da rede, igual para todos os computadores atrás do mesmo roteador; o doc 04 explica isso e o aparelho fica identificado pelo login e pelo navegador.
+- Pop-up de alertas sem ciente ao entrar. Depois corrigiu o comportamento: aparece só no login, obriga a clicar em VER e ir aos alertas, mas não obriga a dar ciente, que é de quem responde pelo item.
+- Autocompletar e código padronizado ao registrar entrada e saída, e depois a mesma busca tolerante em todos os campos em que ela cabe.
+- Ícone nítido e o nome SICEI escrito com a fonte, não recortado de imagem; logo da DDA sem fundo, centralizada no login; "DDA USINAGEM INDUSTRIAL" no menu, alinhado ao ícone.
+
+Segurança
+
+- Propôs que nenhum outro Administrador pudesse remover o Administrador principal, para um funcionário mal-intencionado não sequestrar o sistema, e pediu uma revisão de segurança. Virou a RN-21c, protegida no código e no banco, e as outras falhas encontradas estão no doc 04.
+- Pediu edição do nome dos funcionários (vinham em caixa alta) e matrícula obrigatória e única, para cada funcionário ter um login só. Apontou tabelas com rolagem lateral mesmo com espaço na tela, corrigidas em todas as telas.
+
+Relatórios e análise
+
+- Pediu gráficos no estilo Power BI para acompanhar o consumo, sem perder a visão rápida dos relatórios.
+- Pediu para escolher um ou vários itens e, em seguida, que a Análise virasse uma página própria em Gestão, com filtros combináveis.
+- Notou que, com mais de 4 itens, os demais ficavam cinza nos gráficos. A paleta passou a ter 8 cores validadas para daltonismo.
+- Imprimiu a Análise em PDF e mostrou que as barras, o mapa de calor e parte do gráfico de entradas e saídas não saíam. A impressão passou a manter as cores, a usar sempre o tema claro e a ajustar os gráficos à largura da folha.
+
+### Feito pelo assistente
+
+A redação dos documentos, o código (incluindo a implementação do design do autor), os testes, a integração contínua, a publicação e as revisões de código e de segurança, sempre a partir das decisões e correções acima.
+
+### Como o autor acompanhou
+
+Aprovou cada etapa (regras, requisitos, system design) antes de a próxima começar, respondeu às dúvidas de negócio, testou cada entrega no sistema publicado, no computador e no celular, e devolveu com prints e PDFs o que precisava mudar.
 
 ## Propriedade e licença
 

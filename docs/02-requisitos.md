@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.13 (validada) |
+| **Versão** | 1.14 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -203,6 +203,7 @@ Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o r
 1. **Dado** os relatórios, a lista de itens ou o histórico de movimentações com filtros aplicados, **quando** o usuário clica em "Exportar CSV", **então** recebe um arquivo `sicei-<tela>-<data>.csv` com as mesmas linhas da tela.
 2. **Dado** qualquer exportação, **quando** o arquivo é gerado, **então** a exportação fica no log com o usuário, os filtros e o número de linhas (RN-23). Preços só saem para quem pode vê-los (RN-05b).
 3. **Dado** um relatório na tela, **quando** o usuário escolhe "Imprimir / PDF", **então** o navegador gera o PDF sem o menu e sem os botões.
+4. **Dado** a Análise com gráficos, **quando** o usuário imprime, **então** o PDF sai como a tela: barras, mapa de calor e legendas coloridos mesmo com a opção de imprimir fundos desligada, sempre no tema claro, e cada gráfico na largura da folha, sem cortar o fim do período.
 
 ### RF-21. Log de auditoria
 1. **Dado** o Administrador ou o Gestor, **quando** filtra o log por usuário, ação e período, **então** vê os registros com valor anterior, valor novo, data, IP e dispositivo.
@@ -375,3 +376,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.11 | 28/09/2026 | Novo RF-17a: painel de análise dos relatórios, com gráficos interativos, comparação com o período anterior e filtro por clique no ranking. O relatório em tabela do RF-17 continua como está. |
 | 1.12 | 28/09/2026 | RF-17a reescrito: a análise vira página própria em Gestão ("Análise"), com medida (consumo, perdas ou os dois), dimensão de comparação (item, destino, colaborador, aplicação, fabricante), filtros de vários valores em qualquer combinação, comparação lado a lado de 2 a 4 escolhidos, tabela de detalhe e CSV com os filtros. |
 | 1.13 | 28/09/2026 | RF-17a, critérios 5 e 7: 8 cores próprias em vez de 4. Com 5 a 8 itens, nenhum fica cinza, e a evolução lado a lado vai até 8. |
+| 1.14 | 28/09/2026 | RF-20, critério 4: a Análise impressa sai como na tela (cores, tema claro, gráficos na largura da folha). |

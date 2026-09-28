@@ -90,7 +90,7 @@ O redesign da interface trouxe portas de entrada novas. Cada uma foi conferida:
 | Sugestões da busca do topo (`acaoSugerirItens`) | Só leitura. Confere a sessão e a troca de senha, recusa termo que não seja texto ou passe de 60 caracteres e devolve só código, descrição, posição e status de até 8 itens ativos, o mesmo que a lista de itens mostra a qualquer perfil. Nenhum preço. | `src/app/acoes/estoque.ts` |
 | Filtros de texto tolerantes (movimentações e auditoria) | O texto não vai para o SQL: é comparado em memória com a regra do domínio e o banco recebe só a lista de ids ou OPs encontrados, pelo Prisma parametrizado. | `src/server/consultas/busca.ts` |
 | Campo de escolha com busca | Envia só o id da opção escolhida; o service confere de novo se o fornecedor, colaborador, destino ou posição existe e está ativo. | `src/components/formulario.tsx` |
-| Logo da licenciada no login | Arquivo estático em `public/licenciadas/`, liberado no `proxy.ts` porque aparece antes do login. A escolha vem de uma lista fixa no código (`LOGOS_DAS_LICENCIADAS`), pela variável do servidor; nenhum texto do usuário vira caminho de arquivo. | `src/lib/produto.ts` |
+| Logo da licenciada no login | SVG desenhado no próprio código, sem arquivo externo nem nova exceção no `proxy.ts`. A escolha vem de uma lista fixa (`LogoDaLicenciada.tsx`), pela variável do servidor; nenhum texto do usuário escolhe o que é desenhado. | `src/components/licenciadas/` |
 | Prévias no navegador (saldo, login, CNPJ, senha, parâmetros) | São só ajuda visual, calculadas com as funções puras de `domain/`. O servidor valida tudo de novo. |
 
 ## 6. Histórico do documento

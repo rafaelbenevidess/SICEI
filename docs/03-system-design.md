@@ -327,7 +327,7 @@ Mapa das categorias do OWASP Top 10 (2021) para as proteções do SICEI. A revis
 | Dono do banco (migrations) | `sicei_<sigla>_owner` | `sicei_dda_owner` |
 | Usuário da aplicação | `sicei_<sigla>_app` | `sicei_dda_app` |
 | Nome no rodapé e no login | variável `SICEI_LICENCIADA` | `DDA Metalúrgica` |
-| Logo no login | `public/licenciadas/<chave do nome>.png`, registrada em `LOGOS_DAS_LICENCIADAS` (`lib/produto.ts`) | `dda-metalurgica.png` |
+| Logo no login | componente SVG em `components/licenciadas/`, ligado à chave do nome em `LogoDaLicenciada.tsx` | `LogoDdaMetalurgica.tsx` (chave `dda-metalurgica`) |
 
 A migration `nomes_sicei` dá as permissões a todo usuário que segue o padrão `sicei_<sigla>_app`, então o mesmo código serve para qualquer cliente. O projeto se chamava SIMI: a primeira migration ainda cria a função `simi_bloquear_alteracao`, e a `nomes_sicei` a renomeia para `sicei_bloquear_alteracao` (migration já aplicada não pode ser editada).
 
@@ -464,7 +464,7 @@ O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no serv
 | Parte | Onde | O que faz |
 |---|---|---|
 | Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
-| Tela de acesso | `components/TelaDeAcesso.tsx` | Login, troca de senha, página inicial e "Acesso negado": formulário à esquerda e painel da marca à direita (some abaixo de 1040 px). Só no login, a logo da licenciada (quando cadastrada) fica centralizada acima do formulário e no meio do painel, entre a marca do SICEI e o texto. |
+| Tela de acesso | `components/TelaDeAcesso.tsx` | Login, troca de senha, página inicial e "Acesso negado": formulário à esquerda e painel da marca à direita (some abaixo de 1040 px). Só no login, a logo da licenciada (quando cadastrada) fica centralizada acima do formulário e no meio do painel, entre a marca do SICEI e o texto. A logo é SVG sem fundo, na cor do texto em volta: azul da empresa no fundo claro, branca no escuro. |
 | Marca | `components/Marca.tsx`, `components/SimboloSicei.tsx` | Ícone em SVG (redesenhado em vetor a partir do ícone original de 512 px, nítido em qualquer tamanho) e o nome "SICEI" escrito em texto na fonte da interface (Geist, peso 800), na cor do tema. O mesmo SVG é o ícone da aba (`app/icon.svg`); o `app/apple-icon.png` de 180 px é gerado dele. |
 | Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, gauge de nível, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
 
@@ -527,4 +527,4 @@ Várias telas mostram o resultado antes de enviar, usando as mesmas funções pu
 | 1.7 | 27/09/2026 | Busca tolerante de itens (`domain/busca.ts`) no navegador e no servidor, e autocompletar ao registrar (10.4). |
 | 1.8 | 27/09/2026 | A mesma busca em todos os campos que permitem (nova 10.5; a prévia passa a 10.6): campos de escolha com busca, sugestões no topo, filtros de texto tolerantes, posição digitada de qualquer jeito, código equivalente e padronizado no cadastro e na importação. |
 | 1.9 | 27/09/2026 | Marca em vetor: ícone em SVG e o nome SICEI em texto, no lugar das imagens recortadas (10.2). |
-| 1.10 | 28/09/2026 | Logo da licenciada na tela de login, escolhida pelo nome da empresa (seção 7 e 10.2). |
+| 1.10 | 28/09/2026 | Logo da licenciada na tela de login, em SVG sem fundo, escolhida pelo nome da empresa (seção 7 e 10.2). |

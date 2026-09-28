@@ -6,6 +6,7 @@ import { BotaoEnviar, Campo, CampoSenha, DadosDaAcao, FormAcao, Selecao } from '
 import { Marca } from './Marca'
 import { Paginacao } from './Paginacao'
 import { Rodape } from './Rodape'
+import { temLogo } from './licenciadas/LogoDaLicenciada'
 import { TelaDeAcesso } from './TelaDeAcesso'
 import { Aviso, BadgeStatus, rotulosDoNivel, Vazio } from './ui'
 
@@ -164,20 +165,31 @@ describe('Login · Logo da licenciada', () => {
   it('no login da DDA, a logo aparece acima do formulário e no painel', () => {
     vi.stubEnv('SICEI_LICENCIADA', 'DDA Metalúrgica')
     const { container } = render(<TelaDeAcesso comLogoDaLicenciada>formulário</TelaDeAcesso>)
+    // acima do formulário, com nome para o leitor de tela; no painel, decorativa
     expect(screen.getByRole('img', { name: 'DDA Metalúrgica' })).toBeInTheDocument()
-    expect(container.querySelectorAll('img[src*="dda-metalurgica"]')).toHaveLength(2)
+    expect(container.querySelectorAll('svg text')).toHaveLength(2)
+    expect(container.querySelector('img')).toBeNull()
   })
 
   it('nas outras telas de acesso (troca de senha, acesso negado) a logo não aparece', () => {
     vi.stubEnv('SICEI_LICENCIADA', 'DDA Metalúrgica')
-    const { container } = render(<TelaDeAcesso>formulário</TelaDeAcesso>)
-    expect(container.querySelector('img')).toBeNull()
+    render(<TelaDeAcesso>formulário</TelaDeAcesso>)
+    expect(screen.queryByText('Usinagem Industrial')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['DDA Metalúrgica', true],
+    ['dda metalurgica', true],
+    ['Metalúrgica Exemplo', false],
+    [null, false],
+  ])('licenciada %j tem logo: %s', (nome, esperado) => {
+    expect(temLogo(nome)).toBe(esperado)
   })
 
   it('empresa sem logo cadastrada: login só com a marca do SICEI', () => {
     vi.stubEnv('SICEI_LICENCIADA', 'Metalúrgica Exemplo')
-    const { container } = render(<TelaDeAcesso comLogoDaLicenciada>formulário</TelaDeAcesso>)
-    expect(container.querySelector('img')).toBeNull()
+    render(<TelaDeAcesso comLogoDaLicenciada>formulário</TelaDeAcesso>)
+    expect(screen.queryByText('Usinagem Industrial')).not.toBeInTheDocument()
     expect(screen.getAllByText('SICEI').length).toBeGreaterThan(0)
   })
 })

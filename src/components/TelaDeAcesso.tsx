@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import type { ReactNode } from 'react'
-import { anosDeDireitos, licenciada, logoDaLicenciada, PRODUTO } from '@/lib/produto'
+import { anosDeDireitos, licenciada, PRODUTO } from '@/lib/produto'
+import { LogoDaLicenciada, temLogo } from './licenciadas/LogoDaLicenciada'
 import { Marca } from './Marca'
 import { SimboloSicei } from './SimboloSicei'
 
@@ -17,21 +17,18 @@ export function TelaDeAcesso({
   comLogoDaLicenciada?: boolean
 }) {
   const empresa = licenciada()
-  const logo = comLogoDaLicenciada ? logoDaLicenciada(empresa) : null
+  const comLogo = comLogoDaLicenciada && empresa !== null && temLogo(empresa)
   return (
     <div className="grid min-h-dvh min-[65rem]:grid-cols-2">
       <div className="flex min-h-dvh flex-col px-4 py-6 sm:px-14 sm:py-10">
         <Marca />
         <main className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[380px]">
-            {logo && (
-              <Image
-                src={logo.src}
-                alt={empresa ?? ''}
-                width={logo.largura}
-                height={logo.altura}
-                priority
-                className="mx-auto mb-8 h-auto w-[220px] max-w-full"
+            {comLogo && (
+              <LogoDaLicenciada
+                nome={empresa}
+                titulo={empresa}
+                className="mx-auto mb-9 block h-auto w-[200px] max-w-full text-[#374993] escuro:text-white"
               />
             )}
             {children}
@@ -58,15 +55,9 @@ export function TelaDeAcesso({
           <SimboloSicei className="h-14 w-auto text-[#3d6bff]" />
           <span className="text-[44px] leading-none font-extrabold tracking-[0.02em]">SICEI</span>
         </span>
-        {logo && (
+        {comLogo && (
           <div className="flex flex-1 items-center justify-center py-10">
-            <Image
-              src={logo.src}
-              alt=""
-              width={logo.largura}
-              height={logo.altura}
-              className="h-auto w-[320px] max-w-full"
-            />
+            <LogoDaLicenciada nome={empresa} className="h-auto w-[300px] max-w-full text-white" />
           </div>
         )}
         <div className="max-w-[460px]">

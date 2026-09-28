@@ -153,13 +153,18 @@ export const casosComparacao: CasoDeTeste<{ escolhidos: number; emFoco: boolean 
     esperado: true,
   },
   {
-    descricao: '4 escolhidos → um traço para cada',
-    entrada: { escolhidos: 4, emFoco: false },
+    descricao: '6 escolhidos → um traço para cada, cada um na sua cor',
+    entrada: { escolhidos: 6, emFoco: false },
     esperado: true,
   },
   {
-    descricao: '5 escolhidos → a soma (mais de 4 cores não se distinguem)',
-    entrada: { escolhidos: 5, emFoco: false },
+    descricao: '8 escolhidos → um traço para cada (as 8 cores da paleta)',
+    entrada: { escolhidos: 8, emFoco: false },
+    esperado: true,
+  },
+  {
+    descricao: '9 escolhidos → a soma (não há 9 cores que se distingam)',
+    entrada: { escolhidos: 9, emFoco: false },
     esperado: false,
   },
   {

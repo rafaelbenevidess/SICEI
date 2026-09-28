@@ -123,7 +123,7 @@ export default async function PaginaAnalise({
         </Link>
         <p className="text-[13px] text-ink-3">
           Os filtros se somam: itens escolhidos e um destino mostram só as retiradas daqueles itens
-          naquele destino. Escolha de 2 a 4 em &quot;Comparar por&quot; para ver um traço de cada.
+          naquele destino. Escolha de 2 a 8 em &quot;Comparar por&quot; para ver um traço de cada.
         </p>
       </div>
     </form>

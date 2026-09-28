@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.15 (para revisão) |
+| **Versão** | 1.16 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -519,15 +519,15 @@ A página `/analise`, em Gestão no menu, é um painel no estilo de uma ferramen
 | Contas | `domain/analise.ts` | Tudo o que o painel calcula: dia, semana ou mês, séries no tempo, período anterior, variação, maiores e "Outros", escolhidos sem consumo com zero, quando comparar lado a lado, matriz 7 × 24, eixo e a posição dos nomes na ponta das linhas. Funções puras, com casos no Laboratório. |
 | Tela | `app/(app)/analise/page.tsx` e `PainelAnalitico.tsx` | A página monta o formulário (GET) e passa os dados agregados ao painel, componente de cliente que recalcula tudo no navegador quando o Gestor põe um item em foco pelo ranking, sem ir ao servidor. |
 | Escolha de vários | `components/formulario.tsx`, `SelecaoMultipla` | Combobox com a busca do RF-11 (`buscarOpcoes`), os escolhidos como etiquetas com "×", lista que fica aberta para marcar vários, Enter e Backspace pelo teclado. Envia um campo só, com os valores separados por vírgula. |
-| Gráficos | `components/graficos.tsx` | Linha com área (período atual e anterior), comparação de 2 a 4 linhas com o nome na ponta, ranking em barras que são botões, colunas empilhadas, entradas × saídas num eixo simétrico, mapa de calor e minilinha. Medem a própria largura (`ResizeObserver`) e desenham em SVG. |
+| Gráficos | `components/graficos.tsx` | Linha com área (período atual e anterior), comparação de 2 a 8 linhas com o nome na ponta, ranking em barras que são botões, colunas empilhadas, entradas × saídas num eixo simétrico, mapa de calor e minilinha. Medem a própria largura (`ResizeObserver`) e desenham em SVG. |
 | CSV | `app/(app)/analise/csv/route.ts` | Total de cada dia e de cada um, com os filtros da tela; a exportação fica no log com os filtros (RN-23). |
 
 Os filtros de destino e colaborador não valem para entradas e saídas, porque compra não tem destino; o subtítulo do gráfico avisa. Os itens em alerta contam só os itens dos filtros de item, aplicação e fabricante.
 
 Regras visuais, seguidas em todos os gráficos:
 
-- Paleta categórica fixa em `globals.css` (`--serie-1` a `--serie-4`: azul, laranja, verde-água e amarelo), com tons próprios para o tema escuro e cinza para "Outros". A paleta foi conferida com um validador de daltonismo (distância entre cores vizinhas nos três tipos de daltonismo) nos dois fundos. O amarelo e o verde-água têm pouco contraste no fundo claro, por isso toda série tem legenda escrita e tabela.
-- A cor segue o item, não a posição. Com escolhidos, os 4 primeiros na ordem da escolha têm cor própria; sem escolhidos, os 4 maiores do período. Com ou sem foco, ninguém muda de cor. Do quinto em diante, tudo soma em "Outros".
+- Paleta categórica fixa em `globals.css`, com 8 cores em ordem (`--serie-1` a `--serie-8`: azul, laranja, verde-água, amarelo, magenta, verde, violeta e vermelho), tons próprios para o tema escuro e cinza para "Outros". As 8 foram conferidas com um validador de daltonismo (distância entre cores vizinhas nos três tipos de daltonismo e na visão normal) nos dois fundos; a ordem é parte da garantia, porque separa as cores parecidas. Verde-água, amarelo e magenta têm pouco contraste no fundo claro, por isso toda série tem legenda escrita, nome na ponta da linha e tabela.
+- A cor segue o item, não a posição. Com escolhidos, os 8 primeiros na ordem da escolha têm cor própria; sem escolhidos, os 8 maiores do período. O ranking usa as mesmas cores dos outros gráficos. Com ou sem foco, ninguém muda de cor. Do 9º em diante, tudo soma em "Outros": mais que 8 cores não se distinguem, principalmente para quem é daltônico.
 - Intensidade (mapa de calor) usa uma só cor, do claro ao escuro (`--calor-1` a `--calor-7`), invertida no tema escuro.
 - Um eixo só por gráfico, com topo em número redondo (`escalaDoEixo`). Linhas de 2 px, barras de no máximo 24 px com ponta arredondada, 2 px de fundo entre partes empilhadas, grade clara só na horizontal.
 - Texto sempre nas cores de texto do tema, nunca na cor da série.
@@ -575,3 +575,4 @@ O foco pelo clique vale para os números, a evolução, a composição e o mapa 
 | 1.13 | 28/09/2026 | Matrícula e edição de usuários (5.5); tabelas sem largura mínima no computador e novos pontos de quebra (10.2). |
 | 1.14 | 28/09/2026 | Painel de análise dos relatórios (RF-17a): consulta, contas em `domain/analise.ts`, gráficos em SVG próprio e regras visuais (10.7), ADR-14. Linha de gráficos da stack atualizada e `domain/analise.ts` na tabela 9.1. |
 | 1.15 | 28/09/2026 | A análise vira a página `/analise` em Gestão (10.7): filtros combináveis na URL com schema Zod, consulta própria (`consultas/analise.ts`) com arrays parametrizados, `SelecaoMultipla`, comparação lado a lado, tabela de detalhe e CSV com os filtros. |
+| 1.16 | 28/09/2026 | Paleta da análise com 8 cores validadas (10.7): até 8 itens com cor própria em todos os gráficos, inclusive o ranking, e comparação lado a lado até 8. |

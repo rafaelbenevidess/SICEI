@@ -12,7 +12,8 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import { afastarRotulos, escalaDoEixo } from '@/domain/analise'
 import { formatarNumero } from '@/lib/formatar'
 
-export const COR_SERIE = ['var(--serie-1)', 'var(--serie-2)', 'var(--serie-3)', 'var(--serie-4)']
+/** Paleta categórica validada para daltonismo, na ordem fixa (doc 03, seção 10.7). */
+export const COR_SERIE = Array.from({ length: 8 }, (_, i) => `var(--serie-${i + 1})`)
 export const COR_CINZA = 'var(--serie-cinza)'
 
 const num = (v: number) => formatarNumero(Math.round(v * 10) / 10)

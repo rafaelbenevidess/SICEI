@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.9 |
+| **Versão** | 1.10 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -56,7 +56,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-01 código equivalente e padronizado | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório), `importacao.test.ts` ("PST1" e PST-001 no mesmo arquivo) | `cadastros.test.ts` (criar e editar recusam o equivalente, "pst 2" grava PST-002, prévia da planilha) |
 | RN-25 posição digitada | `posicao.test.ts` (casos em `posicao.casos.ts`, também no Laboratório), `importacao.test.ts` ("a1g3c4" entra como A01-G03-C04) | E2E da posição do item novo |
 | RF-02 prévia do login | `login.test.ts` (`previaDoLogin`) | — |
-| RF-17a análise personalizada | `analise.test.ts` (casos em `analise.casos.ts`, também no Laboratório: dia, semana ou mês, período anterior, variação, maiores e "Outros", eixo, escolhidos, comparação lado a lado, nomes na ponta das linhas), `schemas/analise.test.ts` (filtros da URL, casos em `schemas/analise.casos.ts`), `PainelAnalitico.test.tsx` (números, ranking, foco pelo clique, comparação, escolhido com zero, tabela de detalhe, colaborador pelo nome), `SelecaoMultipla.test.tsx` (busca, marcar vários, "×", Backspace, limite), `menu.test.ts` (Análise em Gestão) | `analise.test.ts` (filtros que se somam, cada dimensão e medida, perda "Sem destino", sem a saída estornada, hora de São Paulo, entradas e saídas e alertas só dos itens filtrados, opções, CSV); E2E do computador |
+| RF-17a análise personalizada | `analise.test.ts` (casos em `analise.casos.ts`, também no Laboratório: dia, semana ou mês, período anterior, variação, maiores e "Outros", eixo, escolhidos, comparação lado a lado, nomes na ponta das linhas), `schemas/analise.test.ts` (filtros da URL, casos em `schemas/analise.casos.ts`), `PainelAnalitico.test.tsx` (números, ranking, foco pelo clique, comparação, escolhido com zero, tabela de detalhe, colaborador pelo nome, seis itens cada um na sua cor, sem cinza), `SelecaoMultipla.test.tsx` (busca, marcar vários, "×", Backspace, limite), `menu.test.ts` (Análise em Gestão) | `analise.test.ts` (filtros que se somam, cada dimensão e medida, perda "Sem destino", sem a saída estornada, hora de São Paulo, entradas e saídas e alertas só dos itens filtrados, opções, CSV); E2E do computador |
 | Interface | `componentes.test.tsx` (selo com texto, campo de senha, toast, rótulos do gauge), `tema.test.ts`, `menu.test.ts` | — |
 | Segurança web | `proxy.test.ts` (CSP), `redirecionamento.test.ts` (open redirect) | — |
 
@@ -114,3 +114,4 @@ Resultado da última execução: 21 de 21 passaram.
 | 1.7 | 28/09/2026 | Testes da matrícula e da edição de usuários (RN-21d); E2E confere tabelas sem rolagem lateral em 1366 px. |
 | 1.8 | 28/09/2026 | Testes do painel de análise (RF-17a): unidade, componente, integração e E2E; suítes novas no Laboratório. E2E com 21 fluxos. |
 | 1.9 | 28/09/2026 | Análise personalizada em página própria: testes dos filtros da URL, da escolha de vários, da comparação lado a lado, da tabela de detalhe e das consultas com filtros combinados; E2E refeito. |
+| 1.10 | 28/09/2026 | Teste de componente com seis itens: cada um com cor própria no ranking, na composição e na evolução lado a lado. |

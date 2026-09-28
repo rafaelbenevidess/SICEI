@@ -156,8 +156,11 @@ export function escalaDoEixo(maximo: number, intervalos = 5): { topo: number; pa
 
 /** Quantos itens (ou destinos, ou colaboradores) a análise personalizada aceita de uma vez. */
 export const LIMITE_DA_SELECAO = 20
-/** Até quantos escolhidos a evolução mostra lado a lado, um traço para cada. */
-export const LINHAS_NA_COMPARACAO = 4
+/**
+ * Quantos têm cor própria nos gráficos e quantos a evolução mostra lado a lado: as 8 cores da
+ * paleta validada para daltonismo. Do 9º em diante, tudo soma em "Outros", em cinza.
+ */
+export const CORES_DISTINTAS = 8
 
 /**
  * A seleção vem da URL como "PST-001,PST-004". Tira espaços, vazios e repetidos, mantém a
@@ -187,11 +190,11 @@ export function completarSelecao(
 }
 
 /**
- * De 2 a 4 escolhidos, sem um deles em foco pelo clique, a evolução mostra um traço por
- * escolhido. Com um só, ou com mais de 4, mostra a soma, comparada com o período anterior.
+ * De 2 a 8 escolhidos, sem um deles em foco pelo clique, a evolução mostra um traço por
+ * escolhido. Com um só, ou com mais de 8, mostra a soma, comparada com o período anterior.
  */
 export function compararNaEvolucao(escolhidos: number, emFoco: boolean): boolean {
-  return !emFoco && escolhidos >= 2 && escolhidos <= LINHAS_NA_COMPARACAO
+  return !emFoco && escolhidos >= 2 && escolhidos <= CORES_DISTINTAS
 }
 
 /**

@@ -21,7 +21,7 @@ import {
   compararNaEvolucao,
   completarSelecao,
   diasNoPeriodo,
-  LINHAS_NA_COMPARACAO,
+  CORES_DISTINTAS,
   maioresEOutros,
   mapaDeCalor,
   serieNoTempo,
@@ -167,11 +167,11 @@ export function PainelAnalitico({ dados }: { dados: DadosDoPainel }) {
     return undefined
   }
 
-  // cores: os escolhidos, na ordem da escolha; sem escolha, os 4 maiores. A cor segue o item.
+  // cores: os escolhidos, na ordem da escolha; sem escolha, os 8 maiores. A cor segue o item.
   const comEscolha = dados.escolhidos.length > 0
   const coloridos = comEscolha
-    ? dados.escolhidos.slice(0, LINHAS_NA_COMPARACAO).map((e) => e.chave)
-    : maioresEOutros(parcelas, LINHAS_NA_COMPARACAO)
+    ? dados.escolhidos.slice(0, CORES_DISTINTAS).map((e) => e.chave)
+    : maioresEOutros(parcelas, CORES_DISTINTAS)
         .filter((p) => p.chave !== 'Outros')
         .map((p) => p.chave)
   const corDo = (chave: string) => {
@@ -375,7 +375,7 @@ export function PainelAnalitico({ dados }: { dados: DadosDoPainel }) {
               detalhe: p.chave === 'Outros' ? p.nome : detalheDe(p.chave),
               total: p.total,
               filtravel: p.chave !== 'Outros',
-              cor: comEscolha ? corDo(p.chave) : undefined,
+              cor: corDo(p.chave),
             }))}
             selecionado={foco}
             aoSelecionar={setFoco}
@@ -389,9 +389,9 @@ export function PainelAnalitico({ dados }: { dados: DadosDoPainel }) {
           subtitulo={
             foco
               ? `Só o ${unidadeDaDimensao} em foco, ${porBalde}.`
-              : comEscolha
-                ? `Os escolhidos, ${porBalde}${dados.escolhidos.length > LINHAS_NA_COMPARACAO ? `; do ${LINHAS_NA_COMPARACAO + 1}º em diante, somados em "Outros"` : ''}.`
-                : `Os ${coloridos.length} maiores e o resto somado em "Outros", ${porBalde}.`
+              : parcelas.length > CORES_DISTINTAS
+                ? `Cada um na sua cor, ${porBalde}; do ${CORES_DISTINTAS + 1}º em diante, somados em "Outros".`
+                : `Cada um na sua cor, ${porBalde}.`
           }
         >
           <div className="mb-3">

@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.12 (validada) |
+| **Versão** | 1.13 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -182,9 +182,9 @@ Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o r
 2. **Dado** a página, **quando** o Gestor monta a análise, **então** escolhe o período (ou um atalho de 7, 30, 90 dias ou 12 meses), o que medir (consumo na produção, perdas e quebras, ou os dois somados), por onde comparar (item, destino, colaborador, aplicação ou fabricante) e, em qualquer combinação, os itens, destinos, colaboradores, aplicações e fabricantes que entram. Cada filtro aceita vários valores, escolhidos com a mesma busca tolerante do RF-11, até 20 por filtro. Filtro vazio vale para todos.
 3. **Dado** mais de um filtro, **quando** a análise é aplicada, **então** os filtros se somam: itens escolhidos e um destino mostram só as retiradas daqueles itens naquele destino. A linha "Filtros:" acima dos números diz o que está aplicado, também no PDF.
 4. **Dado** a análise aplicada, **quando** a página abre, **então** mostra quatro números (total no período com a variação sobre o período anterior do mesmo tamanho, média por dia, pico num só dia, semana ou mês, e itens em alerta agora) e os gráficos de evolução, ranking, composição, dia da semana × hora, entradas × saídas e uma tabela de detalhe com o total, o anterior, a variação, a média por dia, a parte do total e o número de retiradas de cada um. Sem nada no período anterior, o painel diz que não há base para comparar em vez de mostrar um percentual.
-5. **Dado** de 2 a 4 escolhidos na dimensão comparada, **quando** a análise abre, **então** a evolução mostra um traço de cada um, com o nome na ponta e na legenda. Com um só, ou com mais de 4, mostra a soma comparada com o período anterior. As cores seguem a ordem da escolha, e os escolhidos sem nada no período aparecem com zero.
+5. **Dado** de 2 a 8 escolhidos na dimensão comparada, **quando** a análise abre, **então** a evolução mostra um traço de cada um, com o nome na ponta e na legenda. Com um só, ou com mais de 8, mostra a soma comparada com o período anterior. As cores seguem a ordem da escolha, e os escolhidos sem nada no período aparecem com zero.
 6. **Dado** um período de até 45 dias, **quando** o painel monta os gráficos, **então** agrupa por dia; até 200 dias, por semana (a partir da segunda-feira); acima disso, por mês.
-7. **Dado** o ranking, **quando** o Gestor clica numa barra, **então** os números e os gráficos de consumo põem aquele em foco, com o aviso "Em foco" e o botão "Tirar o foco". Clicar de novo na mesma barra também tira o foco. Sem escolhidos, os 4 maiores têm cor própria e o resto soma em "Outros", em cinza.
+7. **Dado** o ranking, **quando** o Gestor clica numa barra, **então** os números e os gráficos de consumo põem aquele em foco, com o aviso "Em foco" e o botão "Tirar o foco". Clicar de novo na mesma barra também tira o foco. Até 8 têm cor própria em todos os gráficos, também no ranking: os escolhidos, na ordem da escolha, ou, sem escolha, os 8 maiores. Só do 9º em diante o resto soma em "Outros", em cinza.
 8. **Dado** filtros de destino ou colaborador, **quando** o gráfico de entradas e saídas é montado, **então** ele usa só os filtros de item, aplicação e fabricante e diz isso no subtítulo, porque compra não tem destino. Os itens em alerta também contam só os itens dos filtros.
 9. **Dado** qualquer gráfico, **quando** o usuário passa o mouse ou usa as setas do teclado, **então** vê o valor de cada ponto; e cada gráfico tem "Ver dados em tabela" com os mesmos números (RNF-10).
 10. **Dado** uma saída estornada, **quando** o painel soma, **então** ela não conta (RN-12). As horas são as de Brasília. Perda sem destino ou sem colaborador aparece como "Sem destino" ou "Sem colaborador".
@@ -374,3 +374,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.10 | 28/09/2026 | RF-02, critérios 12 e 13: matrícula única e edição dos dados do usuário (RN-21d). RNF-02: tabelas sem rolagem lateral quando cabem na tela. |
 | 1.11 | 28/09/2026 | Novo RF-17a: painel de análise dos relatórios, com gráficos interativos, comparação com o período anterior e filtro por clique no ranking. O relatório em tabela do RF-17 continua como está. |
 | 1.12 | 28/09/2026 | RF-17a reescrito: a análise vira página própria em Gestão ("Análise"), com medida (consumo, perdas ou os dois), dimensão de comparação (item, destino, colaborador, aplicação, fabricante), filtros de vários valores em qualquer combinação, comparação lado a lado de 2 a 4 escolhidos, tabela de detalhe e CSV com os filtros. |
+| 1.13 | 28/09/2026 | RF-17a, critérios 5 e 7: 8 cores próprias em vez de 4. Com 5 a 8 itens, nenhum fica cinza, e a evolução lado a lado vai até 8. |

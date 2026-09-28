@@ -1247,7 +1247,7 @@ export const SUITES: SuiteLab[] = [
     id: 'RF-17a',
     titulo: 'Um traço por escolhido na evolução',
     regra:
-      'De 2 a 4 escolhidos, sem nenhum em foco pelo clique, a evolução mostra um traço de cada. Com 1, ou com mais de 4, mostra a soma.',
+      'De 2 a 8 escolhidos, sem nenhum em foco pelo clique, a evolução mostra um traço de cada, com as 8 cores da paleta. Com 1, ou com mais de 8, mostra a soma.',
     casos: casos(casosComparacao),
     executar: (e) => {
       const { escolhidos, emFoco } = e as { escolhidos: number; emFoco: boolean }

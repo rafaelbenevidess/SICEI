@@ -192,4 +192,36 @@ describe('RF-17a · Painel de análise', () => {
     expect(screen.getByText(/Nada encontrado com estes filtros/)).toBeInTheDocument()
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
+
+  describe('seis itens (o caso do print): nenhum fica cinza', () => {
+    const seis = ['PST-001', 'PST-002', 'PST-003', 'PST-004', 'PST-005', 'PST-006']
+    const comSeis: DadosDoPainel = {
+      ...dados,
+      porDia: seis.map((chave, i) => ({
+        dia: '2026-09-25',
+        chave,
+        nome: `Pastilha ${i + 1}`,
+        quantidade: 60 - i * 10,
+        vezes: 1,
+      })),
+    }
+    const coresDasBarras = () =>
+      within(regiao(/^Por item/))
+        .getAllByRole('button')
+        .map((b) => (b.querySelector('[style*="background"]') as HTMLElement).style.background)
+
+    it('sem escolha, cada um dos 6 tem cor própria no ranking e na composição, sem "Outros"', () => {
+      render(<PainelAnalitico dados={comSeis} />)
+      expect(coresDasBarras()).toEqual(seis.map((_, i) => `var(--serie-${i + 1})`))
+      expect(within(regiao(/^Composição/)).getByRole('list')).not.toHaveTextContent('Outros')
+    })
+
+    it('escolhendo os 6, a evolução mostra um traço de cada, nas cores da ordem da escolha', () => {
+      const escolhidos = [...seis].reverse().map((chave) => ({ chave, nome: chave }))
+      render(<PainelAnalitico dados={{ ...comSeis, escolhidos }} />)
+      expect(regiao(/^Evolução, lado a lado/)).toBeInTheDocument()
+      // o ranking vem do maior (PST-001) para o menor, mas a cor segue a ordem da escolha
+      expect(coresDasBarras()).toEqual(seis.map((_, i) => `var(--serie-${6 - i})`))
+    })
+  })
 })

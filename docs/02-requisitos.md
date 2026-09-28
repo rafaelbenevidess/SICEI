@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.10 (validada) |
+| **Versão** | 1.11 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -40,6 +40,7 @@ Os requisitos estão classificados pelo método MoSCoW:
 | RF-15 | Histórico de movimentações com filtros por período, item, tipo, usuário, destino, colaborador e OP | Must | RN-09 |
 | RF-16 | Painel geral: itens em alerta, consumo do mês, itens mais consumidos, últimas movimentações | Must | RN-17 |
 | RF-17 | Relatório de consumo por item, destino, colaborador e período | Must | RN-16 |
+| RF-17a | Painel de análise do consumo, com gráficos interativos e filtro por clique | Should | RN-09, RN-12, RN-17 |
 | RF-18 | Relatório de movimentação | Must | RN-09 |
 | RF-19 | Relatório de necessidade de reposição (sugestão de compra) | Must | RN-03, RN-15, RN-16, RN-20 |
 | RF-20 | Exportar relatórios em CSV e PDF | Should | RN-23 |
@@ -174,6 +175,18 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 ### RF-17. Relatório de consumo
 1. **Dado** um período e um agrupamento (item, destino ou colaborador), **quando** o Gestor gera o relatório, **então** vê as quantidades consumidas, sem contar as saídas estornadas, e o consumo médio diário de cada item.
 
+### RF-17a. Painel de análise
+Complementa o RF-17: o relatório em tabela continua sendo a leitura rápida, e a aba Análise mostra o mesmo consumo em gráficos, para acompanhar a evolução.
+
+1. **Dado** um período e um agrupamento, **quando** o Gestor abre a aba Análise, **então** vê quatro números (consumo no período, média por dia, maior consumo num só dia, semana ou mês, e itens em alerta agora) e os gráficos de evolução, ranking, composição, dia da semana × hora e entradas × saídas.
+2. **Dado** o consumo do período e o do período anterior do mesmo tamanho, **quando** o painel abre, **então** o gráfico de evolução mostra os dois e o número do consumo traz a variação em %. Sem consumo no período anterior, o painel diz que não há base para comparar em vez de mostrar um percentual.
+3. **Dado** um período de até 45 dias, **quando** o painel monta os gráficos, **então** agrupa por dia; até 200 dias, por semana (a partir da segunda-feira); acima disso, por mês.
+4. **Dado** o ranking, **quando** o Gestor clica numa barra, **então** os números e os gráficos de consumo passam a mostrar só aquele item, destino ou colaborador, com um aviso "Filtrando por" e o botão "Tirar o filtro". Clicar de novo na mesma barra também tira o filtro. As cores seguem o item, não a posição no ranking.
+5. **Dado** mais de 4 itens no gráfico de composição, **quando** o painel abre, **então** os 4 maiores têm cor própria e o resto soma em "Outros", em cinza.
+6. **Dado** qualquer gráfico, **quando** o usuário passa o mouse ou usa as setas do teclado, **então** vê o valor de cada ponto; e cada gráfico tem "Ver dados em tabela" com os mesmos números (RNF-10).
+7. **Dado** uma saída estornada, **quando** o painel soma o consumo, **então** ela não conta (RN-12). As horas são as de Brasília.
+8. **Dado** os atalhos "7 dias", "30 dias", "90 dias" e "12 meses", **quando** o Gestor clica num deles, **então** o painel recarrega com o período terminando hoje.
+
 ### RF-18. Relatório de movimentação
 1. **Dado** um período, **quando** o Gestor gera o relatório, **então** vê para cada item o saldo inicial, as entradas, as saídas e o saldo final, e o saldo final bate com o saldo atual quando o período termina hoje.
 
@@ -265,7 +278,7 @@ O RNF-09 (interoperabilidade com ERP) saiu junto com os RF-23 e RF-24.
 | Saldo e painel (RF-11, RF-16) | ✅ | ✅ | ✅ | ✅ |
 | Alertas (RF-13) | ✅ | ✅ (marca ciente) | 👁️ | 👁️ |
 | Histórico de movimentações (RF-15) | ✅ | ✅ | ✅ | ❌ |
-| Relatórios e exportação (RF-17 a RF-20) | ✅ | ✅ | ❌ | ❌ |
+| Relatórios, painel de análise e exportação (RF-17 a RF-20, RF-17a) | ✅ | ✅ | ❌ | ❌ |
 | Log de auditoria e conferências (RF-21) | ✅ | ✅ | ❌ | ❌ |
 | Imprimir etiquetas QR (RF-22) | ✅ | ✅ | ✅ | ❌ |
 
@@ -287,17 +300,17 @@ Toda regra de negócio está coberta por pelo menos um requisito.
 | RN-06 | RF-07, RF-08, RF-11, RF-25 |
 | RN-07 | RF-07, RF-08 |
 | RN-08 | RF-08, RF-09 |
-| RN-09 | RF-07, RF-08, RF-09, RF-10, RF-15, RF-18, RF-21, RF-25 |
+| RN-09 | RF-07, RF-08, RF-09, RF-10, RF-15, RF-17a, RF-18, RF-21, RF-25 |
 | RN-09a | RF-21 |
 | RN-09b | RF-21 |
 | RN-10 | RF-07 |
 | RN-11 | RF-06, RF-07, RF-08, RF-27 |
-| RN-12 | RF-09 |
+| RN-12 | RF-09, RF-17a |
 | RN-13 | RF-10 |
 | RN-14 | RF-12 |
 | RN-15 | RF-11, RF-19 |
 | RN-16 | RF-17, RF-19, RF-26 |
-| RN-17 | RF-11, RF-16 |
+| RN-17 | RF-11, RF-16, RF-17a |
 | RN-18 | RF-13 |
 | RN-19 | RF-13, RF-14, RF-26 |
 | RN-20 | RF-19 |
@@ -321,7 +334,7 @@ Conferência de que cada ponto da demanda original tem requisito correspondente.
 | Alertas quando o item atingir o mínimo | RF-13, RF-14, RN-17, RN-18 |
 | Ajudar no planejamento das compras | RF-19, RF-05a, RN-15, RN-20 |
 | Histórico de movimentações | RF-15, RF-21 |
-| Relatórios de consumo, movimentação e reposição | RF-17, RF-18, RF-19, RF-20 |
+| Relatórios de consumo, movimentação e reposição | RF-17, RF-17a, RF-18, RF-19, RF-20 |
 | Melhor controle dos recursos usados na produção | RF-06, RF-17, RF-27 (consumo por destino, OP e colaborador) |
 | Cadastro de tipos de pastilhas | RF-03 |
 | Cadastro de fabricantes e fornecedores | RF-04, RF-05 |
@@ -355,3 +368,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.8 | 27/09/2026 | A mesma tolerância em todos os campos que permitem: RF-11 (sugestões na busca do topo, campos de escolha com busca), RF-03 (código equivalente e padronizado), RF-15 e RF-21 (filtros de texto), RF-22 (posição digitada e filtro de etiquetas), RF-25 (código e posição na planilha). |
 | 1.9 | 28/09/2026 | RF-02, critérios 9 a 11: Administrador principal protegido e só ele gerencia Administradores (RN-21c). |
 | 1.10 | 28/09/2026 | RF-02, critérios 12 e 13: matrícula única e edição dos dados do usuário (RN-21d). RNF-02: tabelas sem rolagem lateral quando cabem na tela. |
+| 1.11 | 28/09/2026 | Novo RF-17a: painel de análise dos relatórios, com gráficos interativos, comparação com o período anterior e filtro por clique no ranking. O relatório em tabela do RF-17 continua como está. |

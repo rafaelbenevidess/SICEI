@@ -4,6 +4,24 @@
  * mesmas funções de src/domain que o sistema usa.
  */
 import { decidirAlerta, type NivelAlerta } from '@/domain/alertas'
+import {
+  chaveDoBalde,
+  escalaDoEixo,
+  maioresEOutros,
+  periodoAnterior,
+  tamanhoDoBalde,
+  variacao,
+  type TamanhoDoBalde,
+} from '@/domain/analise'
+import {
+  casosChaveDoBalde,
+  casosEscala,
+  casosMaioresEOutros,
+  casosPeriodoAnterior,
+  casosTamanhoDoBalde,
+  casosVariacao as casosVariacaoDoConsumo,
+  PARCELAS_DE_EXEMPLO,
+} from '@/domain/analise.casos'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
 import { buscarItens, buscarOpcoes } from '@/domain/busca'
@@ -1111,6 +1129,101 @@ export const SUITES: SuiteLab[] = [
           ? { resultado: 'aceito', explicacao: 'todos os campos obrigatórios preenchidos' }
           : { resultado: 'recusado', explicacao: Object.values(r.erros).join(' ') }
       },
+    },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Agrupamento do painel no tempo',
+    regra:
+      'Até 45 dias o gráfico mostra um ponto por dia; até 200, por semana; acima disso, por mês.',
+    casos: casos(casosTamanhoDoBalde),
+    executar: (e) => tamanhoDoBalde(e as number),
+    formatar: (v) =>
+      ({ dia: 'por dia', semana: 'por semana', mes: 'por mês' })[v as TamanhoDoBalde],
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Semana e mês de cada data',
+    regra: 'Por semana, a data cai na segunda-feira da sua semana; por mês, no mês dela.',
+    casos: casos(casosChaveDoBalde),
+    executar: (e) => {
+      const { data, tamanho } = e as { data: string; tamanho: TamanhoDoBalde }
+      return chaveDoBalde(data, tamanho)
+    },
+    formatar: (v) => String(v),
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Período anterior para comparar',
+    regra: 'O período anterior tem o mesmo número de dias e termina na véspera do início.',
+    casos: casos(casosPeriodoAnterior),
+    executar: (e) => {
+      const { deIso, ateIso } = e as { deIso: string; ateIso: string }
+      return periodoAnterior(deIso, ateIso)
+    },
+    formatar: (v) => {
+      const p = v as { deIso: string; ateIso: string }
+      return `${p.deIso} a ${p.ateIso}`
+    },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Variação do consumo',
+    regra:
+      '(atual − anterior) ÷ anterior × 100, com uma casa. Sem consumo no período anterior não há percentual.',
+    casos: casos(casosVariacaoDoConsumo),
+    executar: (e) => {
+      const { atual, anterior } = e as { atual: number; anterior: number }
+      return variacao(atual, anterior)
+    },
+    formatar: (v) => (v === null ? 'sem percentual' : `${br(v as number)}%`),
+    formulario: {
+      campos: [
+        { nome: 'atual', rotulo: 'Consumo no período', tipo: 'numero', padrao: '133' },
+        { nome: 'anterior', rotulo: 'Consumo no período anterior', tipo: 'numero', padrao: '100' },
+      ],
+      esperado: { nome: 'esperado', rotulo: 'Variação esperada (%)', tipo: 'texto' },
+      executar: (v) => {
+        const atual = num(v.atual)
+        const anterior = num(v.anterior)
+        const r = variacao(atual, anterior)
+        return r === null
+          ? { resultado: 'sem percentual', explicacao: 'sem consumo no período anterior' }
+          : {
+              resultado: String(r),
+              explicacao: `(${br(atual)} − ${br(anterior)}) ÷ ${br(anterior)} × 100 = ${br(r)}%`,
+            }
+      },
+    },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Maiores consumidores e "Outros"',
+    regra:
+      'O gráfico mostra os maiores pelo total; o resto soma numa barra "Outros". Empate fica em ordem de código.',
+    casos: casos(casosMaioresEOutros),
+    executar: (e) => {
+      const r = maioresEOutros(PARCELAS_DE_EXEMPLO, e as number)
+      return {
+        chaves: r.map((p) => p.chave),
+        outros: r.find((p) => p.chave === 'Outros')?.total ?? 0,
+      }
+    },
+    formatar: (v) => {
+      const r = v as { chaves: string[]; outros: number }
+      return `${r.chaves.join(', ')}${r.outros ? ` (Outros = ${r.outros})` : ''}`
+    },
+  },
+  {
+    id: 'RF-17a',
+    titulo: 'Eixo dos gráficos em números redondos',
+    regra:
+      'O topo do eixo é o menor múltiplo de 1, 2, 2,5 ou 5 (× 10ⁿ) que cabe em até 5 divisões.',
+    casos: casos(casosEscala),
+    executar: (e) => escalaDoEixo(e as number),
+    formatar: (v) => {
+      const r = v as { topo: number; passos: number[] }
+      return `até ${br(r.topo)}: ${r.passos.map(br).join(', ')}`
     },
   },
 ]

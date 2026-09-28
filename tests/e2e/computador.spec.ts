@@ -224,6 +224,29 @@ test('RF-20 / RN-23: itens e movimentações exportam CSV', async ({ page }) => 
   }
 })
 
+test('RF-17a: painel de análise filtra os gráficos ao clicar no ranking', async ({ page }) => {
+  await entrarComoAdmin(page)
+  await page.goto('/relatorios')
+  await page.getByRole('link', { name: 'Análise' }).click()
+  await expect(page.getByRole('region', { name: 'Evolução do consumo' })).toBeVisible()
+  await expect(page.getByRole('img').first()).toBeVisible()
+  // o seed consome 48 un. do PST-001, o maior do ranking
+  const ranking = page.getByRole('region', { name: 'Consumo por item' })
+  const primeiro = ranking.getByRole('button').first()
+  await expect(primeiro).toContainText('PST-001')
+  await primeiro.click()
+  await expect(page.getByRole('status')).toContainText('Filtrando por PST-001')
+  await expect(page.getByRole('region', { name: 'Evolução do consumo · PST-001' })).toBeVisible()
+  await page.getByRole('button', { name: 'Tirar o filtro' }).click()
+  await expect(page.getByRole('status')).toHaveCount(0)
+  // atalho de período recarrega o painel com o novo intervalo
+  await page.getByRole('link', { name: '90 dias' }).click()
+  await expect(page).toHaveURL(/tipo=analise/)
+  await expect(page.getByRole('region', { name: 'Evolução do consumo' })).toContainText(
+    'por semana',
+  )
+})
+
 test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page }) => {
   await entrarComoAdmin(page)
   for (const caminho of [
@@ -236,6 +259,7 @@ test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page
     '/cadastros?aba=fornecedores',
     '/cadastros?aba=posicoes',
     '/relatorios?tipo=reposicao',
+    '/relatorios?tipo=analise',
     '/admin/usuarios',
     '/admin/auditoria',
   ]) {

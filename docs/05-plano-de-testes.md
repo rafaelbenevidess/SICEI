@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.7 |
+| **Versão** | 1.8 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -56,6 +56,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-01 código equivalente e padronizado | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório), `importacao.test.ts` ("PST1" e PST-001 no mesmo arquivo) | `cadastros.test.ts` (criar e editar recusam o equivalente, "pst 2" grava PST-002, prévia da planilha) |
 | RN-25 posição digitada | `posicao.test.ts` (casos em `posicao.casos.ts`, também no Laboratório), `importacao.test.ts` ("a1g3c4" entra como A01-G03-C04) | E2E da posição do item novo |
 | RF-02 prévia do login | `login.test.ts` (`previaDoLogin`) | — |
+| RF-17a painel de análise | `analise.test.ts` (casos em `analise.casos.ts`, também no Laboratório: dia, semana ou mês, período anterior, variação, maiores e "Outros", eixo), `PainelAnalitico.test.tsx` (números do período, ranking, filtro pelo clique e "Tirar o filtro", aviso sem movimentação) | `analise.test.ts` (consumo sem a saída estornada, agrupamento por destino, hora de São Paulo, entradas e saídas pelo efeito no saldo, CSV da aba); E2E do computador |
 | Interface | `componentes.test.tsx` (selo com texto, campo de senha, toast, rótulos do gauge), `tema.test.ts`, `menu.test.ts` | — |
 | Segurança web | `proxy.test.ts` (CSP), `redirecionamento.test.ts` (open redirect) | — |
 
@@ -94,9 +95,10 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 7. Novo item a partir da aba Itens de Cadastros: código PST-007 já sugerido, PST-001 avisado como em uso e bloqueado, fabricante e fornecedor cadastrados na hora e já escolhidos, item gravado.
 8. O item novo vai para A04-G02-C01, digitada como "a4g2c1" no campo com busca → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
 9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02"; a busca do topo sugere o PST-002 para "pst2" e abre o item; o histórico acha a OP-E2E-1 por "ope2e1".
-10. Painel, itens, alertas, movimentações, relatórios, cadastros, usuários e auditoria sem rolagem horizontal na página e sem tabela rolando de lado em 1366 px.
+10. Relatórios → Análise: gráficos na tela, PST-001 no topo do ranking → clicar filtra ("Filtrando por PST-001", evolução só do item) → "Tirar o filtro" volta ao total → o atalho "90 dias" agrupa por semana.
+11. Painel, itens, alertas, movimentações, relatórios (com a aba Análise), cadastros, usuários e auditoria sem rolagem horizontal na página e sem tabela rolando de lado em 1366 px.
 
-Resultado da última execução: 20 de 20 passaram.
+Resultado da última execução: 21 de 21 passaram.
 
 ## 5. Histórico do documento
 
@@ -110,3 +112,4 @@ Resultado da última execução: 20 de 20 passaram.
 | 1.5 | 27/09/2026 | A mesma busca em todos os campos: testes do campo de escolha com busca, das sugestões do topo, dos filtros de texto (integração), do código equivalente e da posição digitada; roteiros E2E atualizados. |
 | 1.6 | 28/09/2026 | Testes do Administrador principal (RN-21c) e do login inexistente fora do log. Cabeçalho de versão corrigido. |
 | 1.7 | 28/09/2026 | Testes da matrícula e da edição de usuários (RN-21d); E2E confere tabelas sem rolagem lateral em 1366 px. |
+| 1.8 | 28/09/2026 | Testes do painel de análise (RF-17a): unidade, componente, integração e E2E; suítes novas no Laboratório. E2E com 21 fluxos. |

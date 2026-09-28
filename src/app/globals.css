@@ -35,6 +35,20 @@
   --zero-ink: #fff;
   --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
   --sombra-pop: 0 12px 32px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.06);
+  /* gráficos (RF-17a): paleta validada para daltonismo contra a superfície de cada tema.
+     A ordem é fixa: a cor segue a entidade, nunca a posição no ranking */
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+  --serie-cinza: #b3b8c2;
+  --calor-1: #cde2fb;
+  --calor-2: #9ec5f4;
+  --calor-3: #6da7ec;
+  --calor-4: #3987e5;
+  --calor-5: #256abf;
+  --calor-6: #184f95;
+  --calor-7: #0d366b;
   color-scheme: light;
 }
 
@@ -66,6 +80,19 @@
   --zero-ink: oklch(0.18 0.01 255);
   --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
   --sombra-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --serie-4: #c98500;
+  --serie-cinza: #5b616c;
+  /* no fundo escuro, pouco consumo fica perto do fundo e muito consumo, claro */
+  --calor-1: #0d366b;
+  --calor-2: #184f95;
+  --calor-3: #256abf;
+  --calor-4: #3987e5;
+  --calor-5: #6da7ec;
+  --calor-6: #9ec5f4;
+  --calor-7: #cde2fb;
   color-scheme: dark;
 }
 

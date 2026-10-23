@@ -1,0 +1,141 @@
+@startuml classes-acesso
+' Diagrama de classes 2/2: acesso, segurança e auditoria
+' Atributos: prisma/schema.prisma. Operações: funções puras de src/domain/*.ts
+!include estilo.iuml
+skinparam linetype polyline
+skinparam nodesep 45
+skinparam ranksep 60
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1F3A5F
+skinparam ClassHeaderBackgroundColor #DCE6F2
+skinparam ClassFontStyle bold
+skinparam ClassAttributeFontSize 11
+skinparam StereotypeCBackgroundColor #DCE6F2
+skinparam StereotypeEBackgroundColor #FCE9C8
+hide empty members
+
+title SICEI · Diagrama de classes (2/2): acesso, segurança e auditoria
+
+class Usuario {
+  - id : UUID
+  - nome : String
+  - sobrenome : String
+  - login : String {único, nome.sobrenome}
+  - matricula : String [0..1] {único}
+  - setor : String
+  - perfil : Perfil
+  - ativo : Boolean
+  - principal : Boolean
+  - deveTrocarSenha : Boolean
+  - senhaHash : String {Argon2id}
+  - falhasLogin : Integer
+  - bloqueadoEm : DateTime [0..1]
+  --
+  + gerarLogin(nome, sobrenome, loginsExistentes) : String
+  + gerarSenhaProvisoria() : String
+  + problemasDaSenha(senha, login, repeteUmaDasUltimas) : String[*]
+  + deveBloquear(falhasConsecutivas) : Boolean
+  + podeAgirSobreUsuario(ator, alvo, acao, novoPerfil) : Decisao
+  + podeCriarComPerfil(ator, perfil) : Decisao
+  + formatarNomeProprio(texto) : String
+}
+
+class Sessao {
+  - id : String {SHA-256 do token}
+  - criadaEm : DateTime
+  - ultimoUso : DateTime
+  - expiraEm : DateTime
+  - ip : String [0..1]
+  - userAgent : String [0..1]
+}
+
+class HistoricoSenha {
+  - id : UUID
+  - senhaHash : String
+  - criadoEm : DateTime
+}
+
+class TentativaLogin {
+  - id : Long
+  - ip : String
+  - login : String
+  - sucesso : Boolean
+  - criadoEm : DateTime
+  --
+  + excedeuLimiteDoIp(tentativasNaJanela) : Boolean
+}
+
+class AuditLog <<imutável>> {
+  - seq : Long
+  - acao : String
+  - entidade : String
+  - entidadeId : String [0..1]
+  - antes : JSON [0..1]
+  - depois : JSON [0..1]
+  - ip : String [0..1]
+  - userAgent : String [0..1]
+  - criadoEm : DateTime
+  - prevHash : String
+  - hash : String {único}
+  --
+  + calcularHash(prevHash, seq, dados) : String
+  + encadear(registros) : RegistroEncadeado[*]
+  + verificarCadeia(registros) : ResultadoVerificacao
+}
+
+class Parametro {
+  - chave : String
+  - valor : String
+  - atualizadoEm : DateTime
+}
+
+class Permissoes <<utilitário>> {
+  + MATRIZ : Map<Perfil, Permissao[*]>
+  --
+  + pode(perfil, permissao) : Boolean
+  + exigirPermissao(perfil, permissao) : void
+  + permissaoDoTipo(tipo) : Permissao
+}
+
+enum Perfil <<enumeração>> {
+  ADMIN
+  GESTOR
+  ALMOXARIFE
+  CONSULTA
+}
+
+class Movimentacao {
+  (detalhada no diagrama 1/2)
+}
+
+class Alerta {
+  (detalhado no diagrama 1/2)
+}
+
+Usuario "1" -- "0..*" Sessao : abre >
+Usuario "1" -- "0..*" HistoricoSenha : guarda as últimas >
+Usuario "1" -- "0..*" Movimentacao : registra >
+Usuario "0..1" -- "0..*" Alerta : marca ciente >
+Usuario "0..1" .. "0..*" AuditLog : autor da ação >
+Usuario ..> Perfil
+Permissoes ..> Perfil
+Usuario ..> Permissoes : é conferido por >
+
+note right of AuditLog
+  hash = SHA-256(prevHash | seq | JSON canônico).
+  Alterar um registro direto no banco
+  quebra a cadeia, e verificarCadeia()
+  aponta o primeiro seq adulterado (RN-09a).
+end note
+
+note bottom of Parametro
+  janela do consumo médio (1 a 365 dias),
+  tempo de sessão (5 a 480 min),
+  e-mail corporativo dos avisos (RF-26)
+end note
+
+note left of Usuario
+  RN-21c: um único Administrador principal,
+  protegido também por trigger no banco.
+end note
+@enduml

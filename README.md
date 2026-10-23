@@ -73,6 +73,8 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).
 
+O Documento do Sistema entregue na UC Projeto Aplicado IV (DOCX e PDF no template da disciplina, com DER e diagramas UML em SVG) está em [docs/entrega-pa4](docs/entrega-pa4). Os diagramas são escritos em PlantUML (`diagramas/*.puml`, gerados por `diagramas/gerar.sh`) e o documento é montado por `fonte/montar_documento.py`.
+
 ## Uso de IA e autoria
 
 Este projeto foi feito com o Claude Code, assistente de programação da Anthropic. Os commits feitos pelo assistente trazem a linha `Co-Authored-By: Claude`. O autor definiu o que o sistema faz, aprovou cada etapa antes da seguinte, testou o sistema publicado e pediu as correções listadas abaixo. O assistente escreveu os documentos, o código e os testes a partir dessas decisões.

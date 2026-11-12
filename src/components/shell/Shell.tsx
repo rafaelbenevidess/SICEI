@@ -6,7 +6,6 @@ import {
   ArrowUpFromLine,
   Bell,
   ChartLine,
-  ChevronRight,
   FileChartColumn,
   FlaskConical,
   FolderOpen,
@@ -121,9 +120,7 @@ export function Shell({
       <nav aria-label="Menu principal" className="-mx-1 flex-1 overflow-y-auto px-1">
         {grupos.map((g) => (
           <div key={g.titulo} className="mb-3">
-            <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-[0.07em] text-ink-3 uppercase">
-              {g.titulo}
-            </p>
+            <p className="mb-1.5 px-2.5 text-xs text-ink-3">{g.titulo}</p>
             <ul className="flex flex-col gap-0.5">
               {g.itens.map((i) => {
                 const Icone = ICONES[i.icone]
@@ -133,7 +130,7 @@ export function Shell({
                     <Link
                       href={i.href}
                       aria-current={eh ? 'page' : undefined}
-                      className={`flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 no-underline ${eh ? 'bg-surface-3 font-semibold text-ink' : 'font-medium text-ink-2 hover:bg-surface-2 hover:text-ink'}`}
+                      className={`flex h-9 items-center gap-2.5 rounded-controle px-2.5 no-underline ${eh ? 'bg-surface font-medium text-ink shadow-pilula' : 'text-ink-2 hover:bg-(--fundo-cartao) hover:text-ink'}`}
                     >
                       <Icone
                         aria-hidden
@@ -154,14 +151,14 @@ export function Shell({
         ))}
         <Link
           href="/testes"
-          className="flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 font-medium text-ink-3 no-underline hover:bg-surface-2 hover:text-ink"
+          className="flex h-9 items-center gap-2.5 rounded-controle px-2.5 text-ink-3 no-underline hover:bg-(--fundo-cartao) hover:text-ink"
         >
           <FlaskConical aria-hidden className="size-[17px]" />
           Laboratório de testes
         </Link>
       </nav>
-      <div className="border-t border-line pt-3.5">
-        <div className="flex items-center gap-2.5 px-1">
+      <div className="cartao p-2.5">
+        <div className="flex items-center gap-2.5">
           <Avatar nome={usuario.nome} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{usuario.nome}</p>
@@ -169,7 +166,7 @@ export function Shell({
           </div>
           <BotaoTema inicial={tema} />
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-2.5 grid grid-cols-2 gap-2">
           <Link href="/trocar-senha" className={`${classeBotao('secundario', true)} w-full`}>
             <KeyRound aria-hidden />
             Senha
@@ -187,9 +184,7 @@ export function Shell({
 
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[252px_minmax(0,1fr)] print:block">
-      <aside className="nao-imprimir sticky top-0 hidden h-dvh border-r border-line bg-surface md:block">
-        {menu}
-      </aside>
+      <aside className="nao-imprimir sticky top-0 hidden h-dvh md:block">{menu}</aside>
 
       {gaveta && (
         <div className="nao-imprimir fixed inset-0 z-40 md:hidden">
@@ -199,14 +194,14 @@ export function Shell({
             onClick={() => setGaveta(false)}
             className="absolute inset-0 bg-black/40"
           />
-          <aside className="absolute inset-y-0 left-0 w-[284px] max-w-[85vw] bg-surface shadow-pop">
+          <aside className="absolute inset-y-0 left-0 w-[284px] max-w-[85vw] bg-bg shadow-pop">
             {menu}
           </aside>
         </div>
       )}
 
       <div className="flex min-w-0 flex-col">
-        <header className="nao-imprimir sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-[color-mix(in_oklch,var(--bg)_88%,transparent)] px-4 backdrop-blur-[10px] md:px-10">
+        <header className="nao-imprimir sticky top-0 z-20 flex h-[68px] items-center gap-3 bg-[color-mix(in_oklch,var(--bg)_82%,transparent)] px-4 backdrop-blur-md md:px-8 md:pl-4">
           <button
             type="button"
             onClick={() => setGaveta(true)}
@@ -217,8 +212,9 @@ export function Shell({
           </button>
           {onde && (
             <p className="hidden shrink-0 items-center gap-2 text-[13px] text-ink-3 min-[65rem]:flex">
+              <FolderOpen aria-hidden className="size-4" />
               {onde.grupo}
-              <ChevronRight aria-hidden className="size-3.5" />
+              <span aria-hidden>/</span>
               <span className="text-ink">{onde.tela}</span>
             </p>
           )}
@@ -226,17 +222,25 @@ export function Shell({
             <BuscaDoTopo />
             <Link
               href="/alertas"
-              className={`${classeBotao('secundario')} h-[38px] max-sm:px-3`}
+              className={`${classeBotao('secundario')} max-sm:px-3`}
               aria-label={`${alertas} ${alertas === 1 ? 'alerta aberto' : 'alertas abertos'}`}
             >
-              <Bell aria-hidden className={alertas > 0 ? 'text-crit' : ''} />
+              <span className="relative">
+                <Bell aria-hidden />
+                {alertas > 0 && (
+                  <span
+                    aria-hidden
+                    className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-crit ring-2 ring-surface"
+                  />
+                )}
+              </span>
               {alertas}
               <span className="max-sm:hidden">{alertas === 1 ? 'alerta' : 'alertas'}</span>
             </Link>
             {podeRegistrarSaida && (
               <Link
                 href="/movimentacoes/nova?modo=saida"
-                className={`${classeBotao('primario')} h-[38px] max-sm:hidden`}
+                className={`${classeBotao('primario')} max-sm:hidden`}
               >
                 <ArrowUpFromLine aria-hidden />
                 Registrar saída
@@ -245,7 +249,7 @@ export function Shell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 pt-6 pb-24 md:px-10 md:pt-8 md:pb-14">
+        <main className="flex-1 px-4 pt-4 pb-24 md:px-8 md:pt-5 md:pb-14 md:pl-4">
           <div className="mx-auto w-full max-w-[1400px]">{children}</div>
         </main>
         <div className="max-md:pb-16">{rodape}</div>
@@ -253,7 +257,7 @@ export function Shell({
 
       <nav
         aria-label="Atalhos"
-        className="nao-imprimir fixed inset-x-0 bottom-0 z-30 grid h-16 grid-cols-4 border-t border-line bg-surface md:hidden"
+        className="nao-imprimir fixed inset-x-0 bottom-0 z-30 grid h-16 grid-cols-4 border-t border-(--borda-cartao) bg-[color-mix(in_oklch,var(--surface)_86%,transparent)] backdrop-blur-md md:hidden"
       >
         {[
           { href: '/painel', rotulo: 'Painel', Icone: LayoutDashboard },
@@ -267,10 +271,10 @@ export function Shell({
               key={href}
               href={href}
               aria-current={eh ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-medium no-underline ${eh ? 'text-accent' : 'text-ink-3'}`}
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-medium no-underline ${eh ? 'text-ink' : 'text-ink-3'}`}
             >
               <span className="relative">
-                <Icone aria-hidden className="size-5" />
+                <Icone aria-hidden className={`size-5 ${eh ? 'text-accent' : ''}`} />
                 {href === '/alertas' && alertas > 0 && (
                   <span className="absolute -top-1.5 -right-2.5 rounded-full bg-crit px-1 text-[10px] leading-4 font-semibold text-white">
                     {alertas}

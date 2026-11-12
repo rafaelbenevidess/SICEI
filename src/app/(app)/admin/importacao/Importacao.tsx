@@ -25,7 +25,7 @@ function Passos({ atual, concluido }: { atual: Passo; concluido: boolean }) {
           <li
             key={n}
             aria-current={ativo ? 'step' : undefined}
-            className={`flex items-center gap-3 rounded-[14px] border px-4 py-3.5 ${
+            className={`flex items-center gap-3 rounded-cartao border px-4 py-3.5 ${
               ativo ? 'border-accent bg-accent-soft' : 'border-line bg-surface'
             }`}
           >
@@ -114,7 +114,7 @@ export function Importacao({ modelo }: { modelo: string }) {
     <div className="flex flex-col gap-5">
       <Passos atual={passo} concluido={importados !== null} />
 
-      <section className="rounded-[14px] border border-line bg-surface p-5 shadow-cartao sm:p-7">
+      <section className="cartao p-5 sm:p-7">
         {erro && (
           <p role="alert" className="mb-4 rounded-xl bg-crit-soft px-4 py-3 text-sm text-crit-ink">
             {erro}
@@ -280,7 +280,7 @@ export function Importacao({ modelo }: { modelo: string }) {
                 setArrastando(false)
                 escolher(e.dataTransfer.files?.[0])
               }}
-              className={`flex h-[220px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed px-4 text-center transition-colors focus-within:border-accent hover:border-accent hover:bg-accent-soft ${
+              className={`flex h-[220px] cursor-pointer flex-col items-center justify-center gap-2 rounded-cartao border-2 border-dashed px-4 text-center transition-colors focus-within:border-accent hover:border-accent hover:bg-accent-soft ${
                 arrastando ? 'border-accent bg-accent-soft' : 'border-line-2'
               }`}
             >

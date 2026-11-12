@@ -437,7 +437,7 @@ export default async function Cadastros({
         {editar && (
           <aside
             id="formulario"
-            className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[96rem]:sticky min-[96rem]:top-[88px]"
+            className="scroll-mt-24 cartao p-6 min-[96rem]:sticky min-[96rem]:top-[88px]"
           >
             <div className="mb-4 flex items-baseline justify-between gap-3">
               <h2 className="text-base font-semibold">{tituloForm}</h2>

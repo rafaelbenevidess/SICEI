@@ -162,10 +162,7 @@ export function LeitorQr({ autoIniciar = false }: { autoIniciar?: boolean }) {
   const mostrandoVideo = estado === 'abrindo' || estado === 'lendo'
 
   return (
-    <section
-      aria-label="Leitor de QR"
-      className="overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao"
-    >
+    <section aria-label="Leitor de QR" className="overflow-hidden cartao">
       <div className="relative aspect-[4/5] max-h-[62dvh] w-full overflow-hidden bg-[#0d1117] sm:aspect-video">
         <video
           ref={video}

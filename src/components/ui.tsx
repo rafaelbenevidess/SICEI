@@ -28,7 +28,7 @@ export function Pagina({
       <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
           {antes && <div className="mb-2 text-[13px] text-ink-3">{antes}</div>}
-          <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.025em]">{titulo}</h1>
+          <h1 className="text-[30px] leading-[1.12] font-normal tracking-[-0.035em]">{titulo}</h1>
           {descricao && <p className="mt-1.5 max-w-3xl text-ink-2">{descricao}</p>}
         </div>
         {acoes && <div className="nao-imprimir flex flex-wrap items-center gap-2">{acoes}</div>}
@@ -55,13 +55,11 @@ export function Cartao({
   semPadding?: boolean
 }) {
   return (
-    <section
-      className={`min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao ${className}`}
-    >
+    <section className={`cartao min-w-0 overflow-hidden ${className}`}>
       {titulo && (
         <header className="flex items-start justify-between gap-3 px-6 pt-5 pb-4">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold">{titulo}</h2>
+            <h2 className="text-[15px] font-medium">{titulo}</h2>
             {subtitulo && <p className="mt-0.5 text-[13px] text-ink-3">{subtitulo}</p>}
           </div>
           {acao && <div className="nao-imprimir shrink-0 text-[13px] font-medium">{acao}</div>}
@@ -74,7 +72,7 @@ export function Cartao({
 
 const ESTILO_TABELA =
   'w-full border-collapse text-left text-sm ' +
-  '[&_th]:bg-surface-2 [&_th]:px-4 [&_th]:py-3 [&_th]:text-xs [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-ink-3 ' +
+  '[&_th]:px-4 [&_th]:pt-3.5 [&_th]:pb-2.5 [&_th]:text-xs [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-ink-3 ' +
   '[&_td]:border-t [&_td]:border-line [&_td]:px-4 [&_td]:py-3.5 [&_td]:align-middle ' +
   '[&_th:first-child]:pl-6 [&_td:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:last-child]:pr-6 ' +
   '[&_tbody_tr:hover]:bg-surface-2'
@@ -105,19 +103,33 @@ export function Tabela({
     </div>
   )
   if (emCartao) return tabela
-  return (
-    <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
-      {tabela}
-    </div>
-  )
+  return <div className="cartao min-w-0 overflow-hidden">{tabela}</div>
 }
 
 /** Cores de cada status: selo (fundo e texto) e cor sólida (barras, bolinhas). */
-export const CORES_STATUS: Record<string, { selo: string; solido: string }> = {
-  OK: { selo: 'bg-ok-soft text-ok-ink', solido: 'bg-ok' },
-  ATENCAO: { selo: 'bg-warn-soft text-warn-ink', solido: 'bg-warn' },
-  CRITICO: { selo: 'bg-crit-soft text-crit-ink', solido: 'bg-crit' },
-  ZERADO: { selo: 'bg-zero-bg text-zero-ink', solido: 'bg-zero-bg' },
+export const CORES_STATUS: Record<
+  string,
+  { selo: string; solido: string; suave: string; variavel: string }
+> = {
+  OK: { selo: 'bg-ok-soft text-ok-ink', solido: 'bg-ok', suave: 'bg-ok-soft', variavel: '--ok' },
+  ATENCAO: {
+    selo: 'bg-warn-soft text-warn-ink',
+    solido: 'bg-warn',
+    suave: 'bg-warn-soft',
+    variavel: '--warn',
+  },
+  CRITICO: {
+    selo: 'bg-crit-soft text-crit-ink',
+    solido: 'bg-crit',
+    suave: 'bg-crit-soft',
+    variavel: '--crit',
+  },
+  ZERADO: {
+    selo: 'bg-zero-bg text-zero-ink',
+    solido: 'bg-zero-bg',
+    suave: 'bg-surface-3',
+    variavel: '--zero-bg',
+  },
 }
 
 /** RNF-10: o status nunca depende só da cor; o selo sempre tem bolinha e texto. */
@@ -196,15 +208,15 @@ export function Aviso({
 
 export function Vazio({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-[14px] border border-dashed border-line-2 bg-surface p-8 text-center text-sm text-ink-3">
+    <p className="rounded-cartao border border-dashed border-line-2 p-8 text-center text-sm text-ink-3">
       {children}
     </p>
   )
 }
 
 const BOTOES = {
-  primario: 'bg-accent text-on-accent hover:bg-accent-hover',
-  secundario: 'border border-line-2 bg-surface text-ink hover:bg-surface-2',
+  primario: 'bg-accent text-on-accent shadow-pilula hover:bg-accent-hover',
+  secundario: 'bg-surface text-ink shadow-pilula hover:bg-surface-2',
   perigo: 'border border-crit bg-surface text-crit-ink hover:bg-crit-soft',
   escuro: 'bg-ink text-bg hover:opacity-90',
   fantasma: 'text-ink-2 hover:bg-surface-2',
@@ -217,7 +229,7 @@ export type VarianteBotao = keyof typeof BOTOES
 /** Classes de botão, para usar em <button>, <Link> ou <a>. */
 export function classeBotao(variante: VarianteBotao = 'primario', pequeno = false): string {
   const tamanho = pequeno ? 'h-8 px-3 text-[13px]' : 'h-10 px-4 text-sm'
-  return `inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-60 [&_svg]:size-4 ${tamanho} ${BOTOES[variante]}`
+  return `inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-controle font-medium no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-60 [&_svg]:size-4 ${tamanho} ${BOTOES[variante]}`
 }
 
 export function LinkBotao({
@@ -252,17 +264,19 @@ export function Segmentado({
   return (
     <nav
       aria-label={rotulo}
-      className="inline-flex max-w-full flex-wrap gap-0.5 rounded-[9px] bg-surface-3 p-[3px]"
+      className="inline-flex max-w-full flex-wrap gap-0.5 rounded-[12px] bg-surface p-[3px] shadow-pilula"
     >
       {opcoes.map((o) => (
         <Link
           key={o.href}
           href={o.href}
           aria-current={o.ativo ? 'page' : undefined}
-          className={`inline-flex h-[34px] items-center gap-1.5 rounded-[7px] px-3 text-[13px] font-medium whitespace-nowrap no-underline ${o.ativo ? 'bg-surface text-ink shadow-cartao' : 'text-ink-2 hover:text-ink'}`}
+          className={`inline-flex h-[34px] items-center gap-1.5 rounded-[9px] px-3.5 text-[13px] font-medium whitespace-nowrap no-underline ${o.ativo ? 'bg-ink text-bg' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'}`}
         >
           {o.rotulo}
-          {o.contagem !== undefined && <span className="text-ink-3">{o.contagem}</span>}
+          {o.contagem !== undefined && (
+            <span className={o.ativo ? 'opacity-60' : 'text-ink-3'}>{o.contagem}</span>
+          )}
         </Link>
       ))}
     </nav>
@@ -297,8 +311,9 @@ export function Abas({
 }
 
 /**
- * Barra de nível do estoque: preenchimento na cor do status e marcadores de mínimo,
- * ponto de reposição e alvo. Na lista tem 120×6 px; no detalhe (larga), largura total × 14 px.
+ * Barra de nível do estoque: preenchimento na cor do status, hachura no que falta até o
+ * alvo e marcadores de mínimo, ponto de reposição e alvo. Na lista tem 120×6 px; no detalhe
+ * (larga), largura total × 14 px.
  */
 export function Gauge({
   saldo,
@@ -329,9 +344,16 @@ export function Gauge({
         role="img"
         aria-label={`Saldo ${saldo}; mínimo ${minimo}; reposição ${pontoReposicao}; alvo ${alvo}`}
         className={`relative rounded-full bg-surface-3 ${larga ? 'h-3.5' : 'h-1.5'}`}
+        style={{ '--cor': `var(${CORES_STATUS[status]?.variavel ?? '--accent'})` } as CSSProperties}
       >
+        {e.alvo > e.saldo && (
+          <span
+            className="hachura absolute inset-y-0 rounded-r-full text-ink-3"
+            style={{ left: `${e.saldo}%`, right: `${Math.round((100 - e.alvo) * 10) / 10}%` }}
+          />
+        )}
         <span
-          className={`absolute inset-y-0 left-0 rounded-full ${CORES_STATUS[status]?.solido ?? 'bg-accent'}`}
+          className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-[color-mix(in_oklch,var(--cor)_45%,var(--surface-3))] to-(--cor)"
           style={{ width: `${e.saldo}%` }}
         />
         {marcador(e.minimo, 'bg-ink-2', 'Mínimo', minimo)}
@@ -440,7 +462,7 @@ export function Avatar({ nome, tamanho = 34 }: { nome: string; tamanho?: number 
   return (
     <span
       aria-hidden
-      className="inline-flex shrink-0 items-center justify-center rounded-full bg-accent-soft text-[13px] font-semibold text-accent-ink"
+      className="inline-flex shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-[12px] font-semibold tracking-wide text-accent-ink"
       style={{ width: tamanho, height: tamanho }}
     >
       {iniciais}

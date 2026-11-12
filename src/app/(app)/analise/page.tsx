@@ -61,10 +61,7 @@ export default async function PaginaAnalise({
   const periodo = `de ${formatarData(inicioDoDia(f.de)!)} até ${formatarData(inicioDoDia(f.ate)!)}`
 
   const filtros = (
-    <form
-      action="/analise"
-      className="nao-imprimir flex flex-col gap-5 rounded-[14px] border border-line bg-surface p-5 shadow-cartao"
-    >
+    <form action="/analise" className="nao-imprimir flex flex-col gap-5 cartao p-5">
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1.5 text-[13px] font-medium">
           De

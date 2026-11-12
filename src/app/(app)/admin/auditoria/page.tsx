@@ -53,7 +53,7 @@ export default async function Auditoria({
     >
       <CartaoConferencia />
 
-      <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
+      <div className="min-w-0 overflow-hidden cartao">
         <FormFiltro
           rotulo="Filtros do log"
           className="flex flex-wrap items-end gap-3 border-b border-line p-4"

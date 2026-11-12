@@ -6,6 +6,8 @@ Nova interface do **SICEI**, o Sistema Inteligente de Controle de Estoques Indus
 
 **Objetivo:** trocar o visual atual (Tailwind `slate` puro, menu horizontal no topo) por uma interface de produto profissional: menu lateral, tokens de cor com tema escuro, tipografia Geist, tabelas arejadas e status sempre com cor e texto. **Regras de negócio, textos legais, rotas, permissões e Server Actions não mudam.**
 
+> **Nota (12/11/2026).** Este pacote é o ponto de partida. A interface em produção está na versão 2, descrita no documento 03, seção 10.8: mesma paleta, rotas e textos, com cartões, moldura, números e painel redesenhados. As capturas desta pasta mostram a versão 1.
+
 ## Sobre os arquivos de design
 
 Os arquivos em `prototipo/` são **referências de design feitas em HTML**. São protótipos que mostram o visual e o comportamento esperados, **não são código de produção para copiar**. O trabalho é **recriar esses designs no código existente** (Next.js 16 + React 19 + Tailwind CSS 4, componentes em `src/components/ui.tsx` e `src/components/formulario.tsx`), seguindo os padrões do projeto:

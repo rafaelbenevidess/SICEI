@@ -18,7 +18,7 @@ export function BotaoTema({ inicial }: { inicial: Tema }) {
       }}
       aria-label={proximo === 'escuro' ? 'Usar tema escuro' : 'Usar tema claro'}
       title={proximo === 'escuro' ? 'Tema escuro' : 'Tema claro'}
-      className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
+      className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface text-ink-2 shadow-pilula hover:bg-surface-2"
     >
       {tema === 'escuro' ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </button>

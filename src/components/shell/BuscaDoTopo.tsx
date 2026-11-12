@@ -115,7 +115,7 @@ export function BuscaDoTopo({
           }
         }}
         placeholder="Buscar código, ISO, classe ou posição"
-        className="h-[38px] w-full min-w-0 rounded-lg border border-line-2 bg-surface pr-9 pl-9 text-base text-ink placeholder:text-ink-3 sm:text-sm"
+        className="h-10 w-full min-w-0 rounded-controle border border-transparent bg-surface pr-9 pl-9 text-base text-ink shadow-pilula placeholder:text-ink-3 sm:text-sm"
       />
       <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-line-2 px-1.5 font-mono text-[11px] text-ink-3 sm:block">
         /
@@ -125,7 +125,7 @@ export function BuscaDoTopo({
           id={`${id}-sugestoes`}
           role="listbox"
           aria-label="Itens sugeridos"
-          className="absolute inset-x-0 top-full z-30 mt-1 max-h-[70vh] overflow-y-auto rounded-lg border border-line bg-surface py-1 shadow-pop"
+          className="absolute inset-x-0 top-full z-30 mt-1 max-h-[70vh] overflow-y-auto rounded-[12px] border border-(--borda-cartao) bg-surface py-1 shadow-pop"
         >
           {lista.map((s, i) => (
             <li

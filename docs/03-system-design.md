@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.18 (para revisão) |
+| **Versão** | 1.19 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -580,6 +580,16 @@ A segunda linha traz dois indicadores (consumo do mês contra o mês anterior, e
 - As contas ficam em `domain/painel.ts`, com casos no Laboratório; os componentes só desenham.
 - No celular as chamadas ficam embaixo do desenho, sem as linhas de ligação, e tudo cabe em 360 px.
 
+### 10.9 Próxima etapa: redesenho de todas as telas
+
+A versão 2 redesenhou o painel e a lista de itens e deu a mesma base visual às outras telas, mas a estrutura delas continua a da versão 1. Ficou decidido em 12/11/2026 que a próxima etapa é um design novo para o aplicativo inteiro.
+
+- **Alcance:** todas as telas e opções, não só o painel e os itens. Entram o detalhe do item, o registro de entrada e saída, movimentações, alertas, sugestão de compra, relatórios, análise, cadastros, etiquetas QR, usuários, auditoria, parâmetros, importação, login e o fluxo do celular.
+- **Objetivo:** deixar o sistema mais integrado e mais conexo. Hoje várias tarefas pedem que a pessoa passe por mais de uma tela ou opção; a meta é concluir cada tarefa sem sair de onde ela começou.
+- **O que não muda:** regras de negócio, permissões, rotas públicas das etiquetas QR e a paleta do projeto.
+
+Esta seção é só o registro da decisão. O desenho de cada tela ainda não foi feito; quando for, entra aqui e no histórico de versões, e os critérios de aceite do documento 02 são revistos onde o fluxo mudar.
+
 ## 11. Decisões de arquitetura (ADRs)
 
 | ADR | Decisão | Alternativa descartada | Motivo |
@@ -622,3 +632,4 @@ A segunda linha traz dois indicadores (consumo do mês contra o mês anterior, e
 | 1.16 | 28/09/2026 | Paleta da análise com 8 cores validadas (10.7): até 8 itens com cor própria em todos os gráficos, inclusive o ranking, e comparação lado a lado até 8. |
 | 1.17 | 28/09/2026 | Impressão da Análise (10.7): cores mantidas no papel, sempre no tema claro, moldura sem a coluna do menu e gráficos na largura da folha. |
 | 1.18 | 12/11/2026 | Versão 2 da interface (10.8): cartões translúcidos, menu sobre o fundo, números leves, barra de nível com hachura, painel com item em destaque, arco de saúde do estoque e consumo por dia em pontos. Desenho da pastilha pela designação ISO (`domain/pastilha.ts`, `components/Pastilha.tsx`). Tokens de forma na 10.1, componentes novos na 10.2 e `domain/painel.ts` e `domain/pastilha.ts` na tabela 9.1. A paleta não mudou. |
+| 1.19 | 12/11/2026 | Registro da próxima etapa (10.9): design novo para todas as telas e opções, com o objetivo de concluir cada tarefa sem passar por várias telas. |

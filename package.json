@@ -30,7 +30,7 @@
     "vercel-build": "prisma migrate deploy && prisma db seed && npm run build"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x || 24.x"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

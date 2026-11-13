@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { urlCom } from './url'
+import { urlBanco, urlCom } from './url'
 
 describe('Filtros na URL', () => {
   it('mantém os filtros atuais e troca só o pedido', () => {
@@ -16,6 +16,27 @@ describe('Filtros na URL', () => {
   it('ignora parâmetros repetidos (arrays) da URL atual', () => {
     expect(urlCom('/itens', { q: ['a', 'b'], aplicacao: 'FRESAMENTO' }, {})).toBe(
       '/itens?aplicacao=FRESAMENTO',
+    )
+  })
+})
+
+describe('URL do banco (SSL)', () => {
+  it('troca sslmode=require, prefer ou verify-ca por verify-full', () => {
+    expect(urlBanco('postgresql://u:s@ep.neon.tech/db?sslmode=require')).toBe(
+      'postgresql://u:s@ep.neon.tech/db?sslmode=verify-full',
+    )
+    expect(urlBanco('postgresql://u:s@ep.neon.tech/db?connect_timeout=15&sslmode=prefer')).toBe(
+      'postgresql://u:s@ep.neon.tech/db?connect_timeout=15&sslmode=verify-full',
+    )
+  })
+
+  it('mantém URLs locais, vazias ou com uselibpqcompat=true', () => {
+    expect(urlBanco(undefined)).toBeUndefined()
+    expect(urlBanco('postgresql://u:s@localhost:5432/db')).toBe(
+      'postgresql://u:s@localhost:5432/db',
+    )
+    expect(urlBanco('postgresql://u:s@ep.neon.tech/db?uselibpqcompat=true&sslmode=require')).toBe(
+      'postgresql://u:s@ep.neon.tech/db?uselibpqcompat=true&sslmode=require',
     )
   })
 })

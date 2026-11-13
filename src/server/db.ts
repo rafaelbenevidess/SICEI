@@ -1,10 +1,11 @@
 import 'server-only'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@/generated/prisma/client'
+import { urlBanco } from '@/lib/url'
 
 /** Prisma Client com o usuário da aplicação (sicei_<empresa>_app), que não altera o histórico. */
 function criarCliente() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+  const adapter = new PrismaPg({ connectionString: urlBanco(process.env.DATABASE_URL) })
   return new PrismaClient({ adapter })
 }
 

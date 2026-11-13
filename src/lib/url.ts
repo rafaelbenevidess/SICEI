@@ -18,3 +18,12 @@ export function urlCom(
   const q = p.toString()
   return q ? `${caminho}?${q}` : caminho
 }
+
+/**
+ * Troca sslmode=prefer|require|verify-ca por sslmode=verify-full quando não há uselibpqcompat,
+ * evitando o aviso do pg-connection-string no stderr (que a Vercel classifica como erro de função).
+ */
+export function urlBanco(url: string | undefined): string | undefined {
+  if (!url || /[?&]uselibpqcompat=true\b/i.test(url)) return url
+  return url.replace(/([?&]sslmode=)(?:prefer|require|verify-ca)\b/i, '$1verify-full')
+}

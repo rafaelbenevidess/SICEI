@@ -21,11 +21,14 @@ export function Gaveta({
   titulo,
   descricao,
   voltarPara,
+  estreita = false,
   children,
 }: {
   titulo: string
   descricao?: ReactNode
   voltarPara?: string
+  /** formulário curto (um cadastro de poucos campos): painel de 480 px no lugar de 760 px */
+  estreita?: boolean
   children: ReactNode
 }) {
   const router = useRouter()
@@ -65,7 +68,7 @@ export function Gaveta({
           aria-modal="true"
           aria-label={titulo}
           tabIndex={-1}
-          className="gaveta absolute inset-y-0 right-0 flex w-full max-w-[760px] flex-col overflow-y-auto bg-bg shadow-pop outline-none [--pe-fixo:0px]"
+          className={`gaveta absolute inset-y-0 right-0 flex w-full flex-col ${estreita ? 'max-w-[480px]' : 'max-w-[760px]'} overflow-y-auto bg-bg shadow-pop outline-none [--pe-fixo:0px]`}
         >
           <header className="sticky top-0 z-20 flex items-start justify-between gap-4 bg-[color-mix(in_oklch,var(--bg)_88%,transparent)] px-5 pt-5 pb-4 backdrop-blur-md sm:px-7">
             <div className="min-w-0">

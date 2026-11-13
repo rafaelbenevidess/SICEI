@@ -129,6 +129,9 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
   await page.waitForURL('**/painel')
   await passarPeloAvisoDeAlertas(page)
   await page.goto('/admin/usuarios')
+  // RNF-14: o formulário abre na gaveta, por cima da tabela
+  await page.getByRole('link', { name: 'Novo usuário' }).click()
+  await expect(page.getByRole('dialog', { name: 'Novo usuário' })).toBeVisible()
   const form = page.locator('form[aria-label="Novo usuário"]')
   // digitado em caixa alta, gravado com cara de nome
   await form.locator('input[name=nome]').fill('PEDRO')
@@ -160,7 +163,10 @@ test('RF-02 / RN-21: Admin cria usuário; login gerado; perfil Consulta não vê
   ).toBeVisible()
 
   // RF-02: o Admin corrige o setor; o login não muda
+  await page.getByRole('button', { name: 'Fechar painel' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
   await linha.getByRole('link', { name: 'Editar' }).click()
+  await expect(page.getByRole('dialog', { name: /Editar Pedro da Consulta/ })).toBeVisible()
   const edicao = page.locator('form[aria-label="Dados do usuário"]')
   await edicao.locator('input[name=setor]').fill('PCP')
   await edicao.getByRole('button', { name: 'Salvar dados' }).click()

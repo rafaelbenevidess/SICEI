@@ -47,13 +47,38 @@ test('RF-07 / RN-05: compra com fornecedor cadastrado na hora, sem sair da tela'
   await expect(page.getByRole('status', { name: 'Entrada registrada' })).toBeVisible()
 })
 
-test('RF-03: novo item com o próximo código e fabricante e fornecedor cadastrados na hora', async ({
+test('RF-03 / RNF-14: cadastros na gaveta; novo item com o próximo código e fabricante e fornecedor cadastrados na hora', async ({
   page,
 }) => {
   await entrarComoAdmin(page)
+  // RNF-14: fabricante cadastrado e corrigido por cima da tabela, sem sair dos Cadastros
+  await page.goto('/cadastros?aba=fabricantes')
+  await page.getByRole('link', { name: 'Novo fabricante' }).click()
+  const novoFabricante = page.getByRole('dialog', { name: 'Novo fabricante' })
+  await novoFabricante.getByLabel(/^Nome/).fill('Gaveta E2E')
+  await novoFabricante.getByRole('button', { name: 'Cadastrar fabricante' }).click()
+  // cadastro novo deixa a gaveta aberta e o campo limpo, para lançar outro em seguida
+  await expect(novoFabricante.getByLabel(/^Nome/)).toHaveValue('')
+  await page.keyboard.press('Escape')
+  await expect(novoFabricante).toHaveCount(0)
+  await page
+    .getByRole('row', { name: /Gaveta E2E/ })
+    .getByRole('link', { name: 'Editar' })
+    .click()
+  const edicao = page.getByRole('dialog', { name: 'Editar fabricante' })
+  await edicao.getByLabel(/^Nome/).fill('Gaveta E2E Corrigido')
+  await edicao.getByRole('button', { name: 'Salvar' }).click()
+  // edição salva fecha a gaveta e a linha de baixo já mostra o nome novo
+  await expect(edicao).toHaveCount(0)
+  await expect(page.getByRole('row', { name: /Gaveta E2E Corrigido/ })).toBeVisible()
+  await expect(page).toHaveURL(/\/cadastros\?aba=fabricantes$/)
+
   await page.goto('/cadastros')
   await expect(page.getByRole('table', { name: 'Itens' })).toBeVisible()
   await page.getByRole('link', { name: 'Cadastrar item' }).click()
+  // o cadastro do item abre na gaveta, com a tabela de Cadastros embaixo
+  await expect(page.getByRole('dialog', { name: 'Novo item' })).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Itens' })).toBeAttached()
   const codigo = page.locator('input[name=codigo]')
   await expect(codigo).toHaveValue('PST-007')
   await codigo.fill('PST-001')

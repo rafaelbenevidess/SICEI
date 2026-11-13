@@ -244,7 +244,8 @@ export function AcoesUsuario({
       )}
       {pode.editar && (
         <Link
-          href={`/admin/usuarios?editar=${id}#formulario`}
+          href={`/admin/usuarios?editar=${id}`}
+          scroll={false}
           className={classeBotao('fantasma', true)}
         >
           <Pencil aria-hidden />

@@ -46,6 +46,7 @@ import {
 import { MapaAlmoxarifado } from './MapaAlmoxarifado'
 
 import { AbasDeCadastros } from '@/components/abasDasTelas'
+import { Gaveta } from '@/components/Gaveta'
 import { GlifoDaPastilha } from '@/components/Pastilha'
 
 export const metadata: Metadata = { title: 'Cadastros' }
@@ -102,11 +103,14 @@ const INFO: Record<Aba, { rotulo: string; descricao: string; novo: string; Icone
     },
   }
 
-/** RF-03, RF-04, RF-05, RF-06, RF-27 e RF-28 numa página com abas. */
+/**
+ * RF-03, RF-04, RF-05, RF-06, RF-27 e RF-28 numa página com abas. A tabela ocupa a largura
+ * toda; cadastrar e editar abrem numa gaveta por cima dela (RNF-14), sem trocar de tela.
+ */
 export default async function Cadastros({
   searchParams,
 }: {
-  searchParams: Promise<{ aba?: string; editar?: string }>
+  searchParams: Promise<{ aba?: string; editar?: string; novo?: string }>
 }) {
   const u = await exigirPermissaoDaPagina('cadastros:ver')
   const p = await searchParams
@@ -129,12 +133,13 @@ export default async function Cadastros({
     posicoes: posicoes.length,
   }
   const editando = editar ? p.editar : undefined
-  const linkEditar = (id: string) => `/cadastros?aba=${aba}&editar=${id}#formulario`
+  const linkEditar = (id: string) => `/cadastros?aba=${aba}&editar=${id}`
   const acoes = (entidade: string, id: string, ativo: boolean) =>
     editar && (
       <span className="flex items-center justify-end gap-1">
         <Link
           href={linkEditar(id)}
+          scroll={false}
           className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-ink-2 no-underline hover:bg-surface-2"
         >
           Editar
@@ -154,23 +159,7 @@ export default async function Cadastros({
   let tituloForm = INFO[aba].novo
 
   if (aba === 'itens') {
-    // o formulário do item é grande: fica na própria tela, aqui só o atalho
-    formulario = (
-      <div className="flex flex-col gap-3">
-        <p className="text-[13px] text-ink-2">
-          O cadastro abre com o próximo código da sequência já preenchido, e o fabricante e o
-          fornecedor podem ser cadastrados ali mesmo.
-        </p>
-        <LinkBotao href="/itens/novo" icone={Plus}>
-          Cadastrar item
-        </LinkBotao>
-        {pode(u.perfil, 'importacao:executar') && (
-          <LinkBotao href="/admin/importacao" variante="secundario" icone={FileUp}>
-            Importar planilha
-          </LinkBotao>
-        )}
-      </div>
-    )
+    // o cadastro do item tem endereço próprio (/itens/novo) e abre na gaveta por cima daqui
     tabela = (
       <Tabela rotulo="Itens" larguraMinima={620}>
         <thead>
@@ -415,42 +404,59 @@ export default async function Cadastros({
   }
 
   const vazio = contagem[aba] === 0
+  // a gaveta abre para um cadastro novo (?novo=1) ou para a linha em edição (?editar=id)
+  const emEdicao = tituloForm.startsWith('Editar')
+  const gavetaAberta = editar && formulario !== null && (emEdicao || p.novo === '1')
 
   return (
-    <Pagina titulo="Cadastros" descricao={INFO[aba].descricao}>
+    <Pagina
+      titulo="Cadastros"
+      descricao={INFO[aba].descricao}
+      acoes={
+        editar &&
+        (aba === 'itens' ? (
+          <>
+            {pode(u.perfil, 'importacao:executar') && (
+              <LinkBotao href="/admin/importacao" variante="secundario" icone={FileUp}>
+                Importar planilha
+              </LinkBotao>
+            )}
+            <LinkBotao href="/itens/novo" icone={Plus}>
+              Cadastrar item
+            </LinkBotao>
+          </>
+        ) : (
+          <LinkBotao href={`/cadastros?aba=${aba}&novo=1`} icone={Plus} scroll={false}>
+            {INFO[aba].novo}
+          </LinkBotao>
+        ))
+      }
+    >
       <AbasDeCadastros
         ativa={aba}
         contagens={contagem}
         comEtiquetas={pode(u.perfil, 'etiquetas:imprimir')}
         etiquetasPendentes={posicoes.filter((x) => x.etiquetaPendente).length}
       />
-      <div
-        className={`grid items-start gap-6 ${editar ? 'min-[96rem]:grid-cols-[minmax(0,1fr)_340px]' : ''}`}
-      >
-        <div className="min-w-0">
-          {vazio && aba !== 'posicoes' ? <Vazio>Nenhum cadastro ainda.</Vazio> : tabela}
-        </div>
-        {editar && (
-          <aside
-            id="formulario"
-            className="scroll-mt-24 cartao p-6 min-[96rem]:sticky min-[96rem]:top-[88px]"
-          >
-            <div className="mb-4 flex items-baseline justify-between gap-3">
-              <h2 className="text-base font-semibold">{tituloForm}</h2>
-              {editando && tituloForm.startsWith('Editar') && (
-                <Link href={`/cadastros?aba=${aba}`} className="text-[13px]">
-                  Cancelar
-                </Link>
-              )}
-            </div>
+      <div className="min-w-0">
+        {vazio && aba !== 'posicoes' ? <Vazio>Nenhum cadastro ainda.</Vazio> : tabela}
+      </div>
+      {gavetaAberta && (
+        <Gaveta
+          titulo={tituloForm}
+          descricao={emEdicao ? undefined : INFO[aba].descricao}
+          voltarPara={`/cadastros?aba=${aba}`}
+          estreita
+        >
+          <div className="cartao p-6">
             {formulario}
             <p className="mt-4 flex gap-2 text-xs text-ink-3">
               <Info aria-hidden className="mt-px size-3.5 shrink-0" />
               Cadastro que já aparece em alguma movimentação não é excluído, só inativado.
             </p>
-          </aside>
-        )}
-      </div>
+          </div>
+        </Gaveta>
+      )}
     </Pagina>
   )
 }

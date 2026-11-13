@@ -6,7 +6,7 @@ Nova interface do **SICEI**, o Sistema Inteligente de Controle de Estoques Indus
 
 **Objetivo:** trocar o visual atual (Tailwind `slate` puro, menu horizontal no topo) por uma interface de produto profissional: menu lateral, tokens de cor com tema escuro, tipografia Geist, tabelas arejadas e status sempre com cor e texto. **Regras de negócio, textos legais, rotas, permissões e Server Actions não mudam.**
 
-> **Nota (12/11/2026).** Este pacote é o ponto de partida. A interface em produção está na versão 2, descrita no documento 03, seção 10.8: mesma paleta, rotas e textos, com cartões, moldura, números e painel redesenhados. As capturas desta pasta mostram a versão 1. A próxima etapa é um design novo para todas as telas (documento 03, seção 10.9).
+> **Nota (12/11/2026).** Este pacote é o ponto de partida. A interface em produção está na versão 2, descrita no documento 03, seção 10.8: mesma paleta, rotas e textos, com cartões, moldura, números e painel redesenhados. As capturas desta pasta mostram a versão 1. A versão 3, com as telas integradas, está na seção 10.9 do mesmo documento.
 
 ## Sobre os arquivos de design
 

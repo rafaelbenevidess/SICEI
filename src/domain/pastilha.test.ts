@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import {
   caminhoSvg,
+  chaveDaFoto,
   contornoDaPastilha,
   formaDaPastilha,
+  fotoDaPastilha,
   raioInscrito,
   verticesDaPastilha,
   vistaDaPastilha,
   type FormatoDaPastilha,
   type Ponto,
 } from './pastilha'
-import { casosFormaDaPastilha } from './pastilha.casos'
+import {
+  casosChaveDaFoto,
+  casosFormaDaPastilha,
+  casosFotoDaPastilha,
+  FOTOS_DE_EXEMPLO,
+} from './pastilha.casos'
 
 /** Ângulo, em graus, entre as duas arestas que saem de um vértice. */
 function anguloNoVertice(v: Ponto, a: Ponto, b: Ponto): number {
@@ -160,5 +167,20 @@ describe('Interface · Pastilha em perspectiva', () => {
         [1, 1],
       ]),
     ).toBe('M0 0L1 0L1 1Z')
+  })
+})
+
+describe('Interface · Foto da pastilha no lugar do desenho', () => {
+  it.each(casosChaveDaFoto)('$descricao', ({ entrada, esperado }) => {
+    expect(chaveDaFoto(entrada)).toBe(esperado)
+  })
+  it.each(casosFotoDaPastilha)('$descricao', ({ entrada, esperado }) => {
+    expect(fotoDaPastilha(entrada, FOTOS_DE_EXEMPLO)?.arquivo ?? null).toBe(esperado)
+  })
+  it('sem nenhuma foto publicada, todo item fica com o desenho', () => {
+    expect(fotoDaPastilha({ codigo: 'PST-001', iso: 'CNMG 120408' }, {})).toBeNull()
+  })
+  it('nome de propriedade herdada não vira foto', () => {
+    expect(fotoDaPastilha({ codigo: 'constructor', iso: 'toString' }, {})).toBeNull()
   })
 })

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { acaoFornecedorRapido, acaoMovimentar } from '@/app/acoes/estoque'
 import { mascararCnpj, situacaoDoCnpj } from '@/domain/cnpj'
 import { quantidadeEmUnidades, statusDoItem } from '@/domain/estoque'
@@ -35,6 +35,8 @@ import {
   SelecaoComBusca,
   type OpcaoComBusca,
 } from '@/components/formulario'
+import { useGaveta } from '@/components/Gaveta'
+import { GlifoDaPastilha } from '@/components/Pastilha'
 import { Aviso, BadgeStatus, ChipCodigo, classeBotao, LinkBotao } from '@/components/ui'
 import type { EstadoAcao } from '@/server/web/acao'
 import { formatarMoeda, NOME_STATUS } from '@/lib/formatar'
@@ -84,6 +86,7 @@ interface Props {
     id: string
     codigo: string
     nome: string
+    iso?: string | null
     fabricante: string
     posicao: string | null
     saldo: number
@@ -115,6 +118,7 @@ export function FormRegistrar({
   cnpjsExistentes,
 }: Props) {
   const router = useRouter()
+  const gaveta = useGaveta()
   const opcoes = TIPOS[modo]
   const [tipo, setTipo] = useState<TipoComum>(opcoes[0].tipo)
   const [qtd, setQtd] = useState('')
@@ -162,304 +166,320 @@ export function FormRegistrar({
     )
 
   return (
-    <div className="grid items-start gap-6 min-[75rem]:grid-cols-[minmax(0,1fr)_360px]">
-      <FormAcao
-        acao={acaoMovimentar}
-        rotulo={modo === 'entrada' ? 'Registrar entrada' : 'Registrar saída'}
-        className="flex min-w-0 flex-col gap-6 cartao p-6 sm:p-7"
-        key={rodada}
-        aoConcluir={(estado) => {
-          setRegistrado(estado.dados ?? {})
-          router.refresh()
-        }}
-      >
-        <Oculto nome="itemId" valor={item.id} />
-        <Oculto nome="tipo" valor={tipo} />
-        <Oculto nome="unidade" valor={unidadeReal} />
+    <div className="@container">
+      <div className="grid items-start gap-6 @4xl:grid-cols-[minmax(0,1fr)_360px]">
+        <FormAcao
+          acao={acaoMovimentar}
+          rotulo={modo === 'entrada' ? 'Registrar entrada' : 'Registrar saída'}
+          className="flex min-w-0 flex-col gap-6 cartao p-6 sm:p-7"
+          key={rodada}
+          aoConcluir={(estado) => {
+            setRegistrado(estado.dados ?? {})
+            router.refresh()
+          }}
+        >
+          <Oculto nome="itemId" valor={item.id} />
+          <Oculto nome="tipo" valor={tipo} />
+          <Oculto nome="unidade" valor={unidadeReal} />
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-[13px] font-medium">Tipo</legend>
-          <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
-            {opcoes.map(({ tipo: t, titulo, sub, Icone }) => {
-              const eh = t === tipo
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  role="radio"
-                  aria-checked={eh}
-                  onClick={() => setTipo(t)}
-                  className={`flex items-start gap-3 rounded-[10px] border px-4 py-3 text-left ${eh ? 'border-accent bg-accent-soft ring-3 ring-[color-mix(in_oklch,var(--accent)_18%,transparent)]' : 'border-line-2 bg-surface hover:bg-surface-2'}`}
-                >
-                  <Icone
-                    aria-hidden
-                    className={`mt-0.5 size-[18px] shrink-0 ${eh ? 'text-accent' : 'text-ink-3'}`}
-                  />
-                  <span>
-                    <span className="block font-semibold">{titulo}</span>
-                    <span className="block text-[13px] text-ink-2">{sub}</span>
-                  </span>
-                </button>
-              )
-            })}
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-[13px] font-medium">Tipo</legend>
+            <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
+              {opcoes.map(({ tipo: t, titulo, sub, Icone }) => {
+                const eh = t === tipo
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    role="radio"
+                    aria-checked={eh}
+                    onClick={() => setTipo(t)}
+                    className={`flex items-start gap-3 rounded-[10px] border px-4 py-3 text-left ${eh ? 'border-accent bg-accent-soft ring-3 ring-[color-mix(in_oklch,var(--accent)_18%,transparent)]' : 'border-line-2 bg-surface hover:bg-surface-2'}`}
+                  >
+                    <Icone
+                      aria-hidden
+                      className={`mt-0.5 size-[18px] shrink-0 ${eh ? 'text-accent' : 'text-ink-3'}`}
+                    />
+                    <span>
+                      <span className="block font-semibold">{titulo}</span>
+                      <span className="block text-[13px] text-ink-2">{sub}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </fieldset>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-[13px] font-medium">Item</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-line-2 px-4 py-3.5">
+              <GlifoDaPastilha iso={item.iso} className="size-8 text-ink-3 max-sm:hidden" />
+              <ChipCodigo forte>{item.codigo}</ChipCodigo>
+              <div className="min-w-0 flex-1 basis-40">
+                <p className="font-medium">{item.nome}</p>
+                <p className="text-[13px] text-ink-2">
+                  {item.fabricante} · posição {item.posicao ?? '—'} · saldo {item.saldo}
+                </p>
+              </div>
+              <Link href={`/movimentacoes/nova?modo=${modo}`} className="text-[13px] font-medium">
+                Trocar
+              </Link>
+            </div>
           </div>
-        </fieldset>
 
-        <div className="flex flex-col gap-2">
-          <p className="text-[13px] font-medium">Item</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-line-2 px-4 py-3.5">
-            <ChipCodigo forte>{item.codigo}</ChipCodigo>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{item.nome}</p>
-              <p className="text-[13px] text-ink-2">
-                {item.fabricante} · posição {item.posicao ?? '—'} · saldo {item.saldo}
+          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <div className="flex flex-wrap items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => passo(-1)}
+                  aria-label="Diminuir a quantidade"
+                  className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
+                >
+                  <Minus aria-hidden className="size-4" />
+                </button>
+                <div className="w-0 min-w-0 flex-1">
+                  <Campo
+                    nome="quantidade"
+                    rotulo="Quantidade"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    step={1}
+                    obrigatorio
+                    value={qtd}
+                    onChange={(e) => setQtd(e.target.value)}
+                    className={`h-11 text-center text-base font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none ${saldoInsuficiente ? '!border-crit' : ''}`}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => passo(1)}
+                  aria-label="Aumentar a quantidade"
+                  className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
+                >
+                  <Plus aria-hidden className="size-4" />
+                </button>
+                {compra && (
+                  <div
+                    role="radiogroup"
+                    aria-label="Informar em caixas ou unidades"
+                    className="flex h-11 shrink-0 rounded-[9px] bg-surface-3 p-[3px] max-sm:w-full max-sm:[&>button]:flex-1"
+                  >
+                    {(['CAIXA', 'UNIDADE'] as const).map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        role="radio"
+                        aria-checked={unidade === u}
+                        onClick={() => setUnidade(u)}
+                        className={`rounded-[7px] px-3 text-[13px] font-medium ${unidade === u ? 'bg-surface text-ink shadow-cartao' : 'text-ink-2'}`}
+                      >
+                        {u === 'CAIXA' ? 'Caixas' : 'Unidades'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-ink-3">
+                {unidades === null
+                  ? compra && unidade === 'CAIXA'
+                    ? `Caixa com ${item.embalagem} unidades`
+                    : 'Em unidades'
+                  : compra && unidade === 'CAIXA'
+                    ? `${n} ${n === 1 ? 'caixa' : 'caixas'} × ${item.embalagem} = ${unidades} unidades`
+                    : `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}`}
               </p>
             </div>
-            <Link href={`/movimentacoes/nova?modo=${modo}`} className="text-[13px] font-medium">
-              Trocar
-            </Link>
-          </div>
-        </div>
 
-        <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex items-end gap-2">
-              <button
-                type="button"
-                onClick={() => passo(-1)}
-                aria-label="Diminuir a quantidade"
-                className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
-              >
-                <Minus aria-hidden className="size-4" />
-              </button>
-              <div className="w-0 min-w-0 flex-1">
-                <Campo
-                  nome="quantidade"
-                  rotulo="Quantidade"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  step={1}
-                  obrigatorio
-                  value={qtd}
-                  onChange={(e) => setQtd(e.target.value)}
-                  className={`h-11 text-center text-base font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none ${saldoInsuficiente ? '!border-crit' : ''}`}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => passo(1)}
-                aria-label="Aumentar a quantidade"
-                className="grid size-11 shrink-0 place-items-center rounded-lg border border-line-2 bg-surface text-ink-2 hover:bg-surface-2"
-              >
-                <Plus aria-hidden className="size-4" />
-              </button>
-              {compra && (
-                <div
-                  role="radiogroup"
-                  aria-label="Informar em caixas ou unidades"
-                  className="flex h-11 shrink-0 rounded-[9px] bg-surface-3 p-[3px]"
-                >
-                  {(['CAIXA', 'UNIDADE'] as const).map((u) => (
+            {tipo === 'CONSUMO_PRODUCAO' && (
+              <Campo
+                nome="ordemProducao"
+                rotulo="Ordem de produção"
+                obrigatorio
+                className="h-11 font-mono"
+                placeholder="2026-0457"
+              />
+            )}
+
+            {compra && (
+              <>
+                <div className="flex min-w-0 flex-col gap-2">
+                  <SelecaoComBusca
+                    nome="fornecedorId"
+                    rotulo="Fornecedor"
+                    opcoes={fornecedores}
+                    placeholder="Nome ou CNPJ"
+                    obrigatorio
+                    valor={fornecedorId}
+                    aoMudar={setFornecedorId}
+                  />
+                  {podeCadastrarFornecedor && !novoForn && (
                     <button
-                      key={u}
                       type="button"
-                      role="radio"
-                      aria-checked={unidade === u}
-                      onClick={() => setUnidade(u)}
-                      className={`rounded-[7px] px-3 text-[13px] font-medium ${unidade === u ? 'bg-surface text-ink shadow-cartao' : 'text-ink-2'}`}
+                      onClick={() => setNovoForn(true)}
+                      className="inline-flex items-center gap-1 self-start text-[13px] font-medium text-accent-ink hover:underline"
                     >
-                      {u === 'CAIXA' ? 'Caixas' : 'Unidades'}
+                      <Plus aria-hidden className="size-3.5" />
+                      Fornecedor não está na lista?
                     </button>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-            <p className="text-xs text-ink-3">
-              {unidades === null
-                ? compra && unidade === 'CAIXA'
-                  ? `Caixa com ${item.embalagem} unidades`
-                  : 'Em unidades'
-                : compra && unidade === 'CAIXA'
-                  ? `${n} ${n === 1 ? 'caixa' : 'caixas'} × ${item.embalagem} = ${unidades} unidades`
-                  : `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}`}
-            </p>
+                <Campo
+                  nome="precoUnitario"
+                  rotulo="Preço unitário"
+                  inputMode="decimal"
+                  placeholder="38,90"
+                  prefixo="R$"
+                  obrigatorio
+                  className="h-11"
+                  ajuda={
+                    ultimo
+                      ? `Último pago a este fornecedor: ${formatarMoeda(ultimo.preco)} em ${diaMes.format(new Date(ultimo.data))}`
+                      : fornecedorId
+                        ? 'Primeira compra deste fornecedor: o preço abre o histórico.'
+                        : undefined
+                  }
+                />
+                <Campo
+                  nome="notaFiscal"
+                  rotulo="Nota fiscal"
+                  obrigatorio
+                  className="h-11 font-mono"
+                />
+              </>
+            )}
+
+            {(tipo === 'CONSUMO_PRODUCAO' || tipo === 'DEVOLUCAO_PRODUCAO') && (
+              <>
+                {destinos.length <= 8 ? (
+                  <div className="col-span-full">
+                    <GrupoDeChips nome="destinoId" rotulo="Destino" opcoes={destinos} obrigatorio />
+                  </div>
+                ) : (
+                  <SelecaoComBusca
+                    nome="destinoId"
+                    rotulo="Destino"
+                    opcoes={destinos}
+                    placeholder="Nome ou código da máquina"
+                    obrigatorio
+                  />
+                )}
+                <SelecaoComBusca
+                  nome="colaboradorId"
+                  rotulo={
+                    tipo === 'CONSUMO_PRODUCAO'
+                      ? 'Colaborador que retirou'
+                      : 'Colaborador que devolveu'
+                  }
+                  opcoes={colaboradores}
+                  placeholder="Nome, matrícula ou setor"
+                  obrigatorio
+                />
+              </>
+            )}
+            {(tipo === 'PERDA_QUEBRA' || tipo === 'DEVOLUCAO_PRODUCAO') && (
+              <Campo nome="motivo" rotulo="Motivo" obrigatorio className="h-11" />
+            )}
           </div>
 
-          {tipo === 'CONSUMO_PRODUCAO' && (
-            <Campo
-              nome="ordemProducao"
-              rotulo="Ordem de produção"
-              obrigatorio
-              className="h-11 font-mono"
-              placeholder="2026-0457"
+          {compra && novoForn && (
+            <FornecedorRapido
+              item={item}
+              cnpjsExistentes={cnpjsExistentes}
+              aoFechar={() => setNovoForn(false)}
+              aoCriar={(f) => {
+                setFornecedores((l) => [...l, f])
+                setFornecedorId(f.valor)
+                setNovoForn(false)
+              }}
             />
           )}
 
-          {compra && (
-            <>
-              <div className="flex min-w-0 flex-col gap-2">
-                <SelecaoComBusca
-                  nome="fornecedorId"
-                  rotulo="Fornecedor"
-                  opcoes={fornecedores}
-                  placeholder="Nome ou CNPJ"
-                  obrigatorio
-                  valor={fornecedorId}
-                  aoMudar={setFornecedorId}
-                />
-                {podeCadastrarFornecedor && !novoForn && (
-                  <button
-                    type="button"
-                    onClick={() => setNovoForn(true)}
-                    className="inline-flex items-center gap-1 self-start text-[13px] font-medium text-accent-ink hover:underline"
-                  >
-                    <Plus aria-hidden className="size-3.5" />
-                    Fornecedor não está na lista?
-                  </button>
-                )}
-              </div>
-              <Campo
-                nome="precoUnitario"
-                rotulo="Preço unitário"
-                inputMode="decimal"
-                placeholder="38,90"
-                prefixo="R$"
-                obrigatorio
-                className="h-11"
-                ajuda={
-                  ultimo
-                    ? `Último pago a este fornecedor: ${formatarMoeda(ultimo.preco)} em ${diaMes.format(new Date(ultimo.data))}`
-                    : fornecedorId
-                      ? 'Primeira compra deste fornecedor: o preço abre o histórico.'
-                      : undefined
-                }
-              />
-              <Campo
-                nome="notaFiscal"
-                rotulo="Nota fiscal"
-                obrigatorio
-                className="h-11 font-mono"
-              />
-            </>
+          {saldoInsuficiente && (
+            <Aviso tipo="erro" titulo="Saída recusada.">
+              Saldo disponível: {item.saldo}
+            </Aviso>
           )}
 
-          {(tipo === 'CONSUMO_PRODUCAO' || tipo === 'DEVOLUCAO_PRODUCAO') && (
-            <>
-              {destinos.length <= 8 ? (
-                <div className="col-span-full">
-                  <GrupoDeChips nome="destinoId" rotulo="Destino" opcoes={destinos} obrigatorio />
-                </div>
-              ) : (
-                <SelecaoComBusca
-                  nome="destinoId"
-                  rotulo="Destino"
-                  opcoes={destinos}
-                  placeholder="Nome ou código da máquina"
-                  obrigatorio
-                />
-              )}
-              <SelecaoComBusca
-                nome="colaboradorId"
-                rotulo={
-                  tipo === 'CONSUMO_PRODUCAO'
-                    ? 'Colaborador que retirou'
-                    : 'Colaborador que devolveu'
-                }
-                opcoes={colaboradores}
-                placeholder="Nome, matrícula ou setor"
-                obrigatorio
-              />
-            </>
-          )}
-          {(tipo === 'PERDA_QUEBRA' || tipo === 'DEVOLUCAO_PRODUCAO') && (
-            <Campo nome="motivo" rotulo="Motivo" obrigatorio className="h-11" />
-          )}
-        </div>
-
-        {compra && novoForn && (
-          <FornecedorRapido
-            item={item}
-            cnpjsExistentes={cnpjsExistentes}
-            aoFechar={() => setNovoForn(false)}
-            aoCriar={(f) => {
-              setFornecedores((l) => [...l, f])
-              setFornecedorId(f.valor)
-              setNovoForn(false)
-            }}
-          />
-        )}
-
-        {saldoInsuficiente && (
-          <Aviso tipo="erro" titulo="Saída recusada.">
-            Saldo disponível: {item.saldo}
-          </Aviso>
-        )}
-
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5 max-md:sticky max-md:bottom-16 max-md:z-10 max-md:-mx-6 max-md:-mb-6 max-md:rounded-b-[14px] max-md:bg-surface max-md:px-6 max-md:pb-4 max-md:[&>button]:h-[54px] max-md:[&>button]:flex-1">
-          <Link href={`/itens/${item.id}`} className={`${classeBotao('secundario')} max-md:hidden`}>
-            Cancelar
-          </Link>
-          <BotaoEnviar desabilitado={saldoInsuficiente || unidades === null}>
-            <Check aria-hidden />
-            {modo === 'entrada' ? 'Confirmar entrada' : 'Confirmar saída'}
-            {unidades !== null && ` de ${unidades} un.`}
-          </BotaoEnviar>
-        </div>
-      </FormAcao>
-
-      <aside className="cartao p-6 min-[75rem]:sticky min-[75rem]:top-[88px]">
-        <h2 className="text-base font-semibold">Resultado</h2>
-        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <div className="rounded-[10px] bg-surface-2 px-4 py-3">
-            <p className="text-[13px] text-ink-2">Saldo atual</p>
-            <p className="text-[28px] leading-tight font-semibold">{item.saldo}</p>
-          </div>
-          <ArrowRight aria-hidden className="size-4 text-ink-3" />
-          <div className="rounded-[10px] bg-surface-2 px-4 py-3">
-            <p className="text-[13px] text-ink-2">Depois</p>
-            <p
-              className={`text-[28px] leading-tight font-semibold ${saldoInsuficiente ? 'text-crit-ink' : ''}`}
-              aria-live="polite"
-            >
-              {depois ?? '—'}
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-[13px] text-ink-2">Status</span>
-          <span className="flex items-center gap-2">
-            <BadgeStatus status={item.status} />
-            <ArrowRight aria-hidden className="size-3.5 text-ink-3" />
-            {statusDepois ? (
-              <BadgeStatus status={statusDepois} />
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5 max-md:sticky max-md:bottom-[var(--pe-fixo,4rem)] max-md:z-10 max-md:-mx-6 max-md:-mb-6 max-md:rounded-b-[14px] max-md:bg-surface max-md:px-6 max-md:pb-4 max-md:[&>button]:h-[54px] max-md:[&>button]:flex-1">
+            {gaveta ? (
+              <button
+                type="button"
+                onClick={gaveta.fechar}
+                className={`${classeBotao('secundario')} max-md:hidden`}
+              >
+                Cancelar
+              </button>
             ) : (
-              <span className="text-ink-3">—</span>
+              <Link
+                href={`/itens/${item.id}`}
+                className={`${classeBotao('secundario')} max-md:hidden`}
+              >
+                Cancelar
+              </Link>
             )}
-          </span>
-        </div>
-        <div className="mt-5 border-t border-line pt-4">
-          <p className="text-[13px] font-medium">Fica registrado</p>
-          <ul className="mt-2 flex flex-col gap-2 text-[13px] text-ink-2">
-            <li className="flex gap-2">
-              <User aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
-              <span className="font-mono">{login}</span>
-            </li>
-            <li className="flex gap-2">
-              <Clock aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
-              Data e hora do servidor (America/Sao_Paulo)
-            </li>
-            <li className="flex gap-2">
-              <MonitorSmartphone aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
-              IP e dispositivo de origem
-            </li>
-            <li className="flex gap-2">
-              <Undo2 aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
-              Depois de gravada, só pode ser estornada
-            </li>
-          </ul>
-        </div>
-      </aside>
+            <BotaoEnviar desabilitado={saldoInsuficiente || unidades === null}>
+              <Check aria-hidden />
+              {modo === 'entrada' ? 'Confirmar entrada' : 'Confirmar saída'}
+              {unidades !== null && ` de ${unidades} un.`}
+            </BotaoEnviar>
+          </div>
+        </FormAcao>
+
+        <aside className="cartao p-6 @4xl:sticky @4xl:top-[88px]">
+          <h2 className="text-base font-semibold">Resultado</h2>
+          <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="rounded-[10px] bg-surface-2 px-4 py-3">
+              <p className="text-[13px] text-ink-2">Saldo atual</p>
+              <p className="text-[28px] leading-tight font-semibold">{item.saldo}</p>
+            </div>
+            <ArrowRight aria-hidden className="size-4 text-ink-3" />
+            <div className="rounded-[10px] bg-surface-2 px-4 py-3">
+              <p className="text-[13px] text-ink-2">Depois</p>
+              <p
+                className={`text-[28px] leading-tight font-semibold ${saldoInsuficiente ? 'text-crit-ink' : ''}`}
+                aria-live="polite"
+              >
+                {depois ?? '—'}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-[13px] text-ink-2">Status</span>
+            <span className="flex items-center gap-2">
+              <BadgeStatus status={item.status} />
+              <ArrowRight aria-hidden className="size-3.5 text-ink-3" />
+              {statusDepois ? (
+                <BadgeStatus status={statusDepois} />
+              ) : (
+                <span className="text-ink-3">—</span>
+              )}
+            </span>
+          </div>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="text-[13px] font-medium">Fica registrado</p>
+            <ul className="mt-2 flex flex-col gap-2 text-[13px] text-ink-2">
+              <li className="flex gap-2">
+                <User aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
+                <span className="font-mono">{login}</span>
+              </li>
+              <li className="flex gap-2">
+                <Clock aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
+                Data e hora do servidor (America/Sao_Paulo)
+              </li>
+              <li className="flex gap-2">
+                <MonitorSmartphone aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
+                IP e dispositivo de origem
+              </li>
+              <li className="flex gap-2">
+                <Undo2 aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
+                Depois de gravada, só pode ser estornada
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     </div>
   )
 }
@@ -476,12 +496,18 @@ function Confirmacao({
   dados: NonNullable<EstadoAcao['dados']>
   aoRegistrarOutra: () => void
 }) {
+  const gaveta = useGaveta()
+  const secao = useRef<HTMLElement>(null)
   // a confirmação ocupa o lugar do formulário: volta ao topo para ela aparecer inteira
-  useEffect(() => window.scrollTo({ top: 0 }), [])
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+    secao.current?.closest('.gaveta')?.scrollTo({ top: 0 })
+  }, [])
   const status = String(dados.status ?? '')
   const preocupa = status === 'ATENCAO' || status === 'CRITICO' || status === 'ZERADO'
   return (
     <section
+      ref={secao}
       role="status"
       aria-label={modo === 'saida' ? 'Saída registrada' : 'Entrada registrada'}
       className="mx-auto flex w-full max-w-lg flex-col gap-5 cartao p-6 sm:p-8"
@@ -527,9 +553,15 @@ function Confirmacao({
         <button type="button" onClick={aoRegistrarOutra} className={classeBotao('secundario')}>
           {modo === 'saida' ? 'Registrar outra saída deste item' : 'Registrar outra entrada'}
         </button>
-        <LinkBotao href={`/itens/${item.id}`} variante="secundario">
-          Voltar ao item
-        </LinkBotao>
+        {gaveta ? (
+          <button type="button" onClick={gaveta.fechar} className={classeBotao('secundario')}>
+            Fechar
+          </button>
+        ) : (
+          <LinkBotao href={`/itens/${item.id}`} variante="secundario">
+            Voltar ao item
+          </LinkBotao>
+        )}
       </div>
     </section>
   )

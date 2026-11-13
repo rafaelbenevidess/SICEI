@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { hrefAtivo, MENU, menuDoPerfil, trilha } from './menu'
 
-const todos = MENU.flatMap((g) => g.itens.map((i) => i.href))
+const todos = MENU.flatMap((g) => g.itens)
 const ativo = (url: string) => {
   const u = new URL(url, 'http://x')
   return hrefAtivo(todos, u.pathname, u.searchParams)
 }
 
 describe('Menu lateral · Itens por perfil', () => {
-  it('Consulta vê só Operação, sem Movimentações nem Sugestão de compra', () => {
+  it('Consulta vê só Operação e Cadastros, sem Movimentações nem Relatórios', () => {
     const m = menuDoPerfil('CONSULTA')
     expect(m.map((g) => g.titulo)).toEqual(['Operação', 'Gestão'])
     expect(m[0].itens.map((i) => i.rotulo)).toEqual(['Painel', 'Itens', 'Alertas'])
@@ -18,21 +18,28 @@ describe('Menu lateral · Itens por perfil', () => {
   it('Almoxarife registra entrada e saída e imprime etiquetas, sem Administração', () => {
     const m = menuDoPerfil('ALMOXARIFE')
     expect(m.map((g) => g.titulo)).toEqual(['Operação', 'Registrar', 'Gestão'])
-    expect(m[2].itens.map((i) => i.rotulo)).toEqual(['Cadastros', 'Etiquetas QR'])
+    expect(m[2].itens.map((i) => i.rotulo)).toEqual(['Cadastros'])
   })
 
-  it('Administrador vê os 15 itens', () => {
-    expect(menuDoPerfil('ADMIN').flatMap((g) => g.itens)).toHaveLength(15)
+  it('Administrador vê os 12 itens', () => {
+    expect(menuDoPerfil('ADMIN').flatMap((g) => g.itens)).toHaveLength(12)
   })
 
-  it('RF-17a: Análise fica em Gestão, logo depois de Relatórios, para Gestor e Administrador', () => {
+  it('cada tela tem um lugar só: sugestão de compra, análise e etiquetas são abas, não itens', () => {
+    const rotulos = MENU.flatMap((g) => g.itens.map((i) => i.rotulo))
+    for (const aba of ['Sugestão de compra', 'Análise', 'Etiquetas QR']) {
+      expect(rotulos).not.toContain(aba)
+    }
+    expect(new Set(rotulos).size).toBe(rotulos.length)
+  })
+
+  it('RF-17a: Relatórios, que leva à Análise, só aparece para Gestor e Administrador', () => {
     for (const perfil of ['GESTOR', 'ADMIN'] as const) {
       const gestao = menuDoPerfil(perfil).find((g) => g.titulo === 'Gestão')!
-      const rotulos = gestao.itens.map((i) => i.rotulo)
-      expect(rotulos.indexOf('Análise')).toBe(rotulos.indexOf('Relatórios') + 1)
+      expect(gestao.itens.map((i) => i.rotulo)).toContain('Relatórios')
     }
     expect(menuDoPerfil('ALMOXARIFE').flatMap((g) => g.itens.map((i) => i.rotulo))).not.toContain(
-      'Análise',
+      'Relatórios',
     )
   })
 })
@@ -44,10 +51,11 @@ describe('Menu lateral · Item ativo', () => {
     ['/itens/abc/editar', '/itens'],
     ['/relatorios', '/relatorios'],
     ['/relatorios?tipo=consumo', '/relatorios'],
-    ['/analise?itens=PST-001', '/analise'],
-    ['/relatorios?tipo=reposicao', '/relatorios?tipo=reposicao'],
+    // abas de Relatórios e de Cadastros mantêm o item da tela aceso
+    ['/analise?itens=PST-001', '/relatorios'],
+    ['/relatorios?tipo=reposicao', '/relatorios'],
     ['/cadastros?aba=fornecedores', '/cadastros'],
-    ['/cadastros/posicoes/etiquetas', '/cadastros/posicoes/etiquetas'],
+    ['/cadastros/posicoes/etiquetas', '/cadastros'],
     ['/movimentacoes', '/movimentacoes'],
     ['/movimentacoes/nova?modo=saida', '/movimentacoes/nova?modo=saida'],
     ['/movimentacoes/nova?modo=entrada', '/movimentacoes/nova?modo=entrada'],

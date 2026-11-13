@@ -1,5 +1,5 @@
 import type { CasoDeTeste } from './tipos'
-import type { FormaDaPastilha } from './pastilha'
+import type { FormaDaPastilha, FotoDaPastilha } from './pastilha'
 
 type Esperado = Pick<FormaDaPastilha, 'nome' | 'temFuro' | 'positiva' | 'reconhecida'>
 
@@ -79,5 +79,57 @@ export const casosFormaDaPastilha: CasoDeTeste<string | null, Esperado>[] = [
       positiva: false,
       reconhecida: false,
     },
+  },
+]
+
+export const casosChaveDaFoto: CasoDeTeste<string | null, string>[] = [
+  { descricao: 'PST-001 → PST001', entrada: 'PST-001', esperado: 'PST001' },
+  { descricao: 'pst 001, minúsculo e com espaço → PST001', entrada: 'pst 001', esperado: 'PST001' },
+  { descricao: 'CNMG 120408 → CNMG120408', entrada: 'CNMG 120408', esperado: 'CNMG120408' },
+  { descricao: '16ER 1.5 ISO → 16ER15ISO', entrada: '16ER 1.5 ISO', esperado: '16ER15ISO' },
+  { descricao: 'sem texto → chave vazia', entrada: null, esperado: '' },
+]
+
+const foto = (nome: string): FotoDaPastilha => ({
+  arquivo: `/pastilhas/${nome}.webp`,
+  largura: 900,
+  altura: 700,
+})
+
+/** Fotos de exemplo: uma pelo código do item e duas pela designação ISO. */
+export const FOTOS_DE_EXEMPLO: Record<string, FotoDaPastilha> = {
+  PST001: foto('PST001'),
+  CNMG120408: foto('CNMG120408'),
+  WNMG080408: foto('WNMG080408'),
+}
+
+export const casosFotoDaPastilha: CasoDeTeste<
+  { codigo?: string | null; iso?: string | null },
+  string | null
+>[] = [
+  {
+    descricao: 'item com foto pelo código → a foto do código vence a da ISO',
+    entrada: { codigo: 'PST-001', iso: 'CNMG 120408' },
+    esperado: '/pastilhas/PST001.webp',
+  },
+  {
+    descricao: 'outro item do mesmo modelo, sem foto própria → a foto da ISO',
+    entrada: { codigo: 'PST-040', iso: 'cnmg120408' },
+    esperado: '/pastilhas/CNMG120408.webp',
+  },
+  {
+    descricao: 'item sem código informado → a foto da ISO',
+    entrada: { iso: 'WNMG 080408' },
+    esperado: '/pastilhas/WNMG080408.webp',
+  },
+  {
+    descricao: 'modelo sem foto → nenhuma (a tela usa o desenho em vetor)',
+    entrada: { codigo: 'PST-003', iso: 'DNMG 150608' },
+    esperado: null,
+  },
+  {
+    descricao: 'item sem ISO e sem foto do código → nenhuma',
+    entrada: { codigo: 'PST-099', iso: null },
+    esperado: null,
   },
 ]

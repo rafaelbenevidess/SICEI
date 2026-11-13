@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Download } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpFromLine, Download } from 'lucide-react'
 import { TIPOS_MOVIMENTACAO } from '@/domain/tipos'
 import { pode } from '@/domain/permissoes'
+import { Gaveta } from '@/components/Gaveta'
 import { QtdMovimentacao, TipoMovimentacao } from '@/components/movimentacao'
 import { Paginacao } from '@/components/Paginacao'
 import { ChipCodigo, LinkBotao, Pagina, Selo, Tabela, Vazio } from '@/components/ui'
@@ -40,8 +41,8 @@ export default async function PaginaMovimentacoes({
     listarMovimentacoes(f, pagina),
     opcoesDeFiltro(),
   ])
-  const selId = f.sel ?? linhas[0]?.id
-  const sel = selId ? await detalheMovimentacao(selId) : null
+  // o detalhe abre numa gaveta por cima da lista, só quando a pessoa escolhe uma linha
+  const sel = f.sel ? await detalheMovimentacao(f.sel) : null
   const filtros: Filtros = { ...f }
   delete filtros.sel
   delete filtros.pagina
@@ -51,13 +52,29 @@ export default async function PaginaMovimentacoes({
       titulo="Movimentações"
       descricao={`Histórico completo e inalterável. ${formatarNumero(total)} ${total === 1 ? 'registro' : 'registros'}${Object.values(filtros).some(Boolean) ? ' com estes filtros' : ''}.`}
       acoes={
-        <LinkBotao
-          href={urlCom('/movimentacoes/csv', filtros, {})}
-          variante="secundario"
-          icone={Download}
-        >
-          Exportar CSV
-        </LinkBotao>
+        <>
+          <LinkBotao
+            href={urlCom('/movimentacoes/csv', filtros, {})}
+            variante="secundario"
+            icone={Download}
+          >
+            Exportar CSV
+          </LinkBotao>
+          {pode(u.perfil, 'movimentacao:entrada') && (
+            <LinkBotao
+              href="/movimentacoes/nova?modo=entrada"
+              variante="secundario"
+              icone={ArrowDownToLine}
+            >
+              Entrada
+            </LinkBotao>
+          )}
+          {pode(u.perfil, 'movimentacao:saida') && (
+            <LinkBotao href="/movimentacoes/nova?modo=saida" icone={ArrowUpFromLine}>
+              Registrar saída
+            </LinkBotao>
+          )}
+        </>
       }
     >
       <form
@@ -118,7 +135,7 @@ export default async function PaginaMovimentacoes({
       {linhas.length === 0 ? (
         <Vazio>Nenhuma movimentação com esses filtros.</Vazio>
       ) : (
-        <div className="grid items-start gap-6 min-[96rem]:grid-cols-[minmax(0,1fr)_340px]">
+        <>
           <div className="flex min-w-0 flex-col gap-4">
             <Tabela rotulo="Movimentações" larguraMinima={700}>
               <thead>
@@ -142,7 +159,7 @@ export default async function PaginaMovimentacoes({
                     >
                       <td className="whitespace-nowrap">
                         <Link
-                          href={`${urlCom('/movimentacoes', f, { sel: m.id })}#detalhe`}
+                          href={urlCom('/movimentacoes', f, { sel: m.id })}
                           scroll={false}
                           aria-current={ativa ? 'true' : undefined}
                           className="text-inherit no-underline after:absolute after:inset-0 after:content-['']"
@@ -181,14 +198,19 @@ export default async function PaginaMovimentacoes({
             />
           </div>
           {sel && (
-            <aside
-              id="detalhe"
-              className="scroll-mt-24 cartao p-6 min-[96rem]:sticky min-[96rem]:top-[88px]"
+            <Gaveta
+              titulo="Movimentação"
+              descricao="O registro não muda depois de gravado. Um erro se corrige com estorno."
+              voltarPara={urlCom('/movimentacoes', filtros, {
+                pagina: pagina > 1 ? String(pagina) : undefined,
+              })}
             >
-              <PainelMovimentacao m={sel} perfil={u.perfil} />
-            </aside>
+              <div className="cartao p-6">
+                <PainelMovimentacao m={sel} perfil={u.perfil} />
+              </div>
+            </Gaveta>
           )}
-        </div>
+        </>
       )}
     </Pagina>
   )

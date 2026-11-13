@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, UserPlus } from 'lucide-react'
 import { podeAgirSobreUsuario, podeCriarComPerfil } from '@/domain/hierarquia'
 import { NOME_DO_PERFIL } from '@/domain/permissoes'
-import { Avatar, Cartao, Pagina, Selo, Tabela } from '@/components/ui'
+import { Gaveta } from '@/components/Gaveta'
+import { Avatar, LinkBotao, Pagina, Selo, Tabela } from '@/components/ui'
 import { formatarDiaHora } from '@/lib/formatar'
 import { listarUsuarios } from '@/server/consultas/cadastros'
 import { exigirPermissaoDaPagina } from '@/server/web/sessao-atual'
@@ -12,17 +12,16 @@ import { AcoesUsuario, FormEditarUsuario, FormNovoUsuario } from './formularios'
 export const metadata: Metadata = { title: 'Usuários' }
 
 /**
- * RF-02: contas geridas pelo Administrador, com login e senha gerados (RN-21). O formulário
- * fica em cima, na largura toda, e a tabela embaixo, também na largura toda: assim as colunas
- * cabem sem rolagem de lado no computador.
+ * RF-02: contas geridas pelo Administrador, com login e senha gerados (RN-21). A tabela ocupa
+ * a tela; criar (?novo=1) e editar (?editar=id) abrem numa gaveta por cima dela (RNF-14).
  */
 export default async function Usuarios({
   searchParams,
 }: {
-  searchParams: Promise<{ editar?: string }>
+  searchParams: Promise<{ editar?: string; novo?: string }>
 }) {
   const eu = await exigirPermissaoDaPagina('usuarios:gerenciar')
-  const { editar } = await searchParams
+  const { editar, novo } = await searchParams
   const lista = await listarUsuarios()
   // RN-21c: o principal vem do banco, não da sessão
   const ator = {
@@ -39,32 +38,12 @@ export default async function Usuarios({
     <Pagina
       titulo="Usuários"
       descricao="Contas geridas só pela empresa. Login e senha gerados pelo sistema; nenhum e-mail. Cada funcionário tem um login só, ligado à matrícula."
+      acoes={
+        <LinkBotao href="/admin/usuarios?novo=1" icone={UserPlus} scroll={false}>
+          Novo usuário
+        </LinkBotao>
+      }
     >
-      <div id="formulario" className="scroll-mt-24">
-        {emEdicao ? (
-          <Cartao
-            titulo={`Editar ${emEdicao.nome} ${emEdicao.sobrenome}`}
-            acao={
-              <Link href="/admin/usuarios" className="text-[13px]">
-                Cancelar
-              </Link>
-            }
-          >
-            <FormEditarUsuario
-              key={emEdicao.id}
-              versao={emEdicao.atualizadoEm.getTime()}
-              usuario={emEdicao}
-              podeMudarPerfil={pode(emEdicao, 'mudar-perfil')}
-              podePromoverAdmin={podeCriarAdmin}
-            />
-          </Cartao>
-        ) : (
-          <Cartao titulo="Novo usuário">
-            {/* inclui inativos: login nunca é reaproveitado (RN-21b) */}
-            <FormNovoUsuario logins={lista.map((u) => u.login)} podeCriarAdmin={podeCriarAdmin} />
-          </Cartao>
-        )}
-      </div>
       <Tabela rotulo="Usuários" larguraMinima={900}>
         <thead>
           <tr>
@@ -144,6 +123,35 @@ export default async function Usuarios({
           ))}
         </tbody>
       </Tabela>
+      {emEdicao ? (
+        <Gaveta
+          titulo={`Editar ${emEdicao.nome} ${emEdicao.sobrenome}`}
+          voltarPara="/admin/usuarios"
+        >
+          <div className="cartao p-6">
+            <FormEditarUsuario
+              key={emEdicao.id}
+              versao={emEdicao.atualizadoEm.getTime()}
+              usuario={emEdicao}
+              podeMudarPerfil={pode(emEdicao, 'mudar-perfil')}
+              podePromoverAdmin={podeCriarAdmin}
+            />
+          </div>
+        </Gaveta>
+      ) : (
+        novo === '1' && (
+          <Gaveta
+            titulo="Novo usuário"
+            descricao="O sistema gera o login e a senha provisória, mostrada uma vez só."
+            voltarPara="/admin/usuarios"
+          >
+            <div className="cartao p-6">
+              {/* inclui inativos: login nunca é reaproveitado (RN-21b) */}
+              <FormNovoUsuario logins={lista.map((u) => u.login)} podeCriarAdmin={podeCriarAdmin} />
+            </div>
+          </Gaveta>
+        )
+      )}
     </Pagina>
   )
 }

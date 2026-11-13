@@ -50,8 +50,12 @@ import {
   casosTracosAcesos,
   casosVariacaoDoMes,
 } from '@/domain/painel.casos'
-import { formaDaPastilha } from '@/domain/pastilha'
-import { casosFormaDaPastilha } from '@/domain/pastilha.casos'
+import { formaDaPastilha, fotoDaPastilha } from '@/domain/pastilha'
+import {
+  casosFormaDaPastilha,
+  casosFotoDaPastilha,
+  FOTOS_DE_EXEMPLO,
+} from '@/domain/pastilha.casos'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
 import { buscarItens, buscarOpcoes } from '@/domain/busca'
@@ -1401,6 +1405,16 @@ export const SUITES: SuiteLab[] = [
       const f = v as { nome: string; temFuro: boolean; positiva: boolean; reconhecida: boolean }
       return `${f.nome}; ${f.temFuro ? 'com furo' : 'sem furo'}; ${f.positiva ? 'positiva' : 'negativa'}${f.reconhecida ? '' : '; não reconhecida'}`
     },
+  },
+  {
+    id: 'Interface',
+    titulo: 'Foto da pastilha no lugar do desenho',
+    regra:
+      'Com as fotos de exemplo (uma pelo código PST-001 e duas pela ISO), vale primeiro a foto do código do item e depois a da designação ISO. Sem foto, a tela usa o desenho em vetor.',
+    casos: casos(casosFotoDaPastilha),
+    executar: (e) =>
+      fotoDaPastilha(e as Parameters<typeof fotoDaPastilha>[0], FOTOS_DE_EXEMPLO)?.arquivo ?? null,
+    formatar: (v) => (v === null ? 'desenho em vetor' : String(v)),
   },
 ]
 

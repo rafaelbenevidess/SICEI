@@ -1,25 +1,60 @@
+import Image from 'next/image'
 import { useId, type CSSProperties } from 'react'
 import {
   caminhoSvg,
   contornoDaPastilha,
   formaDaPastilha,
+  fotoDaPastilha,
   raioInscrito,
   verticesDaPastilha,
   vistaDaPastilha,
+  type FotoDaPastilha,
 } from '@/domain/pastilha'
+import { FOTOS_DAS_PASTILHAS } from '@/lib/fotosDasPastilhas'
 
 /**
- * A pastilha do item, desenhada a partir da designação ISO (domain/pastilha.ts): losango,
- * trigonal, triangular, quadrada… com ou sem furo. É vetor, então fica nítida em qualquer
- * tamanho e segue o tema pelas variáveis --pastilha-*.
+ * A pastilha do item. Se existe foto recortada para o código ou para a ISO dele
+ * (public/pastilhas, gerada por `npm run pastilhas`), mostra a foto. Senão desenha a
+ * pastilha em vetor a partir da designação ISO (domain/pastilha.ts): losango, trigonal,
+ * triangular, quadrada… com ou sem furo, seguindo o tema pelas variáveis --pastilha-*.
  */
 export function Pastilha({
+  iso,
+  codigo,
+  gravacao,
+  className,
+  fotos = FOTOS_DAS_PASTILHAS,
+}: {
+  iso?: string | null
+  /** código do item (PST-001): a foto com esse nome vence a foto da ISO */
+  codigo?: string | null
+  /** texto gravado na face do desenho, como nas pastilhas de verdade (a classe: "P25") */
+  gravacao?: string | null
+  className?: string
+  fotos?: Record<string, FotoDaPastilha>
+}) {
+  const foto = fotoDaPastilha({ codigo, iso }, fotos)
+  if (foto) {
+    return (
+      <Image
+        src={foto.arquivo}
+        width={foto.largura}
+        height={foto.altura}
+        sizes="(min-width: 768px) 360px, 80vw"
+        alt={`Pastilha: ${formaDaPastilha(iso).nome.toLowerCase()}`}
+        className={`object-contain drop-shadow-[0_18px_14px_rgb(16_24_40/0.22)] ${className ?? ''}`}
+      />
+    )
+  }
+  return <DesenhoDaPastilha iso={iso} gravacao={gravacao} className={className} />
+}
+
+function DesenhoDaPastilha({
   iso,
   gravacao,
   className,
 }: {
   iso?: string | null
-  /** texto gravado na face, como nas pastilhas de verdade (a classe: "P25") */
   gravacao?: string | null
   className?: string
 }) {

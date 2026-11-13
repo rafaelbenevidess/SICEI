@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import QRCode from 'qrcode'
 import { interpretarCodigoDePosicao } from '@/domain/posicao'
+import { AbasDeCadastros } from '@/components/abasDasTelas'
 import { Aviso, Pagina, Vazio } from '@/components/ui'
 import { nomeDaPastilha } from '@/lib/formatar'
 import { posicoesOcupadas } from '@/server/consultas/cadastros'
@@ -48,9 +49,12 @@ export default async function Etiquetas({
 
   return (
     <Pagina
-      titulo="Etiquetas QR"
-      descricao="Uma etiqueta por posição ocupada. O QR aponta para a posição: ler com a câmera abre o item."
+      titulo="Cadastros"
+      descricao="Etiquetas QR: uma por posição ocupada. O QR aponta para a posição, e ler com a câmera abre o item."
     >
+      <div className="nao-imprimir">
+        <AbasDeCadastros ativa="etiquetas" comEtiquetas etiquetasPendentes={pendentes.length} />
+      </div>
       {pendentes.length > 0 && (
         <Aviso
           tipo="alerta"

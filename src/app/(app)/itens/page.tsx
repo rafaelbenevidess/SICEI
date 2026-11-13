@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Download, Plus, Search } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpFromLine, Download, Plus, Search } from 'lucide-react'
 import { pode } from '@/domain/permissoes'
 import { FormFiltro } from '@/components/FormFiltro'
 import {
@@ -31,6 +31,8 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
     listarItens({ ...f, inativos: f.inativos === '1' }),
     contarItensPorStatus(),
   ])
+  const podeEntrada = pode(u.perfil, 'movimentacao:entrada')
+  const podeSaida = pode(u.perfil, 'movimentacao:saida')
   const n = (s: string) => contagem[s] ?? 0
   const total = n('OK') + n('ATENCAO') + n('CRITICO') + n('ZERADO')
   const status = f.status ?? ''
@@ -61,9 +63,9 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
         </>
       }
     >
-      <FormFiltro className="flex flex-col gap-3">
+      <FormFiltro className="flex flex-wrap items-center gap-3">
         {f.status && <input type="hidden" name="status" value={f.status} />}
-        <div className="relative max-w-[420px]">
+        <div className="relative min-w-[220px] flex-1 basis-[260px] sm:max-w-[340px]">
           <Search
             aria-hidden
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3"
@@ -77,10 +79,10 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
             type="search"
             defaultValue={f.q}
             placeholder="Código, ISO, classe ou posição"
-            className="h-10 w-full rounded-lg border border-line-2 bg-surface pr-3 pl-9 text-base text-ink placeholder:text-ink-3 sm:text-sm"
+            className="h-10 w-full rounded-controle border border-transparent bg-surface pr-3 pl-9 text-base text-ink shadow-pilula placeholder:text-ink-3 sm:text-sm"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="contents">
           <Segmentado
             rotulo="Filtrar por status"
             opcoes={segmentos.map((o) => ({
@@ -97,7 +99,7 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
             id="aplicacao"
             name="aplicacao"
             defaultValue={f.aplicacao ?? ''}
-            className="h-10 rounded-lg border border-line-2 bg-surface px-3 text-sm text-ink"
+            className="h-10 rounded-controle border border-transparent bg-surface px-3 text-sm text-ink shadow-pilula"
           >
             <option value="">Todas as aplicações</option>
             {Object.entries(NOME_APLICACAO).map(([v, r]) => (
@@ -133,6 +135,7 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
                 <th className="text-right">Reposição</th>
                 <th>Status</th>
                 <th>Posição</th>
+                {(podeEntrada || podeSaida) && <th className="text-right">Registrar</th>}
               </tr>
             </thead>
             <tbody>
@@ -180,6 +183,35 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
                   <td>
                     <ChipPosicao>{i.posicao?.codigo}</ChipPosicao>
                   </td>
+                  {(podeEntrada || podeSaida) && (
+                    <td>
+                      {/* acima do link que cobre a linha: registra sem abrir o item */}
+                      {i.ativo && (
+                        <span className="relative z-10 flex justify-end gap-1.5">
+                          {podeEntrada && (
+                            <Link
+                              href={`/movimentacoes/nova?modo=entrada&item=${i.id}`}
+                              aria-label={`Registrar entrada de ${i.codigo}`}
+                              title="Registrar entrada"
+                              className="grid size-8 place-items-center rounded-lg bg-surface text-ink-2 shadow-pilula hover:bg-surface-2 hover:text-ink"
+                            >
+                              <ArrowDownToLine aria-hidden className="size-4" />
+                            </Link>
+                          )}
+                          {podeSaida && (
+                            <Link
+                              href={`/movimentacoes/nova?modo=saida&item=${i.id}`}
+                              aria-label={`Registrar saída de ${i.codigo}`}
+                              title="Registrar saída"
+                              className="grid size-8 place-items-center rounded-lg bg-accent text-on-accent shadow-pilula hover:bg-accent-hover"
+                            >
+                              <ArrowUpFromLine aria-hidden className="size-4" />
+                            </Link>
+                          )}
+                        </span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

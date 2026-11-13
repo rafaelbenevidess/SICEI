@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
 import { BadgeStatus, ChipCodigo, ChipPosicao, Vazio } from '@/components/ui'
+import { GlifoDaPastilha } from '@/components/Pastilha'
 import { buscarItens, pontuarBusca } from '@/domain/busca'
 
 export interface ItemParaEscolha {
@@ -131,8 +132,9 @@ export function EscolhaDeItem({
               <Link
                 href={href(i)}
                 tabIndex={-1}
-                className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-t border-line px-6 py-3 text-ink no-underline ${n === indice && termo.trim() ? 'bg-accent-soft' : 'hover:bg-surface-2'}`}
+                className={`grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-3.5 border-t border-line px-6 py-3 text-ink no-underline ${n === indice && termo.trim() ? 'bg-accent-soft' : 'hover:bg-surface-2'}`}
               >
+                <GlifoDaPastilha iso={i.iso} className="size-7 text-ink-3" />
                 <ChipCodigo forte>{i.codigo}</ChipCodigo>
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{i.nome}</span>

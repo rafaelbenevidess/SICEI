@@ -238,15 +238,18 @@ export function LinkBotao({
   variante = 'primario',
   pequeno = false,
   icone: Icone,
+  scroll,
 }: {
   href: string
   children: ReactNode
   variante?: VarianteBotao
   pequeno?: boolean
   icone?: LucideIcon
+  /** false para links que abrem uma gaveta na mesma tela: a rolagem fica onde está */
+  scroll?: boolean
 }) {
   return (
-    <Link href={href} className={classeBotao(variante, pequeno)}>
+    <Link href={href} scroll={scroll} className={classeBotao(variante, pequeno)}>
       {Icone && <Icone aria-hidden />}
       {children}
     </Link>

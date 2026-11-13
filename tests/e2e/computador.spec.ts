@@ -47,13 +47,38 @@ test('RF-07 / RN-05: compra com fornecedor cadastrado na hora, sem sair da tela'
   await expect(page.getByRole('status', { name: 'Entrada registrada' })).toBeVisible()
 })
 
-test('RF-03: novo item com o próximo código e fabricante e fornecedor cadastrados na hora', async ({
+test('RF-03 / RNF-14: cadastros na gaveta; novo item com o próximo código e fabricante e fornecedor cadastrados na hora', async ({
   page,
 }) => {
   await entrarComoAdmin(page)
+  // RNF-14: fabricante cadastrado e corrigido por cima da tabela, sem sair dos Cadastros
+  await page.goto('/cadastros?aba=fabricantes')
+  await page.getByRole('link', { name: 'Novo fabricante' }).click()
+  const novoFabricante = page.getByRole('dialog', { name: 'Novo fabricante' })
+  await novoFabricante.getByLabel(/^Nome/).fill('Gaveta E2E')
+  await novoFabricante.getByRole('button', { name: 'Cadastrar fabricante' }).click()
+  // cadastro novo deixa a gaveta aberta e o campo limpo, para lançar outro em seguida
+  await expect(novoFabricante.getByLabel(/^Nome/)).toHaveValue('')
+  await page.keyboard.press('Escape')
+  await expect(novoFabricante).toHaveCount(0)
+  await page
+    .getByRole('row', { name: /Gaveta E2E/ })
+    .getByRole('link', { name: 'Editar' })
+    .click()
+  const edicao = page.getByRole('dialog', { name: 'Editar fabricante' })
+  await edicao.getByLabel(/^Nome/).fill('Gaveta E2E Corrigido')
+  await edicao.getByRole('button', { name: 'Salvar' }).click()
+  // edição salva fecha a gaveta e a linha de baixo já mostra o nome novo
+  await expect(edicao).toHaveCount(0)
+  await expect(page.getByRole('row', { name: /Gaveta E2E Corrigido/ })).toBeVisible()
+  await expect(page).toHaveURL(/\/cadastros\?aba=fabricantes$/)
+
   await page.goto('/cadastros')
   await expect(page.getByRole('table', { name: 'Itens' })).toBeVisible()
   await page.getByRole('link', { name: 'Cadastrar item' }).click()
+  // o cadastro do item abre na gaveta, com a tabela de Cadastros embaixo
+  await expect(page.getByRole('dialog', { name: 'Novo item' })).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Itens' })).toBeAttached()
   const codigo = page.locator('input[name=codigo]')
   await expect(codigo).toHaveValue('PST-007')
   await codigo.fill('PST-001')
@@ -142,6 +167,39 @@ test('RF-08 / RF-11: registrar saída acha o item digitado de qualquer jeito, co
   // o filtro das movimentações acha a OP digitada sem traços (criada na suíte do celular)
   await page.goto('/movimentacoes?busca=ope2e1')
   await expect(page.locator('tbody tr').first()).toContainText('PST-002')
+
+  // pela lista de itens, a saída abre numa gaveta por cima da lista e, ao fechar, o saldo
+  // da linha já é o novo, sem trocar de tela
+  await page.goto('/itens?q=pst2')
+  const linha = page.locator('tbody tr', { hasText: 'PST-002' })
+  const saldoAntes = Number(await linha.locator('td').nth(2).innerText())
+  await linha.getByRole('link', { name: 'Registrar saída de PST-002' }).click()
+  const gaveta = page.getByRole('dialog', { name: 'Registrar saída' })
+  await expect(gaveta).toBeVisible()
+  await expect(page.locator('tbody tr', { hasText: 'PST-002' })).toHaveCount(1)
+  await gaveta.locator('input[name=quantidade]').fill('1')
+  await gaveta
+    .getByRole('group', { name: /Destino/ })
+    .locator('label')
+    .first()
+    .click()
+  const colaborador = gaveta.getByRole('combobox', { name: 'Colaborador que retirou' })
+  await colaborador.fill('1045')
+  await gaveta.getByRole('option').first().click()
+  await gaveta.locator('input[name=ordemProducao]').fill('OP-GAVETA-1')
+  await gaveta.getByRole('button', { name: 'Confirmar saída de 1 un.' }).click()
+  await expect(page.getByRole('status', { name: 'Saída registrada' })).toBeVisible()
+  await gaveta.getByRole('button', { name: 'Fechar', exact: true }).click()
+  await expect(gaveta).toHaveCount(0)
+  await expect(page).toHaveURL(/\/itens\?q=pst2/)
+  await expect(linha.locator('td').nth(2)).toHaveText(String(saldoAntes - 1))
+
+  // o detalhe da movimentação também abre em gaveta, sobre o histórico
+  await page.goto('/movimentacoes?busca=OP-GAVETA-1')
+  await page.locator('tbody a').first().click()
+  await expect(page.getByRole('dialog', { name: 'Movimentação' })).toContainText('OP-GAVETA-1')
+  await page.getByRole('button', { name: 'Fechar painel' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
 test('RF-26: parâmetros avisam o limite e a mudança vai para as últimas alterações', async ({
@@ -231,9 +289,25 @@ test('RF-17a / RF-20: Análise no menu, com itens escolhidos lado a lado, foco, 
   // o endereço antigo da aba de Relatórios leva à página nova
   await page.goto('/relatorios?tipo=analise')
   await expect(page).toHaveURL(/\/analise/)
+  // a Análise é uma aba de Relatórios: trocar de aba mantém a tela, as abas e o item do menu
   await page.goto('/painel')
-  await page.getByRole('link', { name: 'Análise', exact: true }).first().click()
-  await expect(page.getByRole('heading', { name: 'Análise' })).toBeVisible()
+  await page.getByRole('link', { name: 'Relatórios', exact: true }).first().click()
+  const abas = page.getByRole('navigation', { name: 'Tipo de relatório' })
+  for (const [aba, endereco] of [
+    ['Sugestão de compra', /tipo=reposicao/],
+    ['Movimentação', /tipo=movimentacao/],
+    ['Análise', /\/analise/],
+  ] as const) {
+    await abas.getByRole('link', { name: aba }).click()
+    await expect(page).toHaveURL(endereco)
+    await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible()
+    await expect(abas.getByRole('link', { name: aba })).toHaveAttribute('aria-current', 'page')
+    await expect(
+      page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', {
+        name: 'Relatórios',
+      }),
+    ).toHaveAttribute('aria-current', 'page')
+  }
 
   // escolhe dois itens digitando de qualquer jeito e aplica
   const itens = page.getByRole('combobox', { name: 'Itens', exact: true })

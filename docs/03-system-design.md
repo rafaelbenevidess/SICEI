@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.19 (para revisão) |
+| **Versão** | 1.20 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -388,7 +388,7 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 | `domain/importacao.ts` | Sim | Validação linha a linha do CSV (RF-25) | Não, só no relatório |
 | `domain/analise.ts` e `domain/schemas/analise.ts` | Sim | Agrupamento por dia, semana ou mês, período anterior, variação, maiores e "Outros", escolhidos, comparação lado a lado, mapa de calor, eixo, nomes na ponta das linhas, filtros da URL (RF-17a) | Sim |
 | `domain/painel.ts` | Sim | Saúde do estoque, traços do medidor, pontos por dia, barra de comparação, variação e média do mês, tempo do alerta aberto (RF-16) | Sim |
-| `domain/pastilha.ts` | Sim | Formato da pastilha pela designação ISO 1832, vértices, raio de ponta e vista em perspectiva (seção 10.8) | Sim |
+| `domain/pastilha.ts` | Sim | Formato da pastilha pela designação ISO 1832, vértices, raio de ponta e vista em perspectiva (seção 10.8); chave e escolha da foto do item (seção 10.9) | Sim |
 | Componentes de interface | Sim, com Testing Library | Selo de status com texto e cor (RNF-10), formulário de saída exigindo os campos, tabela de fornecedores escondendo preço do perfil Consulta | Não, só no relatório |
 | `server/services/` | Em parte | A parte de decisão já está coberta pelo `domain/`. O que depende do banco vai para a integração | Não |
 | Lock de linha, triggers, permissões do banco, sessão, e-mail | Não é possível em unidade | Dependem do PostgreSQL ou da rede: cobertos por integração e E2E | Não |
@@ -487,16 +487,18 @@ O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no serv
 
 | Parte | Onde | O que faz |
 |---|---|---|
-| Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), direto sobre o fundo da página, sem coluna branca: o item ativo é uma pílula branca. Topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
+| Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), direto sobre o fundo da página, sem coluna branca: o item ativo é uma pílula branca. Cada tela tem um item só; as rotas que são abas dela mantêm o item aceso (seção 10.9). Topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
 | Tela de acesso | `components/TelaDeAcesso.tsx` | Login, troca de senha, página inicial e "Acesso negado": formulário à esquerda e painel da marca à direita (some abaixo de 1040 px). Só no login, a logo da licenciada (quando cadastrada) fica centralizada acima do formulário e no meio do painel, entre a marca do SICEI e o texto. A logo é SVG sem fundo, na cor do texto em volta: azul da empresa no fundo claro, branca no escuro. |
 | Marca | `components/Marca.tsx`, `components/SimboloSicei.tsx` | Ícone em SVG (redesenhado em vetor a partir do ícone original de 512 px, nítido em qualquer tamanho) e o nome "SICEI" escrito em texto na fonte da interface (Geist, peso 800), na cor do tema. O mesmo SVG é o ícone da aba (`app/icon.svg`); o `app/apple-icon.png` de 180 px é gerado dele. |
 | Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, controle segmentado (opção ativa em tinta escura), gauge de nível com hachura até o alvo, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
-| Desenho da pastilha | `components/Pastilha.tsx` | `Pastilha` (perspectiva) e `GlifoDaPastilha` (vista de cima, para listas), desenhadas a partir da designação ISO do item (seção 10.8). |
+| Desenho da pastilha | `components/Pastilha.tsx` | `Pastilha` (foto recortada do item quando existe; senão, o desenho em perspectiva) e `GlifoDaPastilha` (vista de cima, para listas), desenhadas a partir da designação ISO do item (seções 10.8 e 10.9). |
 | Medidores do painel | `components/medidores.tsx` | Arco de traços, barra de comparação e consumo por dia em pontos (seção 10.8). |
+| Gaveta | `components/Gaveta.tsx`, `app/(app)/@gaveta/` | Painel por cima da tela atual, para registrar entrada e saída, ver o detalhe de uma movimentação e cadastrar ou editar item, cadastro de apoio e usuário sem sair da tela (seção 10.9). |
+| Abas das telas | `components/abasDasTelas.tsx` | Barras de abas de Relatórios e de Cadastros, iguais em todos os endereços de cada tela (seção 10.9). |
 
 Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, `min-[85rem]` = 1360 px, `min-[96rem]` = 1536 px, `min-[100rem]` = 1600 px), para respeitar o zoom do navegador.
 
-**Tabelas sem rolagem lateral à toa (RNF-02).** A `Tabela` recebe uma largura mínima, mas ela só vale no celular (abaixo de 768 px), onde a tabela rola de lado para não espremer as colunas. No computador a tabela ocupa a largura disponível e só rola se o conteúdo não couber. Onde a tabela divide a tela com outro bloco, o bloco vai para o lado só quando sobra espaço: o painel de detalhe das movimentações e o formulário de Cadastros a partir de 1536 px, as duas colunas do painel a partir de 1360 px; abaixo disso ficam embaixo da tabela. Em Usuários o formulário fica sempre em cima, na largura toda. Um teste ponta a ponta confere, em 1366 px, que nenhuma tabela das telas principais rola de lado.
+**Tabelas sem rolagem lateral à toa (RNF-02).** A `Tabela` recebe uma largura mínima, mas ela só vale no celular (abaixo de 768 px), onde a tabela rola de lado para não espremer as colunas. No computador a tabela ocupa a largura disponível e só rola se o conteúdo não couber. As tabelas de Movimentações, Cadastros e Usuários ocupam a largura toda da tela: o detalhe e os formulários abrem na gaveta (seção 10.9), e não ao lado nem embaixo. No painel, as duas colunas ficam lado a lado a partir de 1360 px; abaixo disso, uma embaixo da outra. Um teste ponta a ponta confere, em 1366 px, que nenhuma tabela das telas principais rola de lado.
 
 ### 10.3 Celular (RNF-01, RNF-02)
 
@@ -580,15 +582,40 @@ A segunda linha traz dois indicadores (consumo do mês contra o mês anterior, e
 - As contas ficam em `domain/painel.ts`, com casos no Laboratório; os componentes só desenham.
 - No celular as chamadas ficam embaixo do desenho, sem as linhas de ligação, e tudo cabe em 360 px.
 
-### 10.9 Próxima etapa: redesenho de todas as telas
+### 10.9 Versão 3: telas integradas
 
-A versão 2 redesenhou o painel e a lista de itens e deu a mesma base visual às outras telas, mas a estrutura delas continua a da versão 1. Ficou decidido em 12/11/2026 que a próxima etapa é um design novo para o aplicativo inteiro.
+A versão 2 deu a mesma base visual a todas as telas. A versão 3 mexe na estrutura: junta o que é feito em sequência e tira as trocas de tela (RNF-14). A decisão de redesenhar o aplicativo inteiro, e não só o painel e os itens, é de 12/11/2026.
 
-- **Alcance:** todas as telas e opções, não só o painel e os itens. Entram o detalhe do item, o registro de entrada e saída, movimentações, alertas, sugestão de compra, relatórios, análise, cadastros, etiquetas QR, usuários, auditoria, parâmetros, importação, login e o fluxo do celular.
-- **Objetivo:** deixar o sistema mais integrado e mais conexo. Hoje várias tarefas pedem que a pessoa passe por mais de uma tela ou opção; a meta é concluir cada tarefa sem sair de onde ela começou.
-- **O que não muda:** regras de negócio, permissões, rotas públicas das etiquetas QR e a paleta do projeto.
+**Um lugar só no menu.** O menu tem 12 itens no lugar de 15. Sugestão de compra, Análise e Etiquetas QR deixaram de ser itens soltos e viraram abas da tela a que pertencem. Em `shell/menu.ts`, o campo `tambem` lista as outras rotas que são abas de um item, e `hrefAtivo` mantém esse item aceso em todas elas.
 
-Esta seção é só o registro da decisão. O desenho de cada tela ainda não foi feito; quando for, entra aqui e no histórico de versões, e os critérios de aceite do documento 02 são revistos onde o fluxo mudar.
+| Tela | Abas | Endereços |
+|---|---|---|
+| Relatórios | Consumo, Movimentação, Sugestão de compra, Análise | `/relatorios?tipo=…` e `/analise` |
+| Cadastros | Itens, Fabricantes, Fornecedores, Destinos, Colaboradores, Posições, Etiquetas QR | `/cadastros?aba=…` e `/cadastros/posicoes/etiquetas` |
+
+As barras de abas ficam em `components/abasDasTelas.tsx` e são as mesmas em todos os endereços da tela. Antes, a aba "Reposição" dos Relatórios abria a sugestão de compra sem abas, com outro título e outro item do menu aceso: a pessoa clicava numa aba e parecia ter ido para outra tela. Agora o título é o da tela, o texto embaixo diz qual aba está aberta e o período escolhido segue de uma aba para a outra. Os endereços antigos continuam funcionando.
+
+**Gaveta.** `components/Gaveta.tsx` é um painel que entra pela direita, por cima da tela atual, e ocupa a tela toda no celular. Fecha com Esc, com o X ou clicando fora. Tem duas larguras: 760 px e, para formulário de poucos campos, 480 px. É usada em cinco lugares:
+
+- Registrar entrada ou saída. A rota `/movimentacoes/nova` é interceptada pelo espaço paralelo `(app)/@gaveta`: quando a pessoa chega por um link de dentro do sistema (topo, menu, linha da lista de itens, linha do alerta, painel, página do item), o formulário abre na gaveta e a tela de baixo continua lá. Abrir o endereço direto ou recarregar mostra a página inteira. O conteúdo é o mesmo nos dois casos (`movimentacoes/nova/conteudo.tsx`), com a permissão conferida ali. Ao gravar, a tela de baixo é atualizada; ao fechar, a pessoa está onde estava, com o saldo novo.
+- Detalhe da movimentação. Clicar numa linha do histórico abre o detalhe, com o estorno, numa gaveta sobre a lista (`?sel=`). Antes o detalhe ficava ao lado só em telas de 1536 px ou mais; abaixo disso ia para o pé da página.
+- Cadastro e edição de item. `/itens/novo` e `/itens/[id]/editar` também são interceptadas por `(app)/@gaveta`: "Novo item" na lista, "Cadastrar item" nos Cadastros e "Editar" na tela do item abrem o formulário por cima de onde a pessoa está. O conteúdo vem de `itens/novo/conteudo.tsx` e `itens/[id]/editar/conteudo.tsx`, com a permissão conferida ali. Ao salvar, a Server Action leva à tela do item e a gaveta some.
+- Cadastros de apoio (fabricante, fornecedor, destino, colaborador, posição). O botão "Novo…" no topo da aba (`?novo=1`) e o "Editar" de cada linha (`?editar=id`) abrem o formulário na gaveta estreita. Cadastro novo deixa a gaveta aberta e o formulário limpo, para lançar vários em seguida; edição salva fecha a gaveta. Antes o formulário ficava ao lado da tabela só a partir de 1536 px e, abaixo disso, no pé da página.
+- Usuários. "Novo usuário" (`?novo=1`) e "Editar" (`?editar=id`) abrem na gaveta. O login e a senha provisória aparecem ali, uma vez só, como antes (RN-21). Antes o formulário ficava fixo em cima da tabela.
+
+Os links que abrem uma gaveta na mesma tela usam `scroll={false}`: a lista de baixo fica na posição em que estava.
+
+O formulário de registro usa consultas de contêiner (`@container`) no lugar de pontos de quebra da janela, porque a largura que importa é a do lugar onde ele está: página ou gaveta.
+
+**Telas que juntaram tarefas**
+
+- Alertas: cada alerta é uma linha com o item, o saldo, a sugestão de compra (quantidade, caixas, fornecedor preferencial com preço e lead time), o ciente e o botão de entrada. O topo resume os alertas por nível, quantos estão sem ciente e o total sugerido. A sugestão só aparece para quem pode ver relatórios, e o preço só para quem pode ver preços.
+- Itens: os filtros ficam numa linha só, e cada linha da tabela tem os botões de entrada e de saída, que abrem a gaveta.
+- Movimentações: entrada e saída no topo, e o detalhe na gaveta.
+
+**Fotos das pastilhas.** O componente `Pastilha` mostra a foto do item quando ela existe e o desenho em vetor (10.8) quando não existe. `fotoDaPastilha` (`domain/pastilha.ts`) procura primeiro a foto com o código do item e depois a da designação ISO, que vale para qualquer item do mesmo modelo. As fotos entram por `CC/imagens`, com o fundo liso, e `npm run pastilhas` (`scripts/recortar-pastilhas.mjs`) tira o fundo, apara, grava WebP com transparência em `public/pastilhas` e reescreve `src/lib/fotos-pastilhas.json`, que a tela lê. O recorte descobre a cor do fundo pela borda da imagem e apaga o que está ligado a ela; com fundo verde de recorte também abre o furo da pastilha. A pasta `CC` guarda as instruções e os prompts das imagens; não entra no build. Nas listas continua o glifo em vetor, porque a foto ficaria pequena demais.
+
+**O que manteve a disposição.** Auditoria, Parâmetros, Importação e o login já fazem uma tarefa só numa tela só; ganharam a base visual da versão 2 e a disposição deles não mudou.
 
 ## 11. Decisões de arquitetura (ADRs)
 
@@ -633,3 +660,5 @@ Esta seção é só o registro da decisão. O desenho de cada tela ainda não fo
 | 1.17 | 28/09/2026 | Impressão da Análise (10.7): cores mantidas no papel, sempre no tema claro, moldura sem a coluna do menu e gráficos na largura da folha. |
 | 1.18 | 12/11/2026 | Versão 2 da interface (10.8): cartões translúcidos, menu sobre o fundo, números leves, barra de nível com hachura, painel com item em destaque, arco de saúde do estoque e consumo por dia em pontos. Desenho da pastilha pela designação ISO (`domain/pastilha.ts`, `components/Pastilha.tsx`). Tokens de forma na 10.1, componentes novos na 10.2 e `domain/painel.ts` e `domain/pastilha.ts` na tabela 9.1. A paleta não mudou. |
 | 1.19 | 12/11/2026 | Registro da próxima etapa (10.9): design novo para todas as telas e opções, com o objetivo de concluir cada tarefa sem passar por várias telas. |
+| 1.20 | 13/11/2026 | Versão 3 da interface (10.9, no lugar do registro da próxima etapa): menu com 12 itens e abas compartilhadas em Relatórios e Cadastros, gaveta para registrar entrada e saída e para o detalhe da movimentação (rota interceptada `@gaveta`), alertas com a sugestão de compra na linha, ações de registro na lista de itens e fotos recortadas das pastilhas com `npm run pastilhas`. Componentes novos na 10.2 e foto do item na tabela 9.1. |
+| 1.21 | 13/11/2026 | Versão 3, segunda parte (10.9 e 10.2): cadastro e edição de item, cadastros de apoio e usuários abrem na gaveta, com as tabelas na largura toda; gaveta estreita para formulário curto. |

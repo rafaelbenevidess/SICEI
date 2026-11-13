@@ -118,6 +118,7 @@ export default async function Painel({
               <div className="relative md:h-[340px]">
                 <Pastilha
                   iso={destaque.item.iso}
+                  codigo={destaque.item.codigo}
                   gravacao={destaque.item.classe}
                   className="mx-auto block h-48 w-full md:absolute md:top-1/2 md:left-1/2 md:h-auto md:w-[min(48%,360px)] md:-translate-x-1/2 md:-translate-y-1/2"
                 />
@@ -212,6 +213,7 @@ export default async function Painel({
             <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
               <Pastilha
                 iso={maisConsumida?.iso}
+                codigo={maisConsumida?.codigo}
                 gravacao={maisConsumida?.classe}
                 className="h-48 w-full max-w-[320px]"
               />

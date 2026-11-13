@@ -9,17 +9,29 @@ import {
   acaoSituacao,
 } from '@/app/acoes/cadastros'
 import { BotaoEnviar, Campo, FormAcao, Oculto, Selecao } from '@/components/formulario'
+import { useGaveta } from '@/components/Gaveta'
 import { NOME_TIPO_DESTINO } from '@/lib/formatar'
 
 const grade = 'flex flex-col gap-4'
 
+/**
+ * Edição que deu certo fecha a gaveta: a linha corrigida aparece na tabela de baixo.
+ * Cadastro novo deixa a gaveta aberta e o formulário limpo, para lançar vários em seguida.
+ */
+function useFecharAoSalvar(id?: string) {
+  const gaveta = useGaveta()
+  return id ? gaveta?.fechar : undefined
+}
+
 export function FormFabricante({ id, nome }: { id?: string; nome?: string }) {
+  const aoSalvar = useFecharAoSalvar(id)
   return (
     <FormAcao
       acao={acaoSalvarFabricante}
       limparAoConcluir={!id}
       className={grade}
       rotulo="Fabricante"
+      aoConcluir={aoSalvar}
     >
       {id && <Oculto nome="id" valor={id} />}
       <Campo nome="nome" rotulo="Nome" defaultValue={nome} obrigatorio />
@@ -43,12 +55,14 @@ export function FormFornecedor({
     contato?: string | null
   }
 }) {
+  const aoSalvar = useFecharAoSalvar(id)
   return (
     <FormAcao
       acao={acaoSalvarFornecedor}
       limparAoConcluir={!id}
       className={grade}
       rotulo="Fornecedor"
+      aoConcluir={aoSalvar}
     >
       {id && <Oculto nome="id" valor={id} />}
       <Campo
@@ -81,8 +95,15 @@ export function FormDestino({
   id?: string
   valores?: { tipo?: string; codigo?: string; nome?: string }
 }) {
+  const aoSalvar = useFecharAoSalvar(id)
   return (
-    <FormAcao acao={acaoSalvarDestino} limparAoConcluir={!id} className={grade} rotulo="Destino">
+    <FormAcao
+      acao={acaoSalvarDestino}
+      limparAoConcluir={!id}
+      className={grade}
+      rotulo="Destino"
+      aoConcluir={aoSalvar}
+    >
       {id && <Oculto nome="id" valor={id} />}
       <Selecao
         nome="tipo"
@@ -108,12 +129,14 @@ export function FormColaborador({
   id?: string
   valores?: { nome?: string; matricula?: string | null; setor?: string }
 }) {
+  const aoSalvar = useFecharAoSalvar(id)
   return (
     <FormAcao
       acao={acaoSalvarColaborador}
       limparAoConcluir={!id}
       className={grade}
       rotulo="Colaborador"
+      aoConcluir={aoSalvar}
     >
       {id && <Oculto nome="id" valor={id} />}
       <Campo nome="nome" rotulo="Nome" defaultValue={valores.nome} obrigatorio />

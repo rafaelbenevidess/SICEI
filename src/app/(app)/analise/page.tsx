@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Download, RotateCcw } from 'lucide-react'
+import { AbasDeRelatorios } from '@/components/abasDasTelas'
 import { BotaoImprimir } from '@/components/BotaoImprimir'
 import { EscolhaSegmentada, SelecaoMultipla } from '@/components/formulario'
 import { classeBotao, LinkBotao, Pagina, Segmentado } from '@/components/ui'
@@ -128,8 +129,8 @@ export default async function PaginaAnalise({
 
   return (
     <Pagina
-      titulo="Análise"
-      descricao={`${NOME_DA_MEDIDA[f.medida].titulo} por ${NOME_DA_DIMENSAO[f.por].singular.toLowerCase()}, ${periodo}.`}
+      titulo="Relatórios"
+      descricao={`Análise: ${NOME_DA_MEDIDA[f.medida].titulo.toLowerCase()} por ${NOME_DA_DIMENSAO[f.por].singular.toLowerCase()}, ${periodo}.`}
       acoes={
         <>
           <BotaoImprimir />
@@ -139,6 +140,9 @@ export default async function PaginaAnalise({
         </>
       }
     >
+      <div className="nao-imprimir">
+        <AbasDeRelatorios ativa="analise" de={f.de} ate={f.ate} />
+      </div>
       {filtros}
       <p className="text-[13px] text-ink-2" aria-label="Filtros aplicados">
         {resumo.length

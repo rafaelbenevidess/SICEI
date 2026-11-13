@@ -10,7 +10,14 @@ import { COOKIE_AVISO_ALERTAS } from '@/lib/avisoDeAlertas'
 import { contarAlertasAbertos, contarAlertasSemCiente } from '@/server/consultas/estoque'
 import { exigirUsuario } from '@/server/web/sessao-atual'
 
-export default async function LayoutDoSistema({ children }: { children: React.ReactNode }) {
+export default async function LayoutDoSistema({
+  children,
+  gaveta,
+}: {
+  children: React.ReactNode
+  /** painel aberto por cima da tela (rotas interceptadas em @gaveta) */
+  gaveta: React.ReactNode
+}) {
   const u = await exigirUsuario()
   const jar = await cookies()
   const tema = temaDoCookie(jar.get(COOKIE_TEMA)?.value)
@@ -36,6 +43,7 @@ export default async function LayoutDoSistema({ children }: { children: React.Re
       rodape={<Rodape anoAtual={new Date().getFullYear()} licenciada={licenciada()} />}
     >
       {children}
+      {gaveta}
     </Shell>
   )
 }

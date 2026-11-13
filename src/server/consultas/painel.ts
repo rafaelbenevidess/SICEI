@@ -26,12 +26,21 @@ export async function resumoDoPainel() {
       }),
       consumoNoPeriodo(inicioMes, agora),
       consumoNoPeriodo(inicioMesAnterior, inicioMes),
-      prisma.$queryRaw<{ id: string; codigo: string; descricao: string; total: bigint }[]>`
-      SELECT i.id, i.codigo, i.descricao, SUM(m.quantidade)::bigint AS total
+      prisma.$queryRaw<
+        {
+          id: string
+          codigo: string
+          descricao: string
+          iso: string | null
+          classe: string | null
+          total: bigint
+        }[]
+      >`
+      SELECT i.id, i.codigo, i.descricao, i.iso, i.classe, SUM(m.quantidade)::bigint AS total
         FROM movimentacao m JOIN item i ON i.id = m.item_id
        WHERE m.tipo = 'CONSUMO_PRODUCAO' AND m.criado_em >= ${inicioMes}
          AND NOT EXISTS (SELECT 1 FROM movimentacao e WHERE e.estorna_id = m.id)
-       GROUP BY i.id, i.codigo, i.descricao
+       GROUP BY i.id, i.codigo, i.descricao, i.iso, i.classe
        ORDER BY total DESC
        LIMIT 10`,
       prisma.movimentacao.findMany({

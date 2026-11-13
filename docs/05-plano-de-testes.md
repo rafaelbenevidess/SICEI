@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.11 |
+| **Versão** | 1.12 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -44,6 +44,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RN-25 posições | `posicao.test.ts` | `cadastros.test.ts` |
 | RF-03 próximo código | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório) | E2E do novo item |
 | RN-26 etiqueta pendente | `schemas/cadastros.test.ts` (códigos mandados para a impressora) | `cadastros.test.ts` (troca marca a nova e limpa a antiga; impressão limpa e vai para o log; Consulta não registra) |
+| RF-16 painel e desenho da pastilha | `painel.test.ts` (casos em `painel.casos.ts`, também no Laboratório: saúde do estoque, traços do medidor, pontos por dia, barra de comparação, variação e média do mês, dias do mês, tempo do alerta), `pastilha.test.ts` (casos em `pastilha.casos.ts`, também no Laboratório: formato pela ISO 1832, ângulos de ponta, raio inscrito, contorno arredondado, vista em perspectiva), `painel.test.tsx` (desenho com e sem furo, gravação, item sem ISO, arco, barra, pontos por dia, hachura da barra de nível) | E2E do painel em 360 px e das telas principais em 1366 px sem rolagem lateral |
 | RF-13 pop-up de alertas | `avisoDeAlertas.test.ts`, `AvisoDeAlertas.test.tsx` | E2E do primeiro acesso |
 | RF-21 filtro de ações | `acoesDoLog.test.ts` (toda ação gravada pelos services está no catálogo) | — |
 | RN-26 leitura do QR | `posicao.test.ts` (`codigoDoQr`, casos em `posicao.casos.ts`, também no Laboratório), `camera.test.ts`, `LeitorQr.test.tsx` (câmera e leitor simulados) | E2E com câmera falsa (abaixo) |
@@ -116,3 +117,4 @@ Resultado da última execução: 21 de 21 passaram.
 | 1.9 | 28/09/2026 | Análise personalizada em página própria: testes dos filtros da URL, da escolha de vários, da comparação lado a lado, da tabela de detalhe e das consultas com filtros combinados; E2E refeito. |
 | 1.10 | 28/09/2026 | Teste de componente com seis itens: cada um com cor própria no ranking, na composição e na evolução lado a lado. |
 | 1.11 | 28/09/2026 | E2E confere a Análise na mídia de impressão (largura, cores mantidas, gráficos dentro da folha). A verificação fica no teste da Análise, porque o limite de 20 logins por IP a cada 15 minutos vale também para a suíte. |
+| 1.12 | 12/11/2026 | Testes da versão 2 da interface: contas do painel e formato da pastilha (unidade, com suítes novas no Laboratório) e componentes do painel. |

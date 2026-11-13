@@ -29,7 +29,7 @@ export function CartaoConferencia() {
   )
   const r = estado.resultado
   return (
-    <section className="rounded-[14px] border border-line bg-surface p-5 shadow-cartao">
+    <section className="cartao p-5">
       <form action={executar} className="flex flex-wrap items-center gap-4">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-ink">
           <ShieldCheck aria-hidden className="size-[22px]" />

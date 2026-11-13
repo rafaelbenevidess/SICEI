@@ -14,6 +14,7 @@ import {
   Tabela,
   Vazio,
 } from '@/components/ui'
+import { GlifoDaPastilha } from '@/components/Pastilha'
 import { NOME_APLICACAO, nomeDaPastilha } from '@/lib/formatar'
 import { urlCom } from '@/lib/url'
 import { contarItensPorStatus, listarItens } from '@/server/consultas/estoque'
@@ -121,7 +122,7 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
       {itens.length === 0 ? (
         <Vazio>Nenhum item encontrado com esses filtros.</Vazio>
       ) : (
-        <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
+        <div className="cartao min-w-0 overflow-hidden">
           <Tabela rotulo="Itens em estoque" emCartao larguraMinima={860}>
             <thead>
               <tr>
@@ -145,14 +146,19 @@ export default async function PaginaItens({ searchParams }: { searchParams: Prom
                       <ChipCodigo>{i.codigo}</ChipCodigo>
                     </Link>
                   </td>
-                  <td className="min-w-[200px]">
-                    <p className="font-medium">
-                      {nomeDaPastilha(i)}
-                      {!i.ativo && <span className="ml-2 text-xs text-ink-3">(inativo)</span>}
-                    </p>
-                    <p className="text-[13px] text-ink-3">
-                      {i.fabricante.nome} · {NOME_APLICACAO[i.aplicacao]}
-                    </p>
+                  <td className="min-w-[230px]">
+                    <span className="flex items-center gap-3">
+                      <GlifoDaPastilha iso={i.iso} className="size-7 text-ink-3" />
+                      <span className="min-w-0">
+                        <span className="block font-medium">
+                          {nomeDaPastilha(i)}
+                          {!i.ativo && <span className="ml-2 text-xs text-ink-3">(inativo)</span>}
+                        </span>
+                        <span className="block text-[13px] text-ink-3">
+                          {i.fabricante.nome} · {NOME_APLICACAO[i.aplicacao]}
+                        </span>
+                      </span>
+                    </span>
                   </td>
                   <td>
                     <span className="flex items-center gap-3">

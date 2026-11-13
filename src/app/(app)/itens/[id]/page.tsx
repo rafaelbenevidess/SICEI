@@ -13,7 +13,9 @@ import {
   QrCode,
   ScanLine,
 } from 'lucide-react'
+import { formaDaPastilha } from '@/domain/pastilha'
 import { pode } from '@/domain/permissoes'
+import { Pastilha } from '@/components/Pastilha'
 import { QtdMovimentacao, TipoMovimentacao } from '@/components/movimentacao'
 import {
   Aviso,
@@ -212,21 +214,24 @@ export default async function PaginaItem({
       <div className="grid gap-6 min-[75rem]:grid-cols-[2fr_1fr]">
         <Cartao>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[13px] text-ink-2">Saldo disponível</p>
-              <p className="mt-1 flex flex-wrap items-baseline gap-3">
-                <span className="text-[52px] leading-none font-semibold tracking-[-0.04em]">
-                  {item.saldo}
-                </span>
-                <span className="text-ink-2">
-                  unidades · {formatarNumero(Math.round((item.saldo / item.embalagem) * 10) / 10)}{' '}
-                  {item.saldo === item.embalagem ? 'caixa' : 'caixas'}
-                </span>
-              </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Pastilha iso={item.iso} gravacao={item.classe} className="h-28 w-40 shrink-0" />
+              <div>
+                <p className="text-[13px] text-ink-2">Saldo disponível</p>
+                <p className="mt-1 flex flex-wrap items-baseline gap-3">
+                  <span className="text-[56px] leading-none font-light tracking-[-0.045em]">
+                    {item.saldo}
+                  </span>
+                  <span className="text-ink-2">
+                    unidades · {formatarNumero(Math.round((item.saldo / item.embalagem) * 10) / 10)}{' '}
+                    {item.saldo === item.embalagem ? 'caixa' : 'caixas'}
+                  </span>
+                </p>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-[13px] text-ink-2">Cobertura estimada</p>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-medium">
                 {d.cobertura === null
                   ? 'Sem consumo'
                   : item.saldo === 0
@@ -262,6 +267,7 @@ export default async function PaginaItem({
             <Rotulo nome="ISO">
               <span className="font-mono">{item.iso ?? '—'}</span>
             </Rotulo>
+            <Rotulo nome="Formato">{formaDaPastilha(item.iso).nome}</Rotulo>
             <Rotulo nome="Classe">{item.classe ?? '—'}</Rotulo>
             <Rotulo nome="Cobertura">{item.cobertura ?? '—'}</Rotulo>
             <Rotulo nome="Aplicação">{NOME_APLICACAO[item.aplicacao]}</Rotulo>
@@ -500,10 +506,7 @@ function Recolhivel({
   children: ReactNode
 }) {
   return (
-    <details
-      id={id}
-      className="group min-w-0 rounded-[14px] border border-line bg-surface shadow-cartao"
-    >
+    <details id={id} className="group min-w-0 cartao">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 font-medium [&::-webkit-details-marker]:hidden">
         {titulo}
         <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-180">

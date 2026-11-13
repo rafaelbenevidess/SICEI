@@ -23,10 +23,7 @@ export default async function Parametros() {
     >
       <div className="grid items-start gap-5 min-[65rem]:grid-cols-[minmax(0,1fr)_360px]">
         <FormParametros valores={valores} salvo={salvo} loginAtual={u.login} />
-        <section
-          aria-labelledby="ultimas-alteracoes"
-          className="rounded-[14px] border border-line bg-surface p-5 shadow-cartao"
-        >
+        <section aria-labelledby="ultimas-alteracoes" className="cartao p-5">
           <h2 id="ultimas-alteracoes" className="mb-3 text-[15px] font-semibold">
             Últimas alterações
           </h2>

@@ -166,7 +166,7 @@ export function FormRegistrar({
       <FormAcao
         acao={acaoMovimentar}
         rotulo={modo === 'entrada' ? 'Registrar entrada' : 'Registrar saída'}
-        className="flex min-w-0 flex-col gap-6 rounded-[14px] border border-line bg-surface p-6 shadow-cartao sm:p-7"
+        className="flex min-w-0 flex-col gap-6 cartao p-6 sm:p-7"
         key={rodada}
         aoConcluir={(estado) => {
           setRegistrado(estado.dados ?? {})
@@ -408,7 +408,7 @@ export function FormRegistrar({
         </div>
       </FormAcao>
 
-      <aside className="rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[75rem]:sticky min-[75rem]:top-[88px]">
+      <aside className="cartao p-6 min-[75rem]:sticky min-[75rem]:top-[88px]">
         <h2 className="text-base font-semibold">Resultado</h2>
         <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <div className="rounded-[10px] bg-surface-2 px-4 py-3">
@@ -484,7 +484,7 @@ function Confirmacao({
     <section
       role="status"
       aria-label={modo === 'saida' ? 'Saída registrada' : 'Entrada registrada'}
-      className="mx-auto flex w-full max-w-lg flex-col gap-5 rounded-[14px] border border-line bg-surface p-6 shadow-cartao sm:p-8"
+      className="mx-auto flex w-full max-w-lg flex-col gap-5 cartao p-6 sm:p-8"
     >
       <span className="grid size-16 place-items-center rounded-2xl bg-ok-soft text-ok-ink">
         <CircleCheck aria-hidden className="size-8" />

@@ -66,10 +66,7 @@ function Cartao({
   className?: string
 }) {
   return (
-    <section
-      aria-label={titulo}
-      className={`min-w-0 rounded-[14px] border border-line bg-surface p-5 shadow-cartao break-inside-avoid ${className}`}
-    >
+    <section aria-label={titulo} className={`min-w-0 cartao p-5 break-inside-avoid ${className}`}>
       <header className="mb-4">
         <h2 className="text-[15px] font-semibold">{titulo}</h2>
         {subtitulo && <p className="mt-0.5 text-[13px] text-ink-3">{subtitulo}</p>}
@@ -92,10 +89,7 @@ function Numero({
   children?: ReactNode
 }) {
   return (
-    <section
-      aria-label={rotulo}
-      className="flex min-w-0 flex-col gap-2 rounded-[14px] border border-line bg-surface p-5 shadow-cartao"
-    >
+    <section aria-label={rotulo} className="flex min-w-0 flex-col gap-2 cartao p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[13px] text-ink-2">{rotulo}</p>
         {children}
@@ -253,7 +247,7 @@ export function PainelAnalitico({ dados }: { dados: DadosDoPainel }) {
 
   if (parcelas.length === 0 && dados.fluxo.length === 0) {
     return (
-      <p className="rounded-[14px] border border-dashed border-line-2 p-8 text-center text-ink-2">
+      <p className="rounded-cartao border border-dashed border-line-2 p-8 text-center text-ink-2">
         Nada encontrado com estes filtros neste período. Mude o período ou tire algum filtro.
       </p>
     )

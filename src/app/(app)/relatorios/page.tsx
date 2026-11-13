@@ -345,7 +345,7 @@ export default async function PaginaRelatorios({
       {linhas.length === 0 ? (
         <Vazio>Nenhum consumo neste período.</Vazio>
       ) : (
-        <div className="min-w-0 overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
+        <div className="min-w-0 overflow-hidden cartao">
           <Tabela rotulo="Relatório de consumo" emCartao larguraMinima={720}>
             <thead>
               <tr>

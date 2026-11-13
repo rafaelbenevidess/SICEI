@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.17 (para revisão) |
+| **Versão** | 1.19 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -387,6 +387,8 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 | `domain/schemas/` (Zod) | Sim | Campos obrigatórios por tipo de movimentação, formatos, limites (RN-10, RN-11) | Sim |
 | `domain/importacao.ts` | Sim | Validação linha a linha do CSV (RF-25) | Não, só no relatório |
 | `domain/analise.ts` e `domain/schemas/analise.ts` | Sim | Agrupamento por dia, semana ou mês, período anterior, variação, maiores e "Outros", escolhidos, comparação lado a lado, mapa de calor, eixo, nomes na ponta das linhas, filtros da URL (RF-17a) | Sim |
+| `domain/painel.ts` | Sim | Saúde do estoque, traços do medidor, pontos por dia, barra de comparação, variação e média do mês, tempo do alerta aberto (RF-16) | Sim |
+| `domain/pastilha.ts` | Sim | Formato da pastilha pela designação ISO 1832, vértices, raio de ponta e vista em perspectiva (seção 10.8) | Sim |
 | Componentes de interface | Sim, com Testing Library | Selo de status com texto e cor (RNF-10), formulário de saída exigindo os campos, tabela de fornecedores escondendo preço do perfil Consulta | Não, só no relatório |
 | `server/services/` | Em parte | A parte de decisão já está coberta pelo `domain/`. O que depende do banco vai para a integração | Não |
 | Lock de linha, triggers, permissões do banco, sessão, e-mail | Não é possível em unidade | Dependem do PostgreSQL ou da rede: cobertos por integração e E2E | Não |
@@ -462,11 +464,22 @@ O README também exibe o selo da CI do GitHub Actions, que mostra se a última v
 
 ## 10. Interface
 
-O design do SICEI foi feito à parte e entregue num pacote (`design_handoff_sicei/`, com protótipo navegável e capturas de cada tela). O código segue esse pacote; a pasta fica no repositório como referência e não entra no build.
+O design do SICEI foi feito à parte e entregue num pacote (`design_handoff_sicei/`, com protótipo navegável e capturas de cada tela). A pasta fica no repositório como referência e não entra no build. O código partiu desse pacote e hoje está na versão 2 da interface (seção 10.8): as cores, as rotas e os textos continuam os do pacote; mudaram os cartões, a moldura, os números e o painel.
 
 ### 10.1 Tokens e temas
 
 As cores são variáveis CSS no `:root` (tema claro) e em `[data-theme='escuro']`, ligadas ao Tailwind por `@theme inline` em `app/globals.css`. As telas usam só os nomes dos tokens (`bg`, `surface`, `ink`, `accent`, `ok`, `warn`, `crit` e variações), nunca uma cor fixa. Os tons de status seguem o RNF-10: todo selo tem texto além da cor.
+
+A versão 2 acrescentou tokens de forma, sem mexer nas cores:
+
+| Token | Uso |
+|---|---|
+| `--fundo-cartao`, `--borda-cartao` e a utilidade `cartao` | Cartão branco translúcido (76% no claro, 82% no escuro), com borda fina, raio de 18 px (`--radius-cartao`) e sombra suave. No papel vira branco com borda. |
+| `--brilho` | Brilho da cor da marca que sobe do pé da tela (`body::before`, fixo). Some na impressão. |
+| `--sombra-pilula` | Sombra dos controles brancos sem borda: item ativo do menu, botão secundário, busca do topo e controle segmentado. |
+| `--radius-controle` | Raio de 10 px dos botões e das pílulas. |
+| `--pastilha-luz`, `-meio`, `-sombra`, `-gravacao` | Material do desenho da pastilha: metal duro, em cinza-azulado. |
+| utilidade `hachura` | Trecho que falta até o alvo, na barra de nível e nas barras de comparação. |
 
 O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no servidor e já manda o `<html data-theme>` certo, então a página não pisca ao abrir e não precisa de script inline (que a CSP barraria).
 
@@ -474,10 +487,12 @@ O tema escolhido fica no cookie `sicei_tema`. O layout raiz lê o cookie no serv
 
 | Parte | Onde | O que faz |
 |---|---|---|
-| Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
+| Moldura do sistema | `components/shell/Shell.tsx` | Menu lateral de 252 px com os grupos do perfil (`shell/menu.ts`), direto sobre o fundo da página, sem coluna branca: o item ativo é uma pílula branca. Topo com trilha, busca (atalho `/`), alertas e "Registrar saída". No celular, menu em gaveta e barra inferior Painel / Itens / Ler QR / Alertas. |
 | Tela de acesso | `components/TelaDeAcesso.tsx` | Login, troca de senha, página inicial e "Acesso negado": formulário à esquerda e painel da marca à direita (some abaixo de 1040 px). Só no login, a logo da licenciada (quando cadastrada) fica centralizada acima do formulário e no meio do painel, entre a marca do SICEI e o texto. A logo é SVG sem fundo, na cor do texto em volta: azul da empresa no fundo claro, branca no escuro. |
 | Marca | `components/Marca.tsx`, `components/SimboloSicei.tsx` | Ícone em SVG (redesenhado em vetor a partir do ícone original de 512 px, nítido em qualquer tamanho) e o nome "SICEI" escrito em texto na fonte da interface (Geist, peso 800), na cor do tema. O mesmo SVG é o ícone da aba (`app/icon.svg`); o `app/apple-icon.png` de 180 px é gerado dele. |
-| Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, gauge de nível, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
+| Componentes | `components/ui.tsx`, `components/formulario.tsx` | Página, cartão, tabela, selos, avisos, botões, abas, controle segmentado (opção ativa em tinta escura), gauge de nível com hachura até o alvo, campos (com unidade, senha com mostrar/esconder, escolha em botões), toast de sucesso. |
+| Desenho da pastilha | `components/Pastilha.tsx` | `Pastilha` (perspectiva) e `GlifoDaPastilha` (vista de cima, para listas), desenhadas a partir da designação ISO do item (seção 10.8). |
+| Medidores do painel | `components/medidores.tsx` | Arco de traços, barra de comparação e consumo por dia em pontos (seção 10.8). |
 
 Os pontos de quebra usam rem (`min-[65rem]` = 1040 px, `min-[75rem]` = 1200 px, `min-[85rem]` = 1360 px, `min-[96rem]` = 1536 px, `min-[100rem]` = 1600 px), para respeitar o zoom do navegador.
 
@@ -536,6 +551,45 @@ Regras visuais, seguidas em todos os gráficos:
 
 O foco pelo clique vale para os números, a evolução, a composição e o mapa de calor.
 
+### 10.8 Versão 2 da interface: painel e desenho da pastilha
+
+A versão 2 trocou a forma das telas e manteve a paleta. A referência visual foi um painel de monitoramento industrial: cartões claros e translúcidos, números grandes e leves, um objeto no centro da tela com chamadas ligadas a ele e medidores feitos de traços e pontos.
+
+**O que mudou em todas as telas**
+
+- Cartões pela utilidade `cartao`, no lugar da combinação de borda, fundo e sombra repetida em cada tela.
+- Título de página em peso normal (30 px) e números de destaque em peso leve (40 a 56 px), sempre com a unidade pequena ao lado.
+- Menu sem coluna branca e sem títulos em maiúsculas; botão secundário, busca e controle segmentado como pílulas brancas com sombra.
+- Tabela com cabeçalho sem fundo, só com a linha fina embaixo.
+- Barra de nível com o preenchimento em degradê e hachura no trecho que falta até o alvo.
+
+**Desenho da pastilha.** Em vez de uma foto genérica, o sistema desenha a pastilha de cada item. A função `formaDaPastilha` (`domain/pastilha.ts`) lê a designação ISO 1832 do cadastro: a 1ª letra dá o formato (C losango 80°, D losango 55°, V losango 35°, S quadrada, T triangular, W trigonal, R redonda, A paralelogramo 85° e os demais da norma), a 2ª a folga (N é pastilha negativa, de parede reta; as outras fecham em direção à base) e a 4ª diz se há furo. Pastilha de rosca no padrão "16ER" é triangular. Item sem ISO, ou com um código fora da norma, recebe o desenho genérico e o texto "Formato não identificado". `vistaDaPastilha` calcula o contorno com o raio de ponta, as paredes visíveis e a luz de cada uma; o componente só monta o SVG. Por ser vetor, o desenho fica nítido em qualquer tamanho, segue o tema e não soma imagem ao pacote. A classe do item (P25, M20) aparece gravada na face quando há espaço. O desenho aparece no painel, no cartão de saldo do item e, como glifo de traço, na lista de itens e no ranking de consumo.
+
+**Painel (RF-16).** A primeira linha mostra o item em destaque e a saúde do estoque:
+
+- Destaque: o alerta mais grave em aberto, com a pastilha desenhada no centro e duas chamadas ligadas a ela (saldo com o status, e posição com o tempo de alerta). Os três piores alertas aparecem como pílulas acima do desenho; `?destaque=CÓDIGO` troca qual deles está na tela, sem recarregar a posição da página. Sem alertas, a área diz isso e mostra a pastilha mais consumida do mês.
+- Saúde do estoque: arco de 41 traços que acende a parte dos itens ativos com status OK, com o percentual escrito no centro. Embaixo, uma linha por status (Zerado, Crítico, Atenção, OK) com a quantidade de itens e o link para a lista filtrada. Sem itens, o arco fica apagado e o número vira um traço.
+
+A segunda linha traz dois indicadores (consumo do mês contra o mês anterior, e consumo de hoje contra a média diária), o consumo por dia e os alertas abertos. No consumo por dia, cada coluna é um dia do mês e cada ponto vale 1, 2, 5, 10, 20… unidades, o menor valor que faz o maior dia caber em 10 pontos; a legenda diz quanto vale o ponto, o dia de hoje tem etiqueta com o total e os dias que ainda não chegaram ficam vazios. A terceira linha mantém os mais consumidos e as últimas movimentações.
+
+**Regras que valem para os medidores**
+
+- Todo medidor tem o número escrito e um rótulo para leitor de tela (`role="img"` com a frase completa). O arco, os pontos e as barras nunca são a única forma de ler o valor (RNF-10).
+- Na lista de alertas a linha é colorida pelo nível, e o nome do nível vem escrito.
+- O único movimento que não parte de uma ação da pessoa é o arco acendendo ao abrir a página, e ele não acontece com `prefers-reduced-motion`.
+- As contas ficam em `domain/painel.ts`, com casos no Laboratório; os componentes só desenham.
+- No celular as chamadas ficam embaixo do desenho, sem as linhas de ligação, e tudo cabe em 360 px.
+
+### 10.9 Próxima etapa: redesenho de todas as telas
+
+A versão 2 redesenhou o painel e a lista de itens e deu a mesma base visual às outras telas, mas a estrutura delas continua a da versão 1. Ficou decidido em 12/11/2026 que a próxima etapa é um design novo para o aplicativo inteiro.
+
+- **Alcance:** todas as telas e opções, não só o painel e os itens. Entram o detalhe do item, o registro de entrada e saída, movimentações, alertas, sugestão de compra, relatórios, análise, cadastros, etiquetas QR, usuários, auditoria, parâmetros, importação, login e o fluxo do celular.
+- **Objetivo:** deixar o sistema mais integrado e mais conexo. Hoje várias tarefas pedem que a pessoa passe por mais de uma tela ou opção; a meta é concluir cada tarefa sem sair de onde ela começou.
+- **O que não muda:** regras de negócio, permissões, rotas públicas das etiquetas QR e a paleta do projeto.
+
+Esta seção é só o registro da decisão. O desenho de cada tela ainda não foi feito; quando for, entra aqui e no histórico de versões, e os critérios de aceite do documento 02 são revistos onde o fluxo mudar.
+
 ## 11. Decisões de arquitetura (ADRs)
 
 | ADR | Decisão | Alternativa descartada | Motivo |
@@ -577,3 +631,5 @@ O foco pelo clique vale para os números, a evolução, a composição e o mapa 
 | 1.15 | 28/09/2026 | A análise vira a página `/analise` em Gestão (10.7): filtros combináveis na URL com schema Zod, consulta própria (`consultas/analise.ts`) com arrays parametrizados, `SelecaoMultipla`, comparação lado a lado, tabela de detalhe e CSV com os filtros. |
 | 1.16 | 28/09/2026 | Paleta da análise com 8 cores validadas (10.7): até 8 itens com cor própria em todos os gráficos, inclusive o ranking, e comparação lado a lado até 8. |
 | 1.17 | 28/09/2026 | Impressão da Análise (10.7): cores mantidas no papel, sempre no tema claro, moldura sem a coluna do menu e gráficos na largura da folha. |
+| 1.18 | 12/11/2026 | Versão 2 da interface (10.8): cartões translúcidos, menu sobre o fundo, números leves, barra de nível com hachura, painel com item em destaque, arco de saúde do estoque e consumo por dia em pontos. Desenho da pastilha pela designação ISO (`domain/pastilha.ts`, `components/Pastilha.tsx`). Tokens de forma na 10.1, componentes novos na 10.2 e `domain/painel.ts` e `domain/pastilha.ts` na tabela 9.1. A paleta não mudou. |
+| 1.19 | 12/11/2026 | Registro da próxima etapa (10.9): design novo para todas as telas e opções, com o objetivo de concluir cada tarefa sem passar por várias telas. |

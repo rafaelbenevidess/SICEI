@@ -49,7 +49,7 @@ export function FolhaDeEtiquetas({
 
   return (
     <div className="grid items-start gap-6 min-[65rem]:grid-cols-[340px_minmax(0,1fr)]">
-      <section className="nao-imprimir overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao">
+      <section className="nao-imprimir overflow-hidden cartao">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <h2 className="font-semibold">Posições ocupadas</h2>
           {pendentes.length > 0 && (
@@ -152,7 +152,7 @@ export function FolhaDeEtiquetas({
 
       <section
         aria-label="Prévia da folha A4"
-        className="rounded-[14px] bg-surface-3 p-4 sm:p-8 print:bg-white print:p-0"
+        className="rounded-cartao bg-surface-3 p-4 sm:p-8 print:bg-white print:p-0"
       >
         <div className="mx-auto aspect-[210/297] w-full max-w-[620px] bg-white p-[5%] text-[#14191f] shadow-pop print:aspect-auto print:max-w-none print:p-0 print:shadow-none">
           {escolhidas.length === 0 ? (

@@ -31,7 +31,7 @@ export default async function LerQr({
     <Pagina titulo="Ler etiqueta QR">
       <div className="flex flex-col gap-4 sm:max-w-xl">
         <LeitorQr autoIniciar={!invalido} />
-        <section className="flex flex-col gap-5 rounded-[14px] border border-line bg-surface p-5 shadow-cartao">
+        <section className="flex flex-col gap-5 cartao p-5">
           <form action="/p" className="flex flex-col gap-2">
             <label htmlFor="codigo-posicao" className="text-[13px] font-medium">
               Etiqueta apagada? Digite o código da posição

@@ -62,7 +62,7 @@ export default async function PaginaMovimentacoes({
     >
       <form
         role="search"
-        className="grid items-end gap-4 rounded-[14px] border border-line bg-surface p-4 shadow-cartao sm:grid-cols-2 min-[75rem]:grid-cols-[1.3fr_1fr_1fr_1.2fr_auto]"
+        className="grid items-end gap-4 cartao p-4 sm:grid-cols-2 min-[75rem]:grid-cols-[1.3fr_1fr_1fr_1.2fr_auto]"
       >
         <fieldset className={rotulo}>
           <legend className="mb-1.5">Período</legend>
@@ -183,7 +183,7 @@ export default async function PaginaMovimentacoes({
           {sel && (
             <aside
               id="detalhe"
-              className="scroll-mt-24 rounded-[14px] border border-line bg-surface p-6 shadow-cartao min-[96rem]:sticky min-[96rem]:top-[88px]"
+              className="scroll-mt-24 cartao p-6 min-[96rem]:sticky min-[96rem]:top-[88px]"
             >
               <PainelMovimentacao m={sel} perfil={u.perfil} />
             </aside>

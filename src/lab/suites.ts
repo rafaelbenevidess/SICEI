@@ -30,6 +30,28 @@ import {
 } from '@/domain/analise.casos'
 import { schemaFiltrosDaAnalise } from '@/domain/schemas/analise'
 import { casosFiltrosDaAnalise, resumirFiltros } from '@/domain/schemas/analise.casos'
+import {
+  diasDoMes,
+  escalaDaComparacao,
+  matrizDePontos,
+  mediaDiaria,
+  saudeDoEstoque,
+  tempoAberto,
+  tracosAcesos,
+  variacaoDoMes,
+} from '@/domain/painel'
+import {
+  casosDiasDoMes,
+  casosEscalaDaComparacao,
+  casosMatrizDePontos,
+  casosMediaDiaria,
+  casosSaudeDoEstoque,
+  casosTempoAberto,
+  casosTracosAcesos,
+  casosVariacaoDoMes,
+} from '@/domain/painel.casos'
+import { formaDaPastilha } from '@/domain/pastilha'
+import { casosFormaDaPastilha } from '@/domain/pastilha.casos'
 import { casosAlerta } from '@/domain/alertas.casos'
 import { jsonCanonico } from '@/domain/auditoria'
 import { buscarItens, buscarOpcoes } from '@/domain/busca'
@@ -1279,6 +1301,106 @@ export const SUITES: SuiteLab[] = [
       return afastarRotulos(ys, limite)
     },
     formatar: (v) => (v as number[]).join(', '),
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Saúde do estoque no painel',
+    regra:
+      'Percentual dos itens ativos com status OK. Sem nenhum item, não há percentual (a tela mostra um traço).',
+    casos: casos(casosSaudeDoEstoque),
+    executar: (e) => saudeDoEstoque(e as Parameters<typeof saudeDoEstoque>[0]),
+    formatar: (v) => {
+      const s = v as ReturnType<typeof saudeDoEstoque>
+      return `${s.percentual === null ? 'sem percentual' : `${s.percentual}%`} (${s.emDia} de ${s.total} em dia, ${s.emAlerta} em alerta)`
+    },
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Traços acesos do medidor',
+    regra:
+      'Proporção do arco que acende. Acima de 0% acende pelo menos um traço; só 100% acende todos.',
+    casos: casos(casosTracosAcesos),
+    executar: (e) => {
+      const { percentual, tracos } = e as { percentual: number | null; tracos: number }
+      return tracosAcesos(percentual, tracos)
+    },
+    formatar: (v) => `${v} traços`,
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Consumo por dia em pontos',
+    regra:
+      'Cada ponto vale 1, 2, 5, 10, 20, 50… unidades: o menor valor que faz o maior dia caber na altura do gráfico. Dia com consumo tem pelo menos um ponto.',
+    casos: casos(casosMatrizDePontos),
+    executar: (e) => {
+      const { totais, linhas } = e as { totais: number[]; linhas: number }
+      return matrizDePontos(totais, linhas)
+    },
+    formatar: (v) => {
+      const m = v as ReturnType<typeof matrizDePontos>
+      return `ponto = ${m.unidadesPorPonto} un.; pontos por dia: ${m.pontos.join(', ') || 'nenhum'}`
+    },
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Consumo do mês contra o mês anterior',
+    regra: 'Variação percentual inteira. Com o mês anterior zerado, não há variação.',
+    casos: casos(casosVariacaoDoMes),
+    executar: (e) => {
+      const { atual, anterior } = e as { atual: number; anterior: number }
+      return variacaoDoMes(atual, anterior)
+    },
+    formatar: (v) => (v === null ? 'sem variação' : `${v}%`),
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Barra de comparação e média diária',
+    regra:
+      'A barra usa como escala o maior entre o valor e a referência, com 8% de folga. A média divide o total pelos dias decorridos.',
+    casos: casos([
+      ...casosEscalaDaComparacao,
+      ...casosMediaDiaria.map((c) => ({ ...c, entrada: { ...c.entrada, media: true } })),
+    ] as CasoDeTeste<unknown, unknown>[]),
+    executar: (e) => {
+      const entrada = e as { valor: number; referencia: number } | { total: number; dias: number }
+      return 'dias' in entrada
+        ? mediaDiaria(entrada.total, entrada.dias)
+        : escalaDaComparacao(entrada.valor, entrada.referencia)
+    },
+    formatar: (v) =>
+      typeof v === 'number'
+        ? `${br(v)} por dia`
+        : `valor em ${br((v as { valor: number }).valor)}%, referência em ${br((v as { referencia: number }).referencia)}%`,
+  },
+  {
+    id: 'RF-16',
+    titulo: 'Dias do mês e tempo do alerta aberto',
+    regra:
+      'O gráfico tem uma coluna por dia do mês. O alerta em destaque diz há quantos dias inteiros está aberto.',
+    casos: casos([...casosDiasDoMes, ...casosTempoAberto] as CasoDeTeste<unknown, unknown>[]),
+    executar: (e) =>
+      typeof e === 'string'
+        ? diasDoMes(e)
+        : tempoAberto(
+            new Date((e as { abertoEm: string }).abertoEm),
+            new Date((e as { agora: string }).agora),
+          ),
+    formatar: (v) => (typeof v === 'number' ? `${v} dias` : String(v)),
+  },
+  {
+    id: 'Interface',
+    titulo: 'Formato da pastilha pela designação ISO',
+    regra:
+      'ISO 1832: a 1ª letra dá o formato (C losango 80°, D losango 55°, S quadrada, T triangular, W trigonal, R redonda…), a 2ª a folga (N = negativa) e a 4ª o furo. Rosca no padrão "16ER" é triangular. O que não for reconhecido usa o desenho genérico.',
+    casos: casos(casosFormaDaPastilha),
+    executar: (e) => {
+      const f = formaDaPastilha(e as string | null)
+      return { nome: f.nome, temFuro: f.temFuro, positiva: f.positiva, reconhecida: f.reconhecida }
+    },
+    formatar: (v) => {
+      const f = v as { nome: string; temFuro: boolean; positiva: boolean; reconhecida: boolean }
+      return `${f.nome}; ${f.temFuro ? 'com furo' : 'sem furo'}; ${f.positiva ? 'positiva' : 'negativa'}${f.reconhecida ? '' : '; não reconhecida'}`
+    },
   },
 ]
 

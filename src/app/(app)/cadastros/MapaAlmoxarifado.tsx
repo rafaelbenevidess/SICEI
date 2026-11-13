@@ -28,7 +28,7 @@ export function MapaAlmoxarifado({ posicoes }: { posicoes: PosicaoDoMapa[] }) {
         const ocupadas = doArmario.filter((p) => p.item).length
         const nome = `A${String(a).padStart(2, '0')}`
         return (
-          <div key={a} className="rounded-[14px] border border-line bg-surface p-4 shadow-cartao">
+          <div key={a} className="cartao p-4">
             <div className="mb-3 flex items-baseline justify-between">
               <h3 className="font-mono font-semibold">{nome}</h3>
               <span className="text-xs text-ink-3">

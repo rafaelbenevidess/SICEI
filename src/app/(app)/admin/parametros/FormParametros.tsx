@@ -79,7 +79,7 @@ export function FormParametros({
     <FormAcao
       acao={acaoParametros}
       rotulo="Parâmetros"
-      className="overflow-hidden rounded-[14px] border border-line bg-surface shadow-cartao"
+      className="overflow-hidden cartao"
       aoConcluir={() => {
         setSalvos(atuais)
         setUltimoSalvo({ login: loginAtual, quando: new Date() })

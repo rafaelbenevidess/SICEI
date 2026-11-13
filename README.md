@@ -62,25 +62,33 @@ A DDA controla as pastilhas em planilhas preenchidas à mão. Entrada e saída �
 
 ## 🖥️ As telas
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/telas/painel-escuro.webp">
+  <img src="docs/telas/painel.webp" alt="Painel do SICEI: pastilha em destaque, saúde do estoque e alertas abertos">
+</picture>
+
+<sub><b>Painel</b>: a pastilha com o alerta mais grave em destaque, a saúde do estoque e os alertas abertos. Segue o tema claro ou escuro de quem lê.</sub>
+
 <table>
   <tr>
-    <td width="50%"><img src="design_handoff_sicei/screenshots/01-painel.png" alt="Painel com os itens por status"><br><sub><b>Painel</b>: itens zerados, críticos, em atenção e OK</sub></td>
-    <td width="50%"><img src="design_handoff_sicei/screenshots/19-painel-escuro.png" alt="Painel no tema escuro"><br><sub><b>Tema escuro</b></sub></td>
+    <td width="50%"><img src="docs/telas/saida.webp" alt="Registrar saída"><br><sub><b>Registrar saída</b>: o código pode ser digitado de qualquer jeito</sub></td>
+    <td width="50%"><img src="docs/telas/alertas.webp" alt="Alertas"><br><sub><b>Alertas</b> com a sugestão de compra em caixas fechadas</sub></td>
   </tr>
   <tr>
-    <td><img src="design_handoff_sicei/screenshots/05-registrar-saida.png" alt="Registrar saída"><br><sub><b>Registrar saída</b>: destino, ordem de produção e quem retirou</sub></td>
-    <td><img src="design_handoff_sicei/screenshots/07-sugestao-compra.png" alt="Sugestão de compra"><br><sub><b>Sugestão de compra</b> a partir do ponto de reposição</sub></td>
-  </tr>
-  <tr>
-    <td><img src="design_handoff_sicei/screenshots/12-etiquetas-qr.png" alt="Etiquetas QR"><br><sub><b>Etiquetas QR</b> para as gavetas</sub></td>
-    <td><img src="design_handoff_sicei/screenshots/15-auditoria-verificada.png" alt="Auditoria verificada"><br><sub><b>Auditoria</b> com a cadeia de hash verificada</sub></td>
-  </tr>
-  <tr>
-    <td colspan="2"><img src="design_handoff_sicei/screenshots/22-celular.png" alt="Saída pelo QR no celular"><br><sub><b>No celular</b>: item aberto pelo QR, saída em uma tela e painel</sub></td>
+    <td><img src="docs/telas/etiquetas.webp" alt="Etiquetas QR"><br><sub><b>Etiquetas QR</b> das posições ocupadas, prontas para imprimir</sub></td>
+    <td><img src="docs/telas/auditoria.webp" alt="Log de auditoria"><br><sub><b>Auditoria</b> com a cadeia de hash e os saldos conferidos</sub></td>
   </tr>
 </table>
 
-<sub>Imagens do protótipo entregue pelo autor em <code>design_handoff_sicei/</code>, que a interface implementa.</sub>
+<table>
+  <tr>
+    <td width="33%" align="center"><img src="docs/telas/cel-painel.webp" alt="Painel no celular" width="240"><br><sub><b>Painel</b> no celular</sub></td>
+    <td width="33%" align="center"><img src="docs/telas/cel-qr.webp" alt="Item aberto pela leitura do QR" width="240"><br><sub><b>Ler QR</b>: a etiqueta abre o item</sub></td>
+    <td width="33%" align="center"><img src="docs/telas/cel-alertas.webp" alt="Alertas no celular" width="240"><br><sub><b>Alertas</b> no celular</sub></td>
+  </tr>
+</table>
+
+<sub>Capturas do sistema rodando com os dados de demonstração do seed (<code>SEED_DEMO=1</code>).</sub>
 
 ---
 

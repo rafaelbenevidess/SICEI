@@ -1,0 +1,77 @@
+@startuml atividades-gravar-saida
+' Diagrama de atividades 2: gravar a saída sem saldo negativo (RN-08, RN-09, RN-15 a RN-19)
+' Fonte: src/app/acoes/estoque.ts, src/server/services/movimentacoes.ts, src/server/estoque.ts,
+'        src/domain/movimentacao.ts, src/domain/alertas.ts, src/server/audit/registrar.ts
+!include estilo.iuml
+skinparam ActivityBackgroundColor #F4F7FB
+skinparam ActivityBorderColor #1F3A5F
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #1F3A5F
+skinparam SwimlaneTitleFontStyle bold
+skinparam SwimlaneTitleFontColor #1F3A5F
+skinparam defaultFontSize 13
+
+title SICEI · Atividades (2/3): gravar a saída sem deixar o saldo negativo
+
+|Server Action|
+start
+:Recebe o formulário da saída;
+:Confere a sessão de novo
+(toda Action é uma porta de entrada);
+|#F7F9FC|Service registrarMovimentacao|
+:Valida os campos com Zod
+(destino, OP, colaborador, quantidade);
+:exigirPermissao(perfil,
+"movimentacao:saida");
+if (Dados válidos e\nperfil autorizado?) then (não)
+  |Server Action|
+  :Devolve os erros por campo;
+  stop
+else (sim)
+endif
+|PostgreSQL|
+:BEGIN;
+:SELECT ... FOR UPDATE na linha do item
+(outra saída do mesmo item espera aqui);
+|#F7F9FC|Service registrarMovimentacao|
+:avaliarMovimentacao() em domain/:
+item ativo? saldo ≥ quantidade?;
+if (Saída permitida?) then (não)
+  |PostgreSQL|
+  :ROLLBACK;
+  |Server Action|
+  :Mensagem "Saldo disponível: N";
+  stop
+else (sim)
+endif
+|PostgreSQL|
+:INSERT movimentacao (saldo anterior e
+posterior, usuário, IP, dispositivo);
+:UPDATE item SET saldo
+(CHECK saldo >= 0 é a última defesa);
+|#F7F9FC|Service registrarMovimentacao|
+:Recalcula consumo médio, ponto de
+reposição e status (RN-15 a RN-17);
+:decidirAlerta(): abrir, escalar,
+atualizar ou fechar (RN-18);
+if (Entrou em CRÍTICO ou ZERADO\ne há e-mail configurado?) then (sim)
+  |PostgreSQL|
+  :INSERT notificacao PENDENTE
+  (outbox de e-mail);
+else (não)
+endif
+|PostgreSQL|
+:INSERT audit_log com hash encadeado
+(pg_advisory_xact_lock);
+:COMMIT;
+|Server Action|
+:Devolve saldo e status
+para a tela;
+if (Há aviso pendente?) then (sim)
+  :Depois da resposta, envia o e-mail
+  por SMTP (falha não desfaz a saída,
+  a rotina diária tenta de novo);
+else (não)
+endif
+stop
+@enduml

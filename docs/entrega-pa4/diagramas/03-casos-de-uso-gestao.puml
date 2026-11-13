@@ -1,0 +1,93 @@
+@startuml casos-de-uso-gestao
+' Diagrama de casos de uso 2/2: gestão, administração e testes
+' Fonte: docs/02-requisitos.md (RF e matriz de permissões) e src/domain/permissoes.ts
+!include estilo.iuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam ActorBorderColor #1F3A5F
+skinparam ActorBackgroundColor #DCE6F2
+skinparam UsecaseBorderColor #1F3A5F
+skinparam UsecaseBackgroundColor #F4F7FB
+skinparam UsecaseFontSize 12
+skinparam nodesep 18
+skinparam ranksep 60
+
+title SICEI · Casos de uso (2/2): gestão, administração e testes
+
+actor "Gestor" as GES
+actor "Administrador" as ADM
+actor "Rotina diária\n(Vercel Cron)" as CRON <<sistema>>
+actor "Avaliador\n(professor, sem login)" as AVA
+
+ADM -|> GES
+
+rectangle "SICEI" {
+  package "Cadastros (Gestor)" {
+    usecase "UC20 Manter pastilhas\n(RF-03)" as UC20
+    usecase "UC21 Manter fabricantes\n(RF-04)" as UC21
+    usecase "UC22 Manter fornecedores e\nvínculos com itens (RF-05)" as UC22
+    usecase "UC23 Manter destinos\n(RF-06)" as UC23
+    usecase "UC24 Manter colaboradores\n(RF-27)" as UC24
+    usecase "UC25 Manter posições e\natribuir item (RF-28)" as UC25
+    usecase "UC26 Definir estoque\nmínimo e máximo (RF-12)" as UC26
+  }
+
+  package "Relatórios e auditoria (Gestor)" {
+    usecase "UC27 Gerar relatórios de consumo,\nmovimentação e reposição\n(RF-17, RF-18, RF-19)" as UC27
+    usecase "UC28 Analisar consumo com\nfiltros e gráficos (RF-17a)" as UC28
+    usecase "UC29 Exportar CSV\nou imprimir PDF (RF-20)" as UC29
+    usecase "UC30 Consultar log\nde auditoria (RF-21)" as UC30
+    usecase "UC31 Verificar integridade\ne conferir saldos (RF-21)" as UC31
+  }
+
+  package "Administração (Administrador)" {
+    usecase "UC32 Gerenciar usuários: criar com\nlogin e senha gerados, editar, redefinir\nsenha, desbloquear, inativar (RF-02)" as UC32
+    usecase "UC33 Definir parâmetros\ndo sistema (RF-26)" as UC33
+    usecase "UC34 Importar planilha\ninicial por CSV (RF-25)" as UC34
+  }
+
+  package "Rotinas automáticas" {
+    usecase "UC35 Recalcular pontos de reposição,\nstatus e alertas de todos os itens" as UC35
+    usecase "UC36 Reenviar avisos de\ne-mail pendentes (RF-14)" as UC36
+  }
+
+  package "Laboratório de testes /testes (RNF-13)" {
+    usecase "UC37 Executar os testes das\nregras no navegador" as UC37
+    usecase "UC38 Criar casos de\nteste próprios" as UC38
+    usecase "UC39 Demonstrar o log\ninalterável (RN-09a)" as UC39
+  }
+}
+
+GES --> UC20
+GES --> UC21
+GES --> UC22
+GES --> UC23
+GES --> UC24
+GES --> UC25
+GES --> UC26
+GES --> UC27
+GES --> UC28
+GES --> UC30
+GES --> UC31
+
+ADM --> UC32
+ADM --> UC33
+ADM --> UC34
+
+UC29 .> UC27 : <<extend>>
+UC29 .> UC28 : <<extend>>
+
+CRON --> UC35
+CRON --> UC36
+
+AVA --> UC37
+AVA --> UC38
+AVA --> UC39
+
+note right of UC32
+  RN-21c: só o Administrador principal
+  cria, promove ou altera outro
+  Administrador; ninguém inativa,
+  rebaixa ou troca a senha do principal.
+end note
+@enduml

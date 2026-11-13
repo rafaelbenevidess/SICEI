@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-Nova interface do **SICEI**, o Sistema Inteligente de Controle de Estoques Industriais (repositório `rafaelbenevidess/SIMI`, branch `claude/amazing-tesla-54y8dp`). O redesign cobre todas as telas do App Router, nos temas claro e escuro, e a versão para celular a partir de 360 px.
+Nova interface do **SICEI**, o Sistema Inteligente de Controle de Estoques Industriais (repositório `rafaelbenevidess/SICEI`, branch `main`). O redesign cobre todas as telas do App Router, nos temas claro e escuro, e a versão para celular a partir de 360 px.
 
 **Objetivo:** trocar o visual atual (Tailwind `slate` puro, menu horizontal no topo) por uma interface de produto profissional: menu lateral, tokens de cor com tema escuro, tipografia Geist, tabelas arejadas e status sempre com cor e texto. **Regras de negócio, textos legais, rotas, permissões e Server Actions não mudam.**
 

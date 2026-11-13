@@ -1,0 +1,89 @@
+@startuml casos-de-uso-operacao
+' Diagrama de casos de uso 1/2: operação do estoque
+' Fonte: docs/02-requisitos.md (RF e matriz de permissões) e src/domain/permissoes.ts
+!include estilo.iuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam ActorBorderColor #1F3A5F
+skinparam ActorBackgroundColor #DCE6F2
+skinparam UsecaseBorderColor #1F3A5F
+skinparam UsecaseBackgroundColor #F4F7FB
+skinparam UsecaseFontSize 12
+skinparam nodesep 18
+skinparam ranksep 60
+
+title SICEI · Casos de uso (1/2): operação do estoque
+
+actor "Consulta" as CON
+actor "Almoxarife" as ALM
+actor "Gestor" as GES
+actor "Servidor de e-mail\n(SMTP corporativo)" as SMTP <<sistema>>
+
+ALM -|> CON
+GES -|> ALM
+
+rectangle "SICEI" {
+  package "Acesso" {
+    usecase "UC01 Entrar no sistema\n(RF-01)" as UC01
+    usecase "UC02 Trocar a senha\nprovisória (RF-01)" as UC02
+    usecase "UC03 Sair do sistema" as UC03
+  }
+
+  package "Consulta do estoque" {
+    usecase "UC04 Consultar saldo, status\ne posição dos itens (RF-11)" as UC04
+    usecase "UC05 Ver painel geral\n(RF-16)" as UC05
+    usecase "UC06 Ver alertas abertos\n(RF-13)" as UC06
+    usecase "UC07 Ler QR da etiqueta\nda gaveta (RF-22)" as UC07
+  }
+
+  package "Movimentação" {
+    usecase "UC08 Registrar entrada:\ncompra ou devolução (RF-07)" as UC08
+    usecase "UC09 Registrar saída:\nconsumo ou perda (RF-08)" as UC09
+    usecase "UC10 Consultar histórico\nde movimentações (RF-15)" as UC10
+    usecase "UC11 Ver fornecedores e\nhistórico de preços (RF-05a)" as UC11
+    usecase "UC12 Imprimir etiquetas\nQR (RF-22)" as UC12
+    usecase "UC13 Estornar\nmovimentação (RF-09)" as UC13
+    usecase "UC14 Registrar inventário\ne ajuste (RF-10)" as UC14
+    usecase "UC15 Marcar alerta\ncomo ciente (RF-13)" as UC15
+    usecase "UC16 Cadastrar fornecedor\nna hora da compra (RF-07)" as UC16
+  }
+
+  package "Regras aplicadas pelo sistema" {
+    usecase "UC17 Gravar registro de\nauditoria encadeado (RN-09, RN-23)" as UC17
+    usecase "UC18 Recalcular ponto de reposição,\nstatus e alerta (RN-15 a RN-18)" as UC18
+    usecase "UC19 Enviar aviso de item\ncrítico ou zerado (RF-14)" as UC19
+  }
+}
+
+CON --> UC01
+CON --> UC03
+CON --> UC04
+CON --> UC05
+CON --> UC06
+CON --> UC07
+
+ALM --> UC08
+ALM --> UC09
+ALM --> UC10
+ALM --> UC11
+ALM --> UC12
+
+GES --> UC13
+GES --> UC14
+GES --> UC15
+
+UC02 .> UC01 : <<extend>>\n[senha provisória\nou redefinida]
+UC07 .> UC09 : <<extend>>\n[item escolhido\npela etiqueta]
+UC16 .> UC08 : <<extend>>\n[Gestor/Admin e\nfornecedor novo]
+
+UC08 ..> UC17 : <<include>>
+UC09 ..> UC17 : <<include>>
+UC13 ..> UC17 : <<include>>
+UC14 ..> UC17 : <<include>>
+UC08 ..> UC18 : <<include>>
+UC09 ..> UC18 : <<include>>
+UC13 ..> UC18 : <<include>>
+UC14 ..> UC18 : <<include>>
+UC19 .> UC18 : <<extend>>\n[entrou em CRÍTICO\nou ZERADO]
+UC19 --> SMTP
+@enduml

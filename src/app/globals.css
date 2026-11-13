@@ -9,6 +9,10 @@
  * Os mesmos nomes nos dois temas; o escuro vale com data-theme="escuro" no <html>.
  */
 :root {
+  /* altura que sobra para uma página no computador: janela menos o topo (68 px), as
+     margens do conteúdo (20 + 56 px) e o rodapé. Usada pelas páginas em que só a lista rola. */
+  --altura-rodape: 48px;
+  --altura-util: calc(100dvh - 68px - 20px - 56px - var(--altura-rodape));
   --bg: oklch(0.975 0.004 250);
   --surface: #fff;
   --surface-2: oklch(0.968 0.005 250);

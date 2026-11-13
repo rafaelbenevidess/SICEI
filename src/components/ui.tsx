@@ -14,6 +14,7 @@ export function Pagina({
   descricao,
   acoes,
   antes,
+  alturaDaJanela = false,
   children,
 }: {
   titulo: ReactNode
@@ -21,10 +22,18 @@ export function Pagina({
   acoes?: ReactNode
   /** linha acima do título: "← Itens", data do painel etc. */
   antes?: ReactNode
+  /**
+   * No computador, a página ocupa exatamente a altura que sobra na janela: título e filtros
+   * ficam parados e só a lista (uma `Tabela` com `rolagem`) rola. No celular e na impressão
+   * a página rola inteira, como as outras.
+   */
+  alturaDaJanela?: boolean
   children: ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div
+      className={`flex flex-col gap-6 ${alturaDaJanela ? 'md:h-(--altura-util) md:min-h-[540px] print:h-auto print:min-h-0' : ''}`}
+    >
       <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
           {antes && <div className="mb-2 text-[13px] text-ink-3">{antes}</div>}
@@ -83,19 +92,32 @@ export function Tabela({
   rotulo,
   emCartao = false,
   larguraMinima = 680,
+  rolagem = false,
 }: {
   children: ReactNode
   rotulo: string
   emCartao?: boolean
   larguraMinima?: number
+  /**
+   * No computador, a tabela ocupa a altura que sobra no lugar onde está e rola por dentro,
+   * com o cabeçalho das colunas parado no topo. Use dentro de uma `Pagina` com
+   * `alturaDaJanela`.
+   */
+  rolagem?: boolean
 }) {
   // A largura mínima só vale no celular, onde a tabela rola de lado para não espremer as
   // colunas. No computador a tabela usa a largura que o conteúdo pede: só rola se não couber.
   const tabela = (
-    <div className="overflow-x-auto">
+    <div
+      className={
+        rolagem
+          ? 'overflow-x-auto md:min-h-0 md:flex-1 md:overflow-y-auto print:overflow-visible'
+          : 'overflow-x-auto'
+      }
+    >
       <table
         aria-label={rotulo}
-        className={`${ESTILO_TABELA} max-md:min-w-(--largura-minima)`}
+        className={`${ESTILO_TABELA} max-md:min-w-(--largura-minima) ${rolagem ? 'md:[&_th]:sticky md:[&_th]:top-0 md:[&_th]:z-10 md:[&_th]:bg-surface print:[&_th]:static' : ''}`}
         style={{ '--largura-minima': `${larguraMinima}px` } as CSSProperties}
       >
         {children}
@@ -103,7 +125,13 @@ export function Tabela({
     </div>
   )
   if (emCartao) return tabela
-  return <div className="cartao min-w-0 overflow-hidden">{tabela}</div>
+  return (
+    <div
+      className={`cartao min-w-0 overflow-hidden ${rolagem ? 'md:flex md:min-h-0 md:flex-1 md:flex-col' : ''}`}
+    >
+      {tabela}
+    </div>
+  )
 }
 
 /** Cores de cada status: selo (fundo e texto) e cor sólida (barras, bolinhas). */

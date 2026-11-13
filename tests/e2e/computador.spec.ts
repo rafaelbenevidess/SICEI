@@ -195,6 +195,23 @@ test('RF-08 / RF-11: registrar saída acha o item digitado de qualquer jeito, co
   await expect(linha.locator('td').nth(2)).toHaveText(String(saldoAntes - 1))
 
   // o detalhe da movimentação também abre em gaveta, sobre o histórico
+  // RF-15: no histórico, título e filtros ficam parados; só a lista rola
+  await page.goto('/movimentacoes')
+  const rolagem = await page.evaluate(() => {
+    const lista = document.querySelector('table[aria-label="Movimentações"]')!.parentElement!
+    lista.scrollTop = 200
+    return {
+      pagina: document.documentElement.scrollHeight - window.innerHeight,
+      lista: lista.scrollHeight - lista.clientHeight,
+      rolou: lista.scrollTop,
+    }
+  })
+  expect(rolagem.pagina).toBeLessThanOrEqual(0)
+  expect(rolagem.lista).toBeGreaterThan(0)
+  expect(rolagem.rolou).toBe(200)
+  await expect(page.getByRole('button', { name: 'Filtrar' })).toBeInViewport()
+  await expect(page.getByRole('columnheader', { name: 'Quando' })).toBeInViewport()
+
   await page.goto('/movimentacoes?busca=OP-GAVETA-1')
   await page.locator('tbody a').first().click()
   await expect(page.getByRole('dialog', { name: 'Movimentação' })).toContainText('OP-GAVETA-1')

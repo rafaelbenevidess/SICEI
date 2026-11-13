@@ -121,3 +121,4 @@ Resultado da última execução: 21 de 21 passaram.
 | 1.12 | 12/11/2026 | Testes da versão 2 da interface: contas do painel e formato da pastilha (unidade, com suítes novas no Laboratório) e componentes do painel. |
 | 1.13 | 13/11/2026 | Testes da versão 3 da interface (RNF-14): menu, abas, gaveta de registro e de detalhe, foto da pastilha. |
 | 1.14 | 13/11/2026 | Testes da segunda parte da versão 3 (RNF-14): componente Gaveta e cadastros de item, de fabricante e de usuário pela gaveta. |
+| 1.15 | 13/11/2026 | RF-15, critério 4: teste de componente da página de altura fixa e da tabela com rolagem; E2E do computador confere que a página não rola e a lista rola. |

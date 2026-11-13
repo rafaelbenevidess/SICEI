@@ -347,3 +347,33 @@ export function vistaDaPastilha(
 export function caminhoSvg(pontos: readonly Ponto[]): string {
   return pontos.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x} ${y}`).join('') + 'Z'
 }
+
+/**
+ * Chave de uma foto de pastilha: o código do item ou a designação ISO, só com letras e
+ * números em maiúsculas. "pst-001" e "PST 001" dão PST001; "CNMG 120408" dá CNMG120408.
+ */
+export function chaveDaFoto(texto: string | null | undefined): string {
+  return (texto ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+export interface FotoDaPastilha {
+  arquivo: string
+  largura: number
+  altura: number
+}
+
+/**
+ * Foto recortada do item, quando existe. Vale primeiro a foto com o código do item
+ * (PST-001) e depois a da designação ISO, que serve para qualquer item do mesmo modelo.
+ * Sem foto, devolve null e a tela usa o desenho em vetor.
+ */
+export function fotoDaPastilha(
+  item: { codigo?: string | null; iso?: string | null },
+  fotos: Record<string, FotoDaPastilha>,
+): FotoDaPastilha | null {
+  for (const texto of [item.codigo, item.iso]) {
+    const chave = chaveDaFoto(texto)
+    if (chave && Object.hasOwn(fotos, chave)) return fotos[chave]
+  }
+  return null
+}

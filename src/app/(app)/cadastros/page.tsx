@@ -16,7 +16,6 @@ import {
 import { formatarCnpj } from '@/domain/cnpj'
 import { pode } from '@/domain/permissoes'
 import {
-  Abas,
   BadgeStatus,
   ChipCodigo,
   ChipPosicao,
@@ -45,6 +44,8 @@ import {
   FormPosicao,
 } from './formularios'
 import { MapaAlmoxarifado } from './MapaAlmoxarifado'
+
+import { AbasDeCadastros } from '@/components/abasDasTelas'
 
 export const metadata: Metadata = { title: 'Cadastros' }
 
@@ -411,22 +412,11 @@ export default async function Cadastros({
 
   return (
     <Pagina titulo="Cadastros" descricao={INFO[aba].descricao}>
-      <Abas
-        rotulo="Cadastros"
-        opcoes={ABAS.map((a) => {
-          const { Icone, rotulo } = INFO[a]
-          return {
-            href: `/cadastros?aba=${a}`,
-            rotulo: (
-              <>
-                <Icone aria-hidden className="size-4" />
-                {rotulo}
-              </>
-            ),
-            contagem: contagem[a],
-            ativo: a === aba,
-          }
-        })}
+      <AbasDeCadastros
+        ativa={aba}
+        contagens={contagem}
+        comEtiquetas={pode(u.perfil, 'etiquetas:imprimir')}
+        etiquetasPendentes={posicoes.filter((x) => x.etiquetaPendente).length}
       />
       <div
         className={`grid items-start gap-6 ${editar ? 'min-[96rem]:grid-cols-[minmax(0,1fr)_340px]' : ''}`}

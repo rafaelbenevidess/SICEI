@@ -35,6 +35,8 @@ export default function PaginaTestes() {
             executa a cada versão. Cada grupo leva o número da regra de negócio (RN) que verifica.
           </p>
           <p className="mt-2 text-sm">
+            {/* relatório estático em public/, gerado no build: não é uma rota do Next */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/relatorio-testes/index.html"
               className="font-medium text-accent-ink underline"

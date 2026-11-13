@@ -7,13 +7,10 @@ export type NomeIcone =
   | 'itens'
   | 'movimentacoes'
   | 'alertas'
-  | 'sugestao'
   | 'entrada'
   | 'saida'
   | 'relatorios'
-  | 'analise'
   | 'cadastros'
-  | 'etiquetas'
   | 'usuarios'
   | 'auditoria'
   | 'parametros'
@@ -24,6 +21,8 @@ export interface ItemMenu {
   rotulo: string
   icone: NomeIcone
   permissao: Permissao
+  /** outras rotas que são abas desta mesma tela e mantêm este item aceso */
+  tambem?: string[]
 }
 
 export interface GrupoMenu {
@@ -31,7 +30,10 @@ export interface GrupoMenu {
   itens: ItemMenu[]
 }
 
-/** Menu lateral (design_handoff_sicei/README.md, "Shell"). */
+/**
+ * Menu lateral. Cada tela tem um lugar só no menu: o que é parte de outra tela (sugestão de
+ * compra, análise, etiquetas QR) aparece como aba dela, não como item solto (doc 03, 10.10).
+ */
 export const MENU: GrupoMenu[] = [
   {
     titulo: 'Operação',
@@ -45,12 +47,6 @@ export const MENU: GrupoMenu[] = [
         permissao: 'historico:ver',
       },
       { href: '/alertas', rotulo: 'Alertas', icone: 'alertas', permissao: 'alertas:ver' },
-      {
-        href: '/relatorios?tipo=reposicao',
-        rotulo: 'Sugestão de compra',
-        icone: 'sugestao',
-        permissao: 'relatorios:ver',
-      },
     ],
   },
   {
@@ -78,15 +74,9 @@ export const MENU: GrupoMenu[] = [
         rotulo: 'Relatórios',
         icone: 'relatorios',
         permissao: 'relatorios:ver',
+        tambem: ['/analise'],
       },
-      { href: '/analise', rotulo: 'Análise', icone: 'analise', permissao: 'relatorios:ver' },
       { href: '/cadastros', rotulo: 'Cadastros', icone: 'cadastros', permissao: 'cadastros:ver' },
-      {
-        href: '/cadastros/posicoes/etiquetas',
-        rotulo: 'Etiquetas QR',
-        icone: 'etiquetas',
-        permissao: 'etiquetas:imprimir',
-      },
     ],
   },
   {
@@ -130,24 +120,28 @@ export function menuDoPerfil(perfil: Perfil): GrupoMenu[] {
 
 /**
  * Item do menu que corresponde à página aberta. Vence o link mais específico: o caminho
- * precisa ser igual ou um prefixo, e os parâmetros do link precisam estar na URL.
+ * precisa ser igual ou um prefixo, e os parâmetros do link precisam estar na URL. As rotas
+ * em `tambem` valem como o próprio item.
  */
 export function hrefAtivo(
-  hrefs: string[],
+  itens: (string | Pick<ItemMenu, 'href' | 'tambem'>)[],
   caminho: string,
   parametros: URLSearchParams,
 ): string | null {
   let melhor: string | null = null
   let pontos = -1
-  for (const href of hrefs) {
-    const [rota, consulta = ''] = href.split('?')
-    if (caminho !== rota && !caminho.startsWith(`${rota}/`)) continue
-    const exigidos = [...new URLSearchParams(consulta)]
-    if (!exigidos.every(([k, v]) => parametros.get(k) === v)) continue
-    const p = rota.length * 10 + exigidos.length
-    if (p > pontos) {
-      pontos = p
-      melhor = href
+  for (const item of itens) {
+    const { href, tambem = [] } = typeof item === 'string' ? { href: item } : item
+    for (const alvo of [href, ...tambem]) {
+      const [rota, consulta = ''] = alvo.split('?')
+      if (caminho !== rota && !caminho.startsWith(`${rota}/`)) continue
+      const exigidos = [...new URLSearchParams(consulta)]
+      if (!exigidos.every(([k, v]) => parametros.get(k) === v)) continue
+      const p = rota.length * 10 + exigidos.length
+      if (p > pontos) {
+        pontos = p
+        melhor = href
+      }
     }
   }
   return melhor
@@ -160,7 +154,7 @@ export function trilha(
   parametros: URLSearchParams,
 ): { grupo: string; tela: string } | null {
   const ativo = hrefAtivo(
-    grupos.flatMap((g) => g.itens.map((i) => i.href)),
+    grupos.flatMap((g) => g.itens),
     caminho,
     parametros,
   )

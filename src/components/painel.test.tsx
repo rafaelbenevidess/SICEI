@@ -53,6 +53,20 @@ describe('Interface · Desenho da pastilha', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  it('com foto publicada para o item, mostra a foto com o formato no texto alternativo', () => {
+    const fotos = { PST001: { arquivo: '/pastilhas/PST001.webp', largura: 900, altura: 700 } }
+    const { container } = render(<Pastilha iso="CNMG 120408" codigo="PST-001" fotos={fotos} />)
+    expect(screen.getByRole('img', { name: 'Pastilha: losango 80°' }).tagName).toBe('IMG')
+    expect(container.querySelector('svg')).toBeNull()
+  })
+
+  it('sem foto para o item, continua o desenho em vetor', () => {
+    const fotos = { PST001: { arquivo: '/pastilhas/PST001.webp', largura: 900, altura: 700 } }
+    const { container } = render(<Pastilha iso="DNMG 150608" codigo="PST-003" fotos={fotos} />)
+    expect(container.querySelector('svg')).not.toBeNull()
+    expect(container.querySelector('img')).toBeNull()
+  })
+
   it('o glifo da lista é decorativo e traz o nome do formato no título', () => {
     const { container } = render(<GlifoDaPastilha iso="WNMG 080408" />)
     const svg = container.querySelector('svg')!

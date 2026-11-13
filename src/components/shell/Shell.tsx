@@ -5,7 +5,6 @@ import {
   ArrowLeftRight,
   ArrowUpFromLine,
   Bell,
-  ChartLine,
   FileChartColumn,
   FlaskConical,
   FolderOpen,
@@ -14,10 +13,8 @@ import {
   LogOut,
   Menu,
   Package,
-  QrCode,
   ScanLine,
   ShieldCheck,
-  ShoppingCart,
   SlidersHorizontal,
   Upload,
   Users,
@@ -41,13 +38,10 @@ const ICONES: Record<NomeIcone, LucideIcon> = {
   itens: Package,
   movimentacoes: ArrowLeftRight,
   alertas: Bell,
-  sugestao: ShoppingCart,
   entrada: ArrowDownToLine,
   saida: ArrowUpFromLine,
   relatorios: FileChartColumn,
-  analise: ChartLine,
   cadastros: FolderOpen,
-  etiquetas: QrCode,
   usuarios: Users,
   auditoria: ShieldCheck,
   parametros: SlidersHorizontal,
@@ -89,7 +83,7 @@ export function Shell({
   const parametros = useSearchParams()
   const [gaveta, setGaveta] = useState(false)
   const ativo = hrefAtivo(
-    grupos.flatMap((g) => g.itens.map((i) => i.href)),
+    grupos.flatMap((g) => g.itens),
     caminho,
     parametros,
   )

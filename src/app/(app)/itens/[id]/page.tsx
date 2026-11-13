@@ -215,7 +215,12 @@ export default async function PaginaItem({
         <Cartao>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Pastilha iso={item.iso} gravacao={item.classe} className="h-28 w-40 shrink-0" />
+              <Pastilha
+                iso={item.iso}
+                codigo={item.codigo}
+                gravacao={item.classe}
+                className="h-28 w-40 shrink-0"
+              />
               <div>
                 <p className="text-[13px] text-ink-2">Saldo disponível</p>
                 <p className="mt-1 flex flex-wrap items-baseline gap-3">

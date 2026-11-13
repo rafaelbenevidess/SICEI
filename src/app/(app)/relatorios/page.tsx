@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeftRight, CircleCheck, Download, FileChartColumn, ShoppingCart } from 'lucide-react'
+import { CircleCheck, Download } from 'lucide-react'
+import { AbasDeRelatorios } from '@/components/abasDasTelas'
 import { BotaoImprimir } from '@/components/BotaoImprimir'
+import { GlifoDaPastilha } from '@/components/Pastilha'
 import {
-  Abas,
   BadgeStatus,
   Cartao,
   ChipCodigo,
@@ -62,8 +63,8 @@ export default async function PaginaRelatorios({
     const caixas = linhas.reduce((s, l) => s + l.sugestao.caixas, 0)
     return (
       <Pagina
-        titulo="Sugestão de compra"
-        descricao="Itens ativos em atenção, críticos ou zerados. O SICEI não emite pedidos: a decisão de comprar é do Gestor."
+        titulo="Relatórios"
+        descricao="Sugestão de compra: itens ativos em atenção, críticos ou zerados. O SICEI não emite pedidos; a decisão de comprar é do Gestor."
         acoes={
           <>
             <BotaoImprimir rotulo="Imprimir" />
@@ -73,24 +74,27 @@ export default async function PaginaRelatorios({
           </>
         }
       >
+        <div className="nao-imprimir">
+          <AbasDeRelatorios ativa="reposicao" />
+        </div>
         <div className="grid gap-6 min-[65rem]:grid-cols-3">
           <Cartao>
-            <p className="text-[13px] text-ink-2">Itens a repor</p>
-            <p className="mt-2 text-[40px] leading-none font-semibold tracking-[-0.03em]">
+            <p className="text-[13px] font-medium">Itens a repor</p>
+            <p className="mt-2 text-[40px] leading-none font-light tracking-[-0.04em]">
               {linhas.length}
             </p>
           </Cartao>
           <Cartao>
-            <p className="text-[13px] text-ink-2">Unidades sugeridas</p>
+            <p className="text-[13px] font-medium">Unidades sugeridas</p>
             <p className="mt-2 flex items-baseline gap-2">
-              <span className="text-[40px] leading-none font-semibold tracking-[-0.03em]">
+              <span className="text-[40px] leading-none font-light tracking-[-0.04em]">
                 {formatarNumero(unidades)}
               </span>
-              <span className="text-ink-3">{caixas} caixas</span>
+              <span className="text-[13px] text-ink-3">un. · {caixas} caixas</span>
             </p>
           </Cartao>
           <Cartao>
-            <p className="text-[13px] text-ink-2">Parâmetros</p>
+            <p className="text-[13px] font-medium">Como a conta é feita</p>
             <p className="mt-2 text-ink-2">
               Consumo médio dos últimos{' '}
               <strong className="text-ink">{parametros.janelaConsumoDias} dias</strong>. Sem máximo:
@@ -117,9 +121,15 @@ export default async function PaginaRelatorios({
               {linhas.map((l) => (
                 <tr key={l.item.id}>
                   <td>
-                    <Link href={`/itens/${l.item.id}`} className="text-ink no-underline">
-                      <span className="block font-medium">{nomeDaPastilha(l.item)}</span>
-                      <ChipCodigo>{l.item.codigo}</ChipCodigo>
+                    <Link
+                      href={`/itens/${l.item.id}`}
+                      className="flex items-center gap-3 text-ink no-underline"
+                    >
+                      <GlifoDaPastilha iso={l.item.iso} className="size-7 text-ink-3" />
+                      <span>
+                        <span className="block font-medium">{nomeDaPastilha(l.item)}</span>
+                        <ChipCodigo>{l.item.codigo}</ChipCodigo>
+                      </span>
                     </Link>
                   </td>
                   <td>
@@ -197,38 +207,9 @@ export default async function PaginaRelatorios({
   const periodo = `de ${formatarData(n.de)} até ${formatarData(n.ate)}`
   const agrupa = n.tipo === 'consumo'
   const abas = (
-    <Abas
-      rotulo="Tipo de relatório"
-      opcoes={[
-        {
-          href: `/relatorios?tipo=consumo&de=${n.deIso}&ate=${n.ateIso}`,
-          rotulo: (
-            <>
-              <FileChartColumn aria-hidden className="size-4" /> Consumo
-            </>
-          ),
-          ativo: n.tipo === 'consumo',
-        },
-        {
-          href: `/relatorios?tipo=movimentacao&de=${n.deIso}&ate=${n.ateIso}`,
-          rotulo: (
-            <>
-              <ArrowLeftRight aria-hidden className="size-4" /> Movimentação
-            </>
-          ),
-          ativo: n.tipo === 'movimentacao',
-        },
-        {
-          href: '/relatorios?tipo=reposicao',
-          rotulo: (
-            <>
-              <ShoppingCart aria-hidden className="size-4" /> Reposição
-            </>
-          ),
-          ativo: false,
-        },
-      ]}
-    />
+    <div className="nao-imprimir">
+      <AbasDeRelatorios ativa={n.tipo} de={n.deIso} ate={n.ateIso} />
+    </div>
   )
   const filtros = (
     <form className="nao-imprimir flex flex-wrap items-end gap-3">

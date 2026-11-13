@@ -1,0 +1,250 @@
+@startuml der
+' Diagrama de Entidade e Relacionamento (modelo físico) do SICEI
+' Fonte: prisma/schema.prisma e migrations em prisma/migrations
+!include estilo.iuml
+hide circle
+skinparam linetype polyline
+skinparam nodesep 55
+skinparam ranksep 70
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1F3A5F
+skinparam ClassHeaderBackgroundColor #DCE6F2
+skinparam ClassFontStyle bold
+skinparam ClassAttributeFontSize 11
+
+title SICEI · Diagrama de Entidade e Relacionamento (PostgreSQL)
+
+entity "usuario" as usuario {
+  * id : uuid <<PK>>
+  --
+  * nome : text
+  * sobrenome : text
+  * login : text <<UK>>
+  matricula : text <<UK>>
+  * setor : text
+  * perfil : Perfil
+  * ativo : boolean
+  * principal : boolean
+  * deve_trocar_senha : boolean
+  * senha_hash : text (Argon2id)
+  * falhas_login : int
+  bloqueado_em : timestamptz
+}
+
+entity "historico_senha" as historico_senha {
+  * id : uuid <<PK>>
+  --
+  * usuario_id : uuid <<FK>>
+  * senha_hash : text
+  * criado_em : timestamptz
+}
+
+entity "sessao" as sessao {
+  * id : text <<PK>> (SHA-256 do token)
+  --
+  * usuario_id : uuid <<FK>>
+  * ultimo_uso : timestamptz
+  * expira_em : timestamptz
+  ip : text
+  user_agent : text
+}
+
+entity "tentativa_login" as tentativa_login {
+  * id : bigint <<PK>>
+  --
+  * ip : text
+  * login : text
+  * sucesso : boolean
+  * criado_em : timestamptz
+}
+
+entity "fabricante" as fabricante {
+  * id : uuid <<PK>>
+  --
+  * nome : text
+  * nome_chave : text <<UK>>
+  * ativo : boolean
+}
+
+entity "fornecedor" as fornecedor {
+  * id : uuid <<PK>>
+  --
+  * razao_social : text
+  nome_fantasia : text
+  * cnpj : text <<UK>>
+  telefone : text
+  contato : text
+  * ativo : boolean
+}
+
+entity "item" as item {
+  * id : uuid <<PK>>
+  --
+  * codigo : text <<UK>>
+  * descricao : text
+  iso : text
+  classe : text
+  cobertura : text
+  * aplicacao : Aplicacao
+  * fabricante_id : uuid <<FK>>
+  * embalagem : int
+  * estoque_minimo : int
+  estoque_maximo : int
+  * saldo : int  CHECK (saldo >= 0)
+  * ponto_reposicao : int
+  * status : StatusItem
+  * ativo : boolean
+}
+
+entity "item_fornecedor" as item_fornecedor {
+  * item_id : uuid <<PK, FK>>
+  * fornecedor_id : uuid <<PK, FK>>
+  --
+  codigo_no_fornecedor : text
+  lead_time_dias : int
+  * preferencial : boolean
+  ultimo_preco : numeric(12,2)
+  data_ultima_compra : timestamptz
+}
+
+entity "posicao" as posicao {
+  * id : uuid <<PK>>
+  --
+  * armario : int
+  * gaveta : int
+  * compartimento : int
+  * codigo : text <<UK>> (A01-G03-C04)
+  item_id : uuid <<FK, UK>>
+  * ativo : boolean
+  * etiqueta_pendente : boolean
+}
+
+entity "destino" as destino {
+  * id : uuid <<PK>>
+  --
+  * tipo : TipoDestino
+  * codigo : text <<UK>>
+  * nome : text
+  * ativo : boolean
+}
+
+entity "colaborador" as colaborador {
+  * id : uuid <<PK>>
+  --
+  * nome : text
+  matricula : text <<UK>>
+  * setor : text
+  * ativo : boolean
+}
+
+entity "movimentacao" as movimentacao {
+  * id : uuid <<PK>>
+  --
+  * item_id : uuid <<FK>>
+  * tipo : TipoMovimentacao
+  * quantidade : int  CHECK (> 0)
+  * saldo_anterior : int
+  * saldo_posterior : int
+  fornecedor_id : uuid <<FK>>
+  preco_unitario : numeric(12,2)
+  nota_fiscal : text
+  destino_id : uuid <<FK>>
+  ordem_producao : text
+  colaborador_id : uuid <<FK>>
+  motivo : text
+  observacao : text
+  estorna_id : uuid <<FK, UK>>
+  * usuario_id : uuid <<FK>>
+  ip : text
+  user_agent : text
+  * criado_em : timestamptz
+}
+
+entity "alerta" as alerta {
+  * id : uuid <<PK>>
+  --
+  * item_id : uuid <<FK>>
+  * nivel : NivelAlerta
+  * aberto_em : timestamptz
+  fechado_em : timestamptz
+  ciente_por_id : uuid <<FK>>
+  ciente_em : timestamptz
+}
+
+entity "notificacao" as notificacao {
+  * id : uuid <<PK>>
+  --
+  * alerta_id : uuid <<FK>>
+  * nivel : NivelAlerta
+  * destinatario : text
+  * status : StatusNotificacao
+  * tentativas : int
+  erro : text
+  enviado_em : timestamptz
+}
+
+entity "audit_log" as audit_log {
+  * seq : bigint <<PK>>
+  --
+  * acao : text
+  * entidade : text
+  entidade_id : text
+  antes : jsonb
+  depois : jsonb
+  usuario_id : uuid
+  ip : text
+  user_agent : text
+  * criado_em : timestamptz
+  * prev_hash : text
+  * hash : text <<UK>>
+}
+
+entity "parametro" as parametro {
+  * chave : text <<PK>>
+  --
+  * valor : text
+  * atualizado_em : timestamptz
+}
+
+' ----- relacionamentos -----
+usuario ||--o{ historico_senha : "guarda as\núltimas senhas"
+usuario ||--o{ sessao : "abre"
+usuario ||--o{ movimentacao : "registra"
+usuario |o--o{ alerta : "marca ciente"
+usuario |o..o{ audit_log : "autor da ação\n(referência lógica)"
+
+fabricante ||--o{ item : "produz"
+item ||--o{ item_fornecedor : "é comprado de"
+fornecedor ||--o{ item_fornecedor : "vende"
+item |o--o| posicao : "guardado em"
+
+item ||--o{ movimentacao : "sofre"
+fornecedor |o--o{ movimentacao : "compra de"
+destino |o--o{ movimentacao : "saída para"
+colaborador |o--o{ movimentacao : "retirou /\ndevolveu"
+movimentacao |o--o| movimentacao : "estorna"
+
+item ||--o{ alerta : "gera"
+alerta ||--o{ notificacao : "avisa por\ne-mail"
+
+note bottom of movimentacao
+  Imutável: trigger BEFORE UPDATE OR DELETE
+  e usuário da aplicação só com SELECT e INSERT
+  (RN-09a, RN-12). CHECKs por tipo:
+  COMPRA exige fornecedor, preço e NF.
+end note
+
+note bottom of audit_log
+  Cadeia de hash:
+  hash = SHA-256(prev_hash | seq | JSON canônico)
+  Imutável como movimentacao (RN-09a).
+end note
+
+note top of alerta
+  Índice único parcial:
+  um alerta aberto por item
+  (fechado_em IS NULL) — RN-18
+end note
+
+tentativa_login -[hidden]- parametro
+@enduml

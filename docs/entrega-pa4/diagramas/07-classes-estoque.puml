@@ -1,0 +1,222 @@
+@startuml classes-estoque
+' Diagrama de classes 1/2: domínio do estoque
+' Atributos: prisma/schema.prisma. Operações: funções puras de src/domain/*.ts
+' (o código usa funções puras em vez de métodos; cada operação leva o nome real da função).
+!include estilo.iuml
+skinparam linetype polyline
+skinparam nodesep 45
+skinparam ranksep 65
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1F3A5F
+skinparam ClassHeaderBackgroundColor #DCE6F2
+skinparam ClassFontStyle bold
+skinparam ClassAttributeFontSize 11
+skinparam StereotypeCBackgroundColor #DCE6F2
+skinparam StereotypeEBackgroundColor #FCE9C8
+hide empty members
+
+title SICEI · Diagrama de classes (1/2): estoque, movimentação e alertas
+
+class Fabricante {
+  - id : UUID
+  - nome : String
+  - nomeChave : String {único}
+  - ativo : Boolean
+}
+
+class Fornecedor {
+  - id : UUID
+  - razaoSocial : String
+  - nomeFantasia : String [0..1]
+  - cnpj : String {único}
+  - telefone : String [0..1]
+  - contato : String [0..1]
+  - ativo : Boolean
+  --
+  + cnpjValido(cnpj) : Boolean
+}
+
+class Item {
+  - id : UUID
+  - codigo : String {único}
+  - descricao : String
+  - iso : String [0..1]
+  - classe : String [0..1]
+  - cobertura : String [0..1]
+  - aplicacao : Aplicacao
+  - embalagem : Integer
+  - estoqueMinimo : Integer
+  - estoqueMaximo : Integer [0..1]
+  - saldo : Integer {>= 0}
+  - pontoReposicao : Integer
+  - status : StatusItem
+  - ativo : Boolean
+  --
+  + consumoMedioDiario(totalConsumido, janelaDias) : Decimal
+  + pontoDeReposicao(minimo, consumoDiario, leadTime) : Integer
+  + statusDoItem(saldo, minimo, pontoReposicao) : StatusItem
+  + sugestaoDeCompra(saldo, pontoReposicao, maximo, ...) : Integer
+  + quantidadeEmUnidades(quantidade, unidade, embalagem) : Integer
+  + validarLimites(minimo, maximo) : Decisao
+  + proximoCodigo(existentes) : String
+  + codigoEquivalente(codigo, existentes) : String
+}
+
+class ItemFornecedor <<classe de associação>> {
+  - codigoNoFornecedor : String [0..1]
+  - leadTimeDias : Integer [0..1]
+  - preferencial : Boolean
+  - ultimoPreco : Decimal [0..1]
+  - dataUltimaCompra : DateTime [0..1]
+  --
+  + leadTimeParaCalculo(fornecedores) : Integer
+  + ultimoPrecoValido(compras) : Compra
+  + listaDeFornecedores(fornecedores) : Linha[*]
+}
+
+class Posicao {
+  - id : UUID
+  - armario : Integer
+  - gaveta : Integer
+  - compartimento : Integer
+  - codigo : String {único, A01-G03-C04}
+  - ativo : Boolean
+  - etiquetaPendente : Boolean
+  --
+  + codigoDaPosicao(endereco) : String
+  + interpretarCodigoDePosicao(texto) : String
+  + avaliarAtribuicao(itemId, ocupadaPor) : Decisao
+}
+
+class Destino {
+  - id : UUID
+  - tipo : TipoDestino
+  - codigo : String {único}
+  - nome : String
+  - ativo : Boolean
+}
+
+class Colaborador {
+  - id : UUID
+  - nome : String
+  - matricula : String [0..1] {único}
+  - setor : String
+  - ativo : Boolean
+}
+
+class Movimentacao <<imutável>> {
+  - id : UUID
+  - tipo : TipoMovimentacao
+  - quantidade : Integer {> 0}
+  - saldoAnterior : Integer
+  - saldoPosterior : Integer
+  - precoUnitario : Decimal [0..1]
+  - notaFiscal : String [0..1]
+  - ordemProducao : String [0..1]
+  - motivo : String [0..1]
+  - observacao : String [0..1]
+  - ip : String [0..1]
+  - userAgent : String [0..1]
+  - criadoEm : DateTime
+  --
+  + sinalDoTipo(tipo) : Integer
+  + avaliarMovimentacao(tipo, quantidade, saldoAtual, itemAtivo) : Decisao
+  + avaliarEstorno(original, saldoAtual, justificativa, itemAtivo) : Decisao
+  + ajusteDeInventario(saldo, contado) : Decisao
+  + saldoPelasMovimentacoes(movimentacoes) : Integer
+}
+
+class Alerta {
+  - id : UUID
+  - nivel : NivelAlerta
+  - abertoEm : DateTime
+  - fechadoEm : DateTime [0..1]
+  - cienteEm : DateTime [0..1]
+  --
+  + decidirAlerta(nivelAberto, novoStatus) : AcaoAlerta
+}
+
+class Notificacao {
+  - id : UUID
+  - nivel : NivelAlerta
+  - destinatario : String
+  - status : StatusNotificacao
+  - tentativas : Integer
+  - erro : String [0..1]
+  - enviadoEm : DateTime [0..1]
+}
+
+class Usuario {
+  (detalhado no diagrama 2/2)
+}
+
+enum TipoMovimentacao <<enumeração>> {
+  COMPRA
+  DEVOLUCAO_PRODUCAO
+  AJUSTE_POSITIVO
+  CONSUMO_PRODUCAO
+  PERDA_QUEBRA
+  AJUSTE_NEGATIVO
+  ESTORNO
+}
+
+enum StatusItem <<enumeração>> {
+  OK
+  ATENCAO
+  CRITICO
+  ZERADO
+}
+
+enum NivelAlerta <<enumeração>> {
+  ATENCAO
+  CRITICO
+  ZERADO
+}
+
+enum Aplicacao <<enumeração>> {
+  TORNEAMENTO
+  FRESAMENTO
+  FURACAO
+  ROSQUEAMENTO
+  OUTRA
+}
+
+enum TipoDestino <<enumeração>> {
+  SETOR
+  MAQUINA
+  CENTRO_CUSTO
+}
+
+enum StatusNotificacao <<enumeração>> {
+  PENDENTE
+  ENVIADO
+  FALHOU
+}
+
+Fabricante "1" -- "0..*" Item : produz >
+Item "0..*" -- "1..*" Fornecedor : é comprado de >
+(Item, Fornecedor) .. ItemFornecedor
+Item "0..1" -- "0..1" Posicao : guardado em >
+Item "1" -- "0..*" Movimentacao : sofre >
+Movimentacao "0..*" -- "0..1" Fornecedor : compra de >
+Movimentacao "0..*" -- "0..1" Destino : saída para >
+Movimentacao "0..*" -- "0..1" Colaborador : retirou / devolveu >
+Movimentacao "0..1" -- "0..1" Movimentacao : estorna >
+Usuario "1" -- "0..*" Movimentacao : registra >
+Item "1" -- "0..*" Alerta : gera >
+Alerta "1" -- "0..*" Notificacao : avisa por e-mail >
+Usuario "0..1" -- "0..*" Alerta : marca ciente >
+
+Item ..> StatusItem
+Item ..> Aplicacao
+Movimentacao ..> TipoMovimentacao
+Alerta ..> NivelAlerta
+Destino ..> TipoDestino
+Notificacao ..> StatusNotificacao
+
+note bottom of Movimentacao
+  Não tem UPDATE nem DELETE.
+  Erro se corrige com ESTORNO,
+  uma única vez por movimentação (RN-12).
+end note
+@enduml

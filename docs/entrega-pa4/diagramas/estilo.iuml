@@ -1,0 +1,16 @@
+' Estilo comum dos diagramas do Documento do Sistema (SICEI)
+skinparam dpi 220
+skinparam defaultFontName "Liberation Sans"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam ArrowColor #1F3A5F
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1F3A5F
+skinparam BackgroundColor white
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B8A04A
+skinparam NoteFontSize 11
+skinparam PackageBorderColor #1F3A5F
+skinparam PackageFontColor #1F3A5F
+skinparam PackageFontStyle bold

@@ -1,0 +1,69 @@
+@startuml arquitetura-camadas
+' Arquitetura da solução: camadas do monólito modular e regras de dependência
+' Fonte: docs/03-system-design.md, seção 3, e a árvore src/
+!include estilo.iuml
+skinparam nodesep 35
+skinparam ranksep 55
+skinparam ComponentBackgroundColor #FFFFFF
+skinparam ComponentBorderColor #1F3A5F
+skinparam RectangleBackgroundColor #F4F7FB
+skinparam RectangleBorderColor #1F3A5F
+skinparam DatabaseBackgroundColor #DCE6F2
+
+title SICEI · Arquitetura em camadas (monólito modular em Next.js)
+
+rectangle "Apresentação · src/app e src/components" as L1 {
+  component "Telas (Server Components)\npainel, itens, movimentações,\nrelatórios, análise, cadastros, admin" as TELAS
+  component "Componentes de cliente\nformulários, gráficos SVG,\nleitor de QR, busca do topo" as CLIENTE
+  component "Server Actions (app/acoes)\nconferem a sessão de novo\ne chamam o service" as ACOES
+}
+
+rectangle "Aplicação · src/server" as L2 {
+  component "services/\nexigirPermissao → Zod → transação →\ndecisão (domain) → gravação →\nauditoria → commit" as SVC
+  component "consultas/\nleituras para as telas\n(paginação, filtros, agregações)" as CONS
+  component "auth/  audit/  notificacao/\nsessão e Argon2id, log encadeado,\noutbox de e-mail" as INFRA
+}
+
+rectangle "Domínio · src/domain (funções puras)" as L3 {
+  component "estoque · movimentacao · alertas · precos\nposicao · codigo · busca · analise\nlogin · senha · hierarquia · permissoes\nauditoria · cnpj · importacao · schemas (Zod)" as DOM
+  component "~*.casos.ts\ncasos de teste como dados" as CASOS
+}
+
+rectangle "Dados" as L4 {
+  component "Prisma Client 7\n+ $queryRaw parametrizado\n(FOR UPDATE, advisory lock)" as PRISMA
+  database "PostgreSQL\nCHECK, índices únicos parciais,\ntriggers de imutabilidade" as DB
+}
+
+rectangle "Testes" as LT {
+  component "Vitest (*.test.ts, it.each)" as VITEST
+  component "Laboratório /testes\n(no navegador)" as LAB
+}
+
+TELAS --> CONS : lê
+CLIENTE --> ACOES : envia formulário
+ACOES --> SVC : escreve
+TELAS ..> DOM : prévia (mesmas regras)
+CLIENTE ..> DOM : prévia no navegador
+SVC --> DOM : decide
+SVC --> INFRA
+SVC --> PRISMA
+CONS --> PRISMA
+INFRA --> PRISMA
+PRISMA --> DB
+VITEST --> CASOS
+LAB --> CASOS
+CASOS ..> DOM
+
+note right of L3
+  Não importa nada de server/, app/,
+  Prisma ou Next. Usa só recursos que
+  existem no Node e no navegador
+  (ex.: crypto.subtle).
+end note
+
+note bottom of DB
+  Tela nunca acessa o banco:
+  leitura passa por consultas/,
+  escrita passa por services/.
+end note
+@enduml

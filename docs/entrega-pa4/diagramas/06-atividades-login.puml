@@ -1,0 +1,66 @@
+@startuml atividades-login
+' Diagrama de atividades 3: entrar no sistema (RF-01, RN-21a, RN-22, RN-23)
+' Fonte: src/server/services/autenticacao.ts, src/server/auth/sessao.ts, src/domain/senha.ts,
+'        src/domain/login.ts
+!include estilo.iuml
+skinparam ActivityBackgroundColor #F4F7FB
+skinparam ActivityBorderColor #1F3A5F
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #1F3A5F
+skinparam SwimlaneTitleFontStyle bold
+skinparam SwimlaneTitleFontColor #1F3A5F
+skinparam defaultFontSize 13
+
+title SICEI · Atividades (3/3): entrar no sistema
+
+|Usuário|
+start
+:Informa login (nome.sobrenome) e senha;
+|#F7F9FC|SICEI (servidor)|
+if (20 tentativas ou mais deste IP\nnos últimos 15 minutos?) then (sim)
+  :Recusa: "Muitas tentativas a partir
+  deste endereço. Aguarde.";
+  stop
+elseif (Login inexistente ou\nusuário inativo?) then (sim)
+  :Gasta o tempo de uma verificação Argon2id,
+  registra LOGIN_FALHOU (login inexistente:
+  só o tamanho) e responde
+  "Login ou senha inválidos.";
+  stop
+elseif (Conta bloqueada?) then (sim)
+  :Registra LOGIN_FALHOU e responde
+  "Conta bloqueada. Procure o Administrador.";
+  stop
+elseif (Senha não confere\ncom o hash Argon2id?) then (sim)
+  :Soma 1 em falhas_login (UPDATE atômico);
+  if (Chegou a 5 falhas seguidas?) then (sim)
+    :Bloqueia a conta, encerra as sessões
+    e registra USUARIO_BLOQUEADO;
+  else (não)
+  endif
+  :Registra LOGIN_FALHOU e responde
+  com a mesma mensagem genérica;
+  stop
+else (senha certa)
+  :Zera falhas_login e cria a sessão:
+  token de 32 bytes no cookie HttpOnly,
+  o banco guarda só o SHA-256;
+  :Registra LOGIN no audit_log;
+endif
+if (deve_trocar_senha?) then (sim)
+  repeat
+    |Usuário|
+    :Cria a nova senha (checklist na tela);
+    |SICEI (servidor)|
+    :Confere: 10 caracteres ou mais, diferente
+    do login e das 3 últimas senhas;
+  repeat while (Senha aceita?) is (não: mostra o motivo)
+  ->sim;
+  :Grava o hash Argon2id, guarda no histórico
+  e registra SENHA_ALTERADA no log;
+else (não)
+endif
+|Usuário|
+:Usa o sistema com as permissões do perfil;
+stop
+@enduml

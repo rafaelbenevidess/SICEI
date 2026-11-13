@@ -1,0 +1,69 @@
+@startuml arquitetura-implantacao
+' Arquitetura da solução: visão de implantação
+' Fonte: docs/03-system-design.md (seções 1, 2 e 7), vercel.json, .github/workflows/ci.yml
+!include estilo.iuml
+skinparam nodesep 50
+skinparam ranksep 70
+skinparam NodeBackgroundColor #F4F7FB
+skinparam NodeBorderColor #1F3A5F
+skinparam ComponentBackgroundColor #FFFFFF
+skinparam ComponentBorderColor #1F3A5F
+skinparam DatabaseBackgroundColor #DCE6F2
+skinparam DatabaseBorderColor #1F3A5F
+skinparam ArtifactBackgroundColor #FFFFFF
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #1F3A5F
+
+title SICEI · Arquitetura da solução: implantação
+
+node "Celular do almoxarife\n(Android ou iPhone)" as CEL {
+  component "Navegador\n(tela Ler QR, câmera\nanalisada no aparelho)" as NAVCEL
+}
+node "Computador do escritório\n(Gestor, Administrador)" as PC {
+  component "Navegador\n(Chrome, Edge,\nFirefox, Safari)" as NAVPC
+}
+artifact "Etiqueta QR na gaveta\nhttps://.../p/A01-G03-C04" as QR
+
+node "Vercel · região gru1 (São Paulo)" as VERCEL {
+  component "proxy.ts\n(CSP com nonce, HSTS,\nredireciona quem não tem sessão)" as PROXY
+  node "Aplicação Next.js 16 (Node.js)" as NEXT {
+    component "app/\nServer Components\n+ Server Actions" as APP
+    component "server/services\n(casos de uso)" as SVC
+    component "server/consultas\n(leituras)" as CONS
+    component "domain/\n(regras puras)" as DOM
+    component "Prisma Client 7\n(@prisma/adapter-pg)" as PRISMA
+  }
+  component "Vercel Cron\n06:00 UTC\n/api/cron/diario" as CRON
+  component "/testes\nLaboratório (público)" as LAB
+}
+
+node "Neon · PostgreSQL" as NEON {
+  database "sicei_dda\n(triggers, CHECKs,\níndices parciais)" as DB
+}
+
+cloud "Servidor SMTP\n(e-mail corporativo)" as SMTP
+
+node "GitHub" as GH {
+  artifact "Repositório\nrafaelbenevidess/SICEI" as REPO
+  component "GitHub Actions (CI)\nlint, tipos, unidade,\nintegração e E2E" as CI
+}
+
+node "Avaliador\n(navegador, sem login)" as AVA
+
+QR ..> NAVCEL : câmera lê\na URL
+NAVCEL --> PROXY : HTTPS
+NAVPC --> PROXY : HTTPS
+AVA --> LAB : HTTPS
+PROXY --> APP
+APP --> SVC : escrita
+APP --> CONS : leitura
+SVC --> DOM
+SVC --> PRISMA
+CONS --> PRISMA
+CRON --> SVC : recalcularTodos()\n+ reenviar avisos
+LAB ..> DOM : mesmas funções\nrodando no navegador
+PRISMA --> DB : TCP/TLS, usuário\nsicei_dda_app\n(sem UPDATE/DELETE no\nhistórico e no log)
+SVC --> SMTP : Nodemailer\n(outbox de avisos)
+REPO --> CI : push
+REPO --> VERCEL : deploy a cada push\n(migrations + seed +\ntestes + next build)
+@enduml

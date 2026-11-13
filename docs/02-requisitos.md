@@ -168,6 +168,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 1. **Dado** o filtro de setembro e o item X, **quando** aplicado, **então** aparecem todas as movimentações do item no mês, em ordem cronológica, com usuário, saldo anterior e posterior.
 2. **Dado** qualquer movimentação, **quando** o usuário abre o detalhe, **então** vê todos os campos gravados, inclusive IP, dispositivo, OP, colaborador e, se for o caso, o estorno ligado a ela.
 3. **Dado** a OP 2026-0457, o item PST-001 e o colaborador Juliana Martins, matrícula 1045, **quando** o usuário busca "20260457", "pst1", "juliana" ou "1045" no campo "Item, OP ou colaborador", **então** as movimentações correspondentes aparecem (RF-11). O filtro de usuário acha "joao silva" como joao.silva.
+4. **Dado** o histórico aberto no computador com mais linhas do que cabem na tela, **quando** o usuário rola, **então** só a lista de movimentações rola: o título, os filtros e o cabeçalho das colunas continuam à vista. No celular a página rola inteira.
 
 ### RF-16. Painel geral
 1. **Dado** o acesso ao sistema, **quando** o usuário abre o painel, **então** vê a quantidade de itens em cada status, os alertas abertos, o consumo do mês comparado ao mês anterior, os 10 itens mais consumidos e as últimas movimentações.
@@ -383,3 +384,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.14 | 28/09/2026 | RF-20, critério 4: a Análise impressa sai como na tela (cores, tema claro, gráficos na largura da folha). |
 | 1.15 | 13/11/2026 | Novo RNF-14, navegação integrada: uma tela por item do menu, abas que não trocam de tela e tarefas feitas por cima da tela atual. RF-17a, critério 1: a Análise é aba de Relatórios. RF-19, critérios 4 e 5: sugestão de compra como aba de Relatórios e na linha de cada alerta. RF-13, critério 6: ciente e entrada pela linha do alerta. |
 | 1.16 | 13/11/2026 | RNF-14: os cadastros (item, cadastros de apoio e usuário) também são feitos por cima da tela atual. |
+| 1.17 | 13/11/2026 | RF-15, critério 4: no computador, só a lista de movimentações rola; título, filtros e cabeçalho das colunas ficam parados. |

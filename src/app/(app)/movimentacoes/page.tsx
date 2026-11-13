@@ -27,7 +27,10 @@ const rotulo = 'flex min-w-0 flex-col gap-1.5 text-[13px] font-medium'
 
 type Filtros = FiltroMovimentacoes & { pagina?: string; sel?: string }
 
-/** RF-15: histórico completo e inalterável, com filtros e o detalhe ao lado. */
+/**
+ * RF-15: histórico completo e inalterável. No computador o título e os filtros ficam parados
+ * e só a lista rola; o detalhe abre numa gaveta por cima.
+ */
 export default async function PaginaMovimentacoes({
   searchParams,
 }: {
@@ -49,6 +52,7 @@ export default async function PaginaMovimentacoes({
 
   return (
     <Pagina
+      alturaDaJanela
       titulo="Movimentações"
       descricao={`Histórico completo e inalterável. ${formatarNumero(total)} ${total === 1 ? 'registro' : 'registros'}${Object.values(filtros).some(Boolean) ? ' com estes filtros' : ''}.`}
       acoes={
@@ -79,7 +83,7 @@ export default async function PaginaMovimentacoes({
     >
       <form
         role="search"
-        className="grid items-end gap-4 cartao p-4 sm:grid-cols-2 min-[75rem]:grid-cols-[1.3fr_1fr_1fr_1.2fr_auto]"
+        className="grid shrink-0 items-end gap-4 cartao p-4 sm:grid-cols-2 min-[75rem]:grid-cols-[1.3fr_1fr_1fr_1.2fr_auto]"
       >
         <fieldset className={rotulo}>
           <legend className="mb-1.5">Período</legend>
@@ -136,8 +140,8 @@ export default async function PaginaMovimentacoes({
         <Vazio>Nenhuma movimentação com esses filtros.</Vazio>
       ) : (
         <>
-          <div className="flex min-w-0 flex-col gap-4">
-            <Tabela rotulo="Movimentações" larguraMinima={700}>
+          <div className="flex min-w-0 flex-col gap-4 md:min-h-0 md:flex-1">
+            <Tabela rotulo="Movimentações" larguraMinima={700} rolagem>
               <thead>
                 <tr>
                   <th>Quando</th>

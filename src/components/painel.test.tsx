@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { BarraDeComparacao, MedidorDeTracos, PontosPorDia } from './medidores'
 import { GlifoDaPastilha, Pastilha } from './Pastilha'
-import { Gauge, Segmentado } from './ui'
+import { Gauge, Pagina, Segmentado, Tabela } from './ui'
 
 afterEach(cleanup)
 
@@ -157,5 +157,46 @@ describe('Componentes-base da versão 2', () => {
     )
     expect(screen.getByRole('link', { name: /Todos/ })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: /Em alerta/ })).not.toHaveAttribute('aria-current')
+  })
+})
+
+describe('RF-15 · Lista que rola dentro da página', () => {
+  it('Pagina com alturaDaJanela ocupa a altura útil só no computador; sem ela, não fixa altura', () => {
+    const { container } = render(
+      <Pagina titulo="Movimentações" alturaDaJanela>
+        <p>conteúdo</p>
+      </Pagina>,
+    )
+    expect(container.firstElementChild).toHaveClass('md:h-(--altura-util)', 'print:h-auto')
+    cleanup()
+    const { container: comum } = render(
+      <Pagina titulo="Itens">
+        <p>conteúdo</p>
+      </Pagina>,
+    )
+    expect(comum.firstElementChild).not.toHaveClass('md:h-(--altura-util)')
+  })
+
+  it('Tabela com rolagem rola por dentro e prende o cabeçalho das colunas; sem ela, só rola de lado', () => {
+    const linhas = (
+      <tbody>
+        <tr>
+          <td>12/11 18:26</td>
+        </tr>
+      </tbody>
+    )
+    render(
+      <Tabela rotulo="Movimentações" rolagem>
+        {linhas}
+      </Tabela>,
+    )
+    const tabela = screen.getByRole('table', { name: 'Movimentações' })
+    expect(tabela.parentElement).toHaveClass('md:overflow-y-auto', 'print:overflow-visible')
+    expect(tabela).toHaveClass('md:[&_th]:sticky')
+    cleanup()
+    render(<Tabela rotulo="Itens">{linhas}</Tabela>)
+    const comum = screen.getByRole('table', { name: 'Itens' })
+    expect(comum.parentElement).not.toHaveClass('md:overflow-y-auto')
+    expect(comum).not.toHaveClass('md:[&_th]:sticky')
   })
 })

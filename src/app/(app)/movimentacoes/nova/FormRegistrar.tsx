@@ -213,9 +213,9 @@ export function FormRegistrar({
           <div className="flex flex-col gap-2">
             <p className="text-[13px] font-medium">Item</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-line-2 px-4 py-3.5">
-              <GlifoDaPastilha iso={item.iso} className="size-8 text-ink-3" />
+              <GlifoDaPastilha iso={item.iso} className="size-8 text-ink-3 max-sm:hidden" />
               <ChipCodigo forte>{item.codigo}</ChipCodigo>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-40">
                 <p className="font-medium">{item.nome}</p>
                 <p className="text-[13px] text-ink-2">
                   {item.fabricante} · posição {item.posicao ?? '—'} · saldo {item.saldo}
@@ -229,7 +229,7 @@ export function FormRegistrar({
 
           <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
             <div className="flex min-w-0 flex-col gap-1.5">
-              <div className="flex items-end gap-2">
+              <div className="flex flex-wrap items-end gap-2">
                 <button
                   type="button"
                   onClick={() => passo(-1)}
@@ -264,7 +264,7 @@ export function FormRegistrar({
                   <div
                     role="radiogroup"
                     aria-label="Informar em caixas ou unidades"
-                    className="flex h-11 shrink-0 rounded-[9px] bg-surface-3 p-[3px]"
+                    className="flex h-11 shrink-0 rounded-[9px] bg-surface-3 p-[3px] max-sm:w-full max-sm:[&>button]:flex-1"
                   >
                     {(['CAIXA', 'UNIDADE'] as const).map((u) => (
                       <button

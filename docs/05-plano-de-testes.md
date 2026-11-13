@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.12 |
+| **Versão** | 1.13 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -45,6 +45,7 @@ Cada `describe` começa pelo identificador da regra, então basta procurar pelo 
 | RF-03 próximo código | `codigo.test.ts` (casos em `codigo.casos.ts`, também no Laboratório) | E2E do novo item |
 | RN-26 etiqueta pendente | `schemas/cadastros.test.ts` (códigos mandados para a impressora) | `cadastros.test.ts` (troca marca a nova e limpa a antiga; impressão limpa e vai para o log; Consulta não registra) |
 | RF-16 painel e desenho da pastilha | `painel.test.ts` (casos em `painel.casos.ts`, também no Laboratório: saúde do estoque, traços do medidor, pontos por dia, barra de comparação, variação e média do mês, dias do mês, tempo do alerta), `pastilha.test.ts` (casos em `pastilha.casos.ts`, também no Laboratório: formato pela ISO 1832, ângulos de ponta, raio inscrito, contorno arredondado, vista em perspectiva), `painel.test.tsx` (desenho com e sem furo, gravação, item sem ISO, arco, barra, pontos por dia, hachura da barra de nível) | E2E do painel em 360 px e das telas principais em 1366 px sem rolagem lateral |
+| RNF-14 navegação integrada | `menu.test.ts` (12 itens, nenhuma aba como item solto, abas de Relatórios e de Cadastros mantêm o item aceso), `pastilha.test.ts` (chave e escolha da foto do item, casos também no Laboratório), `painel.test.tsx` (foto no lugar do desenho quando existe) | E2E do computador: as quatro abas de Relatórios com o mesmo título e o item do menu aceso; saída pela gaveta a partir da lista de itens, com o saldo da linha atualizado ao fechar; detalhe da movimentação na gaveta. E2E do celular: saída pela etiqueta QR com a gaveta em tela cheia |
 | RF-13 pop-up de alertas | `avisoDeAlertas.test.ts`, `AvisoDeAlertas.test.tsx` | E2E do primeiro acesso |
 | RF-21 filtro de ações | `acoesDoLog.test.ts` (toda ação gravada pelos services está no catálogo) | — |
 | RN-26 leitura do QR | `posicao.test.ts` (`codigoDoQr`, casos em `posicao.casos.ts`, também no Laboratório), `camera.test.ts`, `LeitorQr.test.tsx` (câmera e leitor simulados) | E2E com câmera falsa (abaixo) |
@@ -118,3 +119,4 @@ Resultado da última execução: 21 de 21 passaram.
 | 1.10 | 28/09/2026 | Teste de componente com seis itens: cada um com cor própria no ranking, na composição e na evolução lado a lado. |
 | 1.11 | 28/09/2026 | E2E confere a Análise na mídia de impressão (largura, cores mantidas, gráficos dentro da folha). A verificação fica no teste da Análise, porque o limite de 20 logins por IP a cada 15 minutos vale também para a suíte. |
 | 1.12 | 12/11/2026 | Testes da versão 2 da interface: contas do painel e formato da pastilha (unidade, com suítes novas no Laboratório) e componentes do painel. |
+| 1.13 | 13/11/2026 | Testes da versão 3 da interface (RNF-14): menu, abas, gaveta de registro e de detalhe, foto da pastilha. |

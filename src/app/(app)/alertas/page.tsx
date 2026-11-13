@@ -91,7 +91,7 @@ export default async function PaginaAlertas({
         ) : (
           <>
             <div
-              className={`grid gap-4 sm:grid-cols-2 ${verSugestao ? 'min-[65rem]:grid-cols-3' : ''}`}
+              className={`grid grid-cols-2 gap-3 sm:gap-4 ${verSugestao ? 'min-[65rem]:grid-cols-3 [&>*:last-child]:max-[65rem]:col-span-2' : ''}`}
             >
               <Resumo titulo="Alertas abertos" valor={abertos.length}>
                 {(['ZERADO', 'CRITICO', 'ATENCAO'] as const)

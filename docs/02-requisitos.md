@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 02, Requisitos |
-| **Versão** | 1.14 (validada) |
+| **Versão** | 1.15 (validada) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) |
 | **Próximo documento** | [03, System Design](03-system-design.md) |
 
@@ -157,6 +157,7 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 3. **Dado** um alerta aberto, **quando** uma compra leva o saldo acima do ponto de reposição, **então** o alerta fecha sozinho.
 4. **Dado** um alerta aberto, **quando** o Gestor marca como ciente, **então** ele continua aberto, mas aparece identificado com quem marcou e quando.
 5. **Dado** um Gestor ou Administrador e 3 alertas abertos sem ciente, **quando** ele entra no sistema, **então** aparece no centro da tela "Existem 3 alertas sem ciente", com um símbolo de atenção e o botão VER. Não há como fechar: o aviso continua em qualquer página até ele tocar em VER, que leva à tela de alertas. Ir à tela de alertas não obriga a dar ciente (o ciente é de quem responde pelo alerta); serve para todo Gestor e Administrador saber que existem alertas e cobrar o responsável. Depois disso o aviso não volta, nem navegando pelo menu nem recarregando a página, até o próximo login. Almoxarife e Consulta, que não dão ciente, não veem o aviso.
+6. **Dado** um alerta aberto na tela de Alertas, **quando** quem pode dar ciente ou registrar entrada olha a linha, **então** encontra ali "Marcar ciente" e "Entrada". A entrada abre por cima da tela de Alertas, e ao fechar a lista já está atualizada (RNF-14).
 
 ### RF-14. Aviso por e-mail
 1. **Dado** o e-mail corporativo configurado, **quando** um item passa para `CRITICO` ou `ZERADO`, **então** o sistema envia um e-mail com o código, a descrição, o saldo, o mínimo e o link do item.
@@ -176,9 +177,9 @@ Os critérios estão no formato **Dado / Quando / Então** e viram casos de test
 1. **Dado** um período e um agrupamento (item, destino ou colaborador), **quando** o Gestor gera o relatório, **então** vê as quantidades consumidas, sem contar as saídas estornadas, e o consumo médio diário de cada item.
 
 ### RF-17a. Análise personalizada
-Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o relatório em tabela continua sendo a leitura rápida, e a Análise serve para investigar o consumo com a combinação de filtros que o Gestor quiser.
+Aba "Análise" da tela Relatórios, com endereço próprio (`/analise`). Complementa o RF-17: o relatório em tabela continua sendo a leitura rápida, e a Análise serve para investigar o consumo com a combinação de filtros que o Gestor quiser.
 
-1. **Dado** o menu de Gestor ou Administrador, **quando** ele abre Gestão, **então** vê "Análise" logo depois de "Relatórios". O endereço antigo da aba (`/relatorios?tipo=analise`) leva à página nova.
+1. **Dado** a tela Relatórios de Gestor ou Administrador, **quando** ele olha as abas, **então** vê "Análise" depois de "Consumo", "Movimentação" e "Sugestão de compra", e ao abrir a aba continua em Relatórios (RNF-14). O endereço antigo (`/relatorios?tipo=analise`) leva ao novo.
 2. **Dado** a página, **quando** o Gestor monta a análise, **então** escolhe o período (ou um atalho de 7, 30, 90 dias ou 12 meses), o que medir (consumo na produção, perdas e quebras, ou os dois somados), por onde comparar (item, destino, colaborador, aplicação ou fabricante) e, em qualquer combinação, os itens, destinos, colaboradores, aplicações e fabricantes que entram. Cada filtro aceita vários valores, escolhidos com a mesma busca tolerante do RF-11, até 20 por filtro. Filtro vazio vale para todos.
 3. **Dado** mais de um filtro, **quando** a análise é aplicada, **então** os filtros se somam: itens escolhidos e um destino mostram só as retiradas daqueles itens naquele destino. A linha "Filtros:" acima dos números diz o que está aplicado, também no PDF.
 4. **Dado** a análise aplicada, **quando** a página abre, **então** mostra quatro números (total no período com a variação sobre o período anterior do mesmo tamanho, média por dia, pico num só dia, semana ou mês, e itens em alerta agora) e os gráficos de evolução, ranking, composição, dia da semana × hora, entradas × saídas e uma tabela de detalhe com o total, o anterior, a variação, a média por dia, a parte do total e o número de retiradas de cada um. Sem nada no período anterior, o painel diz que não há base para comparar em vez de mostrar um percentual.
@@ -198,6 +199,8 @@ Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o r
 1. **Dado** o exemplo da RN-20 (saldo 35, ponto de reposição 41, consumo de 3 por dia, caixas de 10), **quando** o relatório é gerado, **então** a sugestão para o item é de 100 unidades.
 2. **Dado** um item inativo ou com status `OK`, **quando** o relatório é gerado, **então** ele não aparece.
 3. **Dado** um item na lista, **quando** o Gestor olha a linha, **então** vê a quantidade sugerida, o fornecedor preferencial, o de menor último preço e o lead time de cada um.
+4. **Dado** a tela Relatórios, **quando** o Gestor abre a aba "Sugestão de compra", **então** o relatório aparece com as outras abas à vista e ele volta para Consumo ou Movimentação por elas (RNF-14).
+5. **Dado** a tela de Alertas aberta por Gestor ou Administrador, **quando** há alertas abertos, **então** cada alerta mostra na mesma linha a quantidade sugerida e o fornecedor preferencial, e o total sugerido aparece no topo. Almoxarife e Consulta veem os alertas sem a sugestão.
 
 ### RF-20. Exportar relatórios
 1. **Dado** os relatórios, a lista de itens ou o histórico de movimentações com filtros aplicados, **quando** o usuário clica em "Exportar CSV", **então** recebe um arquivo `sicei-<tela>-<data>.csv` com as mesmas linhas da tela.
@@ -262,6 +265,7 @@ Página própria, "Análise", no grupo Gestão do menu. Complementa o RF-17: o r
 | RNF-11 | Observabilidade | Logs técnicos estruturados de erros e acessos, separados do log de auditoria do negócio. | Revisão da configuração |
 | RNF-12 | Retenção | Movimentações, histórico de preços e log de auditoria guardados por 7 anos (RN-24), sem prejudicar o desempenho do RNF-03. | Teste de carga com volume de 7 anos |
 | RNF-13 | Testes demonstráveis pelo avaliador | Toda parte do sistema que pode ter teste unitário tem teste unitário. O avaliador acessa pela web, sem instalar nada e sem login, uma página onde pode: (1) **executar** os testes das regras de negócio no próprio navegador e ver o resultado de cada um; (2) **criar os próprios casos de teste**, informando entradas e resultado esperado; (3) ver o relatório completo da suíte, com a cobertura. Cada teste leva no nome a regra (RN) ou o requisito (RF) que verifica. | Página `/testes` no endereço do sistema, atualizada a cada versão publicada |
+| RNF-14 | Navegação integrada | Cada tela tem um lugar só no menu, e o que é parte de outra tela aparece como aba dela. Trocar de aba nunca leva a outra tela: a barra de abas, o título e o item aceso no menu continuam os mesmos. As tarefas do dia (registrar entrada e saída, dar ciente, ver o detalhe de uma movimentação) são feitas por cima da tela em que a pessoa está, sem navegar para outra. | Testes do menu e E2E das abas e da gaveta |
 
 O RNF-09 (interoperabilidade com ERP) saiu junto com os RF-23 e RF-24.
 
@@ -377,3 +381,4 @@ O MVP inclui todos os requisitos **Must** e todos os RNF. Os **Should** (RF-10 i
 | 1.12 | 28/09/2026 | RF-17a reescrito: a análise vira página própria em Gestão ("Análise"), com medida (consumo, perdas ou os dois), dimensão de comparação (item, destino, colaborador, aplicação, fabricante), filtros de vários valores em qualquer combinação, comparação lado a lado de 2 a 4 escolhidos, tabela de detalhe e CSV com os filtros. |
 | 1.13 | 28/09/2026 | RF-17a, critérios 5 e 7: 8 cores próprias em vez de 4. Com 5 a 8 itens, nenhum fica cinza, e a evolução lado a lado vai até 8. |
 | 1.14 | 28/09/2026 | RF-20, critério 4: a Análise impressa sai como na tela (cores, tema claro, gráficos na largura da folha). |
+| 1.15 | 13/11/2026 | Novo RNF-14, navegação integrada: uma tela por item do menu, abas que não trocam de tela e tarefas feitas por cima da tela atual. RF-17a, critério 1: a Análise é aba de Relatórios. RF-19, critérios 4 e 5: sugestão de compra como aba de Relatórios e na linha de cada alerta. RF-13, critério 6: ciente e entrada pela linha do alerta. |

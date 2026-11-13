@@ -64,6 +64,7 @@ npm run lint            # ESLint
 npm run typecheck       # tsc --noEmit
 npm run format          # Prettier
 npm run build           # testes + relatório HTML + next build
+npm run pastilhas       # recorta o fundo das fotos de CC/imagens e publica em public/pastilhas
 ```
 
 Antes de cada commit: `npm run lint && npm run typecheck && npm test`.

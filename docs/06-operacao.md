@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 06, Operação (instalação, execução, testes, publicação, backup) |
-| **Versão** | 1.2 |
+| **Versão** | 1.3 |
 | **Base** | [03, System Design](03-system-design.md) |
 
 ## 1. Pré-requisitos
@@ -55,6 +55,7 @@ No primeiro acesso, entre com `admin` e a senha provisória mostrada pelo seed. 
 | `npm run test:integracao` | Testes com PostgreSQL real: concorrência, triggers, permissões, sessões, fraude detectada |
 | `npm run test:e2e` | Ponta a ponta com Playwright no build de produção (banco `sicei_e2e`; rode `npm run build:app` antes) |
 | `npm run verificar` | Lint, tipos, formatação e testes unitários (rode antes de cada commit) |
+| `npm run pastilhas` | Tira o fundo das fotos de `CC/imagens` e publica em `public/pastilhas`, com o manifesto em `src/lib/fotos-pastilhas.json` (ver `CC/README.md`) |
 
 Os testes de integração usam o banco `sicei_teste`, que é apagado e recriado a cada execução. As URLs podem ser trocadas com `DATABASE_URL_TESTE` e `DIRECT_URL_TESTE`.
 
@@ -120,3 +121,4 @@ O dump tem dados pessoais (nomes e logins), então só deve ficar em local priva
 | 1.0 | 26/09/2026 | Primeira versão. |
 | 1.1 | 28/09/2026 | Seção 5: logo da licenciada na tela de login; a DDA passa a aparecer como DDA Usinagem Industrial. Seção 5: como trocar o endereço sem perder as etiquetas impressas. |
 | 1.2 | 28/09/2026 | Seção 7: desbloqueio do Administrador principal e como passar o posto de principal pelo banco (RN-21c). |
+| 1.3 | 13/11/2026 | Comando `npm run pastilhas`, para publicar as fotos recortadas das pastilhas. |

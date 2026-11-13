@@ -46,6 +46,7 @@ import {
 import { MapaAlmoxarifado } from './MapaAlmoxarifado'
 
 import { AbasDeCadastros } from '@/components/abasDasTelas'
+import { GlifoDaPastilha } from '@/components/Pastilha'
 
 export const metadata: Metadata = { title: 'Cadastros' }
 
@@ -190,10 +191,15 @@ export default async function Cadastros({
                 </Link>
               </td>
               <td>
-                <span className="block font-medium">{nomeDaPastilha(i)}</span>
-                <span className="text-[13px] text-ink-3">
-                  {i.fabricante.nome} · {i._count.fornecedores}{' '}
-                  {i._count.fornecedores === 1 ? 'fornecedor' : 'fornecedores'}
+                <span className="flex items-center gap-3">
+                  <GlifoDaPastilha iso={i.iso} className="size-7 text-ink-3" />
+                  <span>
+                    <span className="block font-medium">{nomeDaPastilha(i)}</span>
+                    <span className="text-[13px] text-ink-3">
+                      {i.fabricante.nome} · {i._count.fornecedores}{' '}
+                      {i._count.fornecedores === 1 ? 'fornecedor' : 'fornecedores'}
+                    </span>
+                  </span>
                 </span>
               </td>
               <td>

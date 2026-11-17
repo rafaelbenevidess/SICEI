@@ -121,14 +121,19 @@ export default async function PaginaAlertas({
               )}
             </div>
 
-            <ul aria-label="Alertas abertos" className="flex flex-col gap-3">
+            {/* As colunas ficam na lista, e cada cartão usa subgrid: assim saldo, sugestão e ações
+                ficam alinhados entre as linhas, mesmo quando uma tem "Marcar ciente" e outra o ciente. */}
+            <ul
+              aria-label="Alertas abertos"
+              className={`flex flex-col gap-3 ${verSugestao ? 'min-[80rem]:grid min-[80rem]:grid-cols-[minmax(0,1.35fr)_96px_minmax(0,1.25fr)_auto] min-[80rem]:gap-x-6' : 'min-[65rem]:grid min-[65rem]:grid-cols-[minmax(0,1fr)_96px_auto] min-[65rem]:gap-x-6'}`}
+            >
               {abertos.map((a) => {
                 const s = sugestoes.get(a.item.id)
                 const fornecedor = s?.preferencial ?? s?.maisBarato ?? null
                 return (
                   <li
                     key={a.id}
-                    className={`cartao grid items-center gap-x-6 gap-y-4 px-5 py-4 ${verSugestao ? 'min-[80rem]:grid-cols-[minmax(0,1.35fr)_96px_minmax(0,1.25fr)_auto]' : 'min-[65rem]:grid-cols-[minmax(0,1fr)_96px_auto]'}`}
+                    className={`cartao grid items-center gap-x-6 gap-y-4 px-5 py-4 ${verSugestao ? 'min-[80rem]:col-span-full min-[80rem]:grid-cols-subgrid' : 'min-[65rem]:col-span-full min-[65rem]:grid-cols-subgrid'}`}
                   >
                     <Link
                       href={`/itens/${a.item.id}`}
@@ -155,7 +160,7 @@ export default async function PaginaAlertas({
                     </Link>
 
                     <p className="whitespace-nowrap">
-                      <span className="text-[30px] leading-none font-light tracking-[-0.04em]">
+                      <span className="text-[30px] leading-none font-light tracking-[-0.04em] tabular-nums">
                         {a.item.saldo}
                       </span>{' '}
                       <span className="text-[13px] text-ink-3">/ mín. {a.item.estoqueMinimo}</span>

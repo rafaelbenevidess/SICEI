@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | 05, Plano de testes |
-| **Versão** | 1.13 |
+| **Versão** | 1.16 |
 | **Base** | [02, Requisitos](02-requisitos.md) · [03, System Design, seção 9](03-system-design.md#9-estratégia-de-testes) |
 
 ## 1. Como os testes estão organizados
@@ -98,7 +98,7 @@ A suíte também confere a rotina diária (recusa sem o segredo) e os cabeçalho
 8. O item novo vai para A04-G02-C01, digitada como "a4g2c1" no campo com busca → aviso de etiqueta não impressa → "Imprimir etiqueta" → mandar imprimir registra a impressão → o aviso some → o filtro de ação da auditoria acha "Etiqueta QR impressa" com a posição e o item.
 9. Registrar saída: "pst" lista os PST, "Pst 2" é reconhecido como PST-002 e o Enter abre a saída; a lista de itens acha o PST-002 por "a01g01c02"; a busca do topo sugere o PST-002 para "pst2" e abre o item; o histórico acha a OP-E2E-1 por "ope2e1".
 10. O endereço antigo `/relatorios?tipo=analise` leva a `/analise` → Análise pelo menu → "pst1" e "apmt" escolhem PST-001 e PST-004 → Aplicar: a URL leva os dois, a linha "Filtros:" os mostra, a evolução fica lado a lado e o ranking tem só os dois → clicar em PST-004 põe em foco e "Tirar o foco" volta → comparar por colaborador mantém o filtro de itens → o CSV sai como `sicei-analise-<data>.csv` → na mídia de impressão, o conteúdo ocupa a página inteira (sem a coluna do menu), as barras mantêm a cor e nenhum gráfico passa da largura da folha.
-11. Painel, itens, alertas, movimentações, relatórios, análise, cadastros, usuários e auditoria sem rolagem horizontal na página e sem tabela rolando de lado em 1366 px.
+11. Painel, itens, alertas, movimentações, relatórios, análise, cadastros, usuários e auditoria sem rolagem horizontal na página e sem tabela rolando de lado em 1366 px. Na mesma passagem, em Alertas, o saldo e a sugestão começam na mesma posição em todas as linhas, com uma linha com ciente e outra sem (no mesmo teste, por causa do limite de 20 logins por IP).
 
 Resultado da última execução: 21 de 21 passaram.
 
@@ -122,3 +122,4 @@ Resultado da última execução: 21 de 21 passaram.
 | 1.13 | 13/11/2026 | Testes da versão 3 da interface (RNF-14): menu, abas, gaveta de registro e de detalhe, foto da pastilha. |
 | 1.14 | 13/11/2026 | Testes da segunda parte da versão 3 (RNF-14): componente Gaveta e cadastros de item, de fabricante e de usuário pela gaveta. |
 | 1.15 | 13/11/2026 | RF-15, critério 4: teste de componente da página de altura fixa e da tabela com rolagem; E2E do computador confere que a página não rola e a lista rola. |
+| 1.16 | 17/11/2026 | E2E do computador confere o alinhamento das colunas de Alertas (saldo e sugestão) entre linhas com e sem ciente. |

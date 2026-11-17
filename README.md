@@ -185,9 +185,9 @@ Cada empresa que licencia o SICEI recebe uma instalação separada, sem nada em 
 |---|---|---|
 | 01 | [Regras de negócio](docs/01-regras-de-negocio.md) | 1.7 |
 | 02 | [Requisitos](docs/02-requisitos.md) | 1.17 |
-| 03 | [System design e stack](docs/03-system-design.md) | 1.22 |
+| 03 | [System design e stack](docs/03-system-design.md) | 1.23 |
 | 04 | [Segurança](docs/04-seguranca.md) | 1.6 |
-| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.15 |
+| 05 | [Plano de testes e QA](docs/05-plano-de-testes.md) | 1.16 |
 | 06 | [Operação](docs/06-operacao.md) | 1.3 |
 
 As regras de trabalho do projeto (arquitetura, testes, segurança, convenções) estão em [CLAUDE.md](CLAUDE.md).

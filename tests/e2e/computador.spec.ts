@@ -379,7 +379,9 @@ test('RF-17a / RF-20: Análise no menu, com itens escolhidos lado a lado, foco, 
   expect(r.passaDaPagina).toBe(false)
 })
 
-test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page }) => {
+test('RNF-02 / RF-13: telas principais sem rolagem horizontal em 1366 px e Alertas alinhado', async ({
+  page,
+}) => {
   await entrarComoAdmin(page)
   for (const caminho of [
     '/painel',
@@ -406,4 +408,29 @@ test('RNF-02: telas principais sem rolagem horizontal em 1366 px', async ({ page
     )
     expect(tabelasComRolagem, caminho).toEqual([])
   }
+
+  // RF-13: em Alertas, saldo e sugestão ficam alinhados entre as linhas, com e sem ciente
+  // (sem login novo: a suíte inteira fica perto do limite de 20 logins por minuto do RNF de segurança)
+  await page.goto('/alertas')
+  const linhas = page.getByRole('list', { name: 'Alertas abertos' }).getByRole('listitem')
+  expect(await linhas.count()).toBeGreaterThanOrEqual(2)
+  // garante linhas diferentes na coluna de ações: uma com o ciente dado, outra com o botão
+  const botoes = page.getByRole('button', { name: 'Marcar ciente' })
+  if ((await botoes.count()) === (await linhas.count())) {
+    await botoes.first().click()
+    await expect(botoes).toHaveCount((await linhas.count()) - 1)
+  }
+  const esquerdas = async (texto: RegExp) => {
+    const xs: number[] = []
+    for (const linha of await linhas.all()) {
+      // mede o parágrafo inteiro: o início da coluna, não o do texto depois do número
+      const caixa = await linha.locator('p', { hasText: texto }).first().boundingBox()
+      if (caixa) xs.push(Math.round(caixa.x))
+    }
+    return xs
+  }
+  const saldos = await esquerdas(/\/ mín\./)
+  expect(new Set(saldos).size, `saldo começa em x = ${saldos.join(', ')}`).toBe(1)
+  const sugestoes = await esquerdas(/^Comprar/)
+  expect(new Set(sugestoes).size, `sugestão começa em x = ${sugestoes.join(', ')}`).toBe(1)
 })

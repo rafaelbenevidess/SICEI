@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.20 (para revisão) |
+| **Versão** | 1.23 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -609,7 +609,7 @@ O formulário de registro usa consultas de contêiner (`@container`) no lugar de
 
 **Telas que juntaram tarefas**
 
-- Alertas: cada alerta é uma linha com o item, o saldo, a sugestão de compra (quantidade, caixas, fornecedor preferencial com preço e lead time), o ciente e o botão de entrada. O topo resume os alertas por nível, quantos estão sem ciente e o total sugerido. A sugestão só aparece para quem pode ver relatórios, e o preço só para quem pode ver preços.
+- Alertas: cada alerta é uma linha com o item, o saldo, a sugestão de compra (quantidade, caixas, fornecedor preferencial com preço e lead time), o ciente e o botão de entrada. As colunas ficam na lista e cada linha usa subgrid, então saldo, sugestão e ações ficam alinhados entre as linhas, tenha a linha o ciente dado ou o botão "Marcar ciente". O topo resume os alertas por nível, quantos estão sem ciente e o total sugerido. A sugestão só aparece para quem pode ver relatórios, e o preço só para quem pode ver preços.
 - Itens: os filtros ficam numa linha só, e cada linha da tabela tem os botões de entrada e de saída, que abrem a gaveta.
 - Movimentações: entrada e saída no topo, e o detalhe na gaveta.
 
@@ -663,3 +663,4 @@ O formulário de registro usa consultas de contêiner (`@container`) no lugar de
 | 1.20 | 13/11/2026 | Versão 3 da interface (10.9, no lugar do registro da próxima etapa): menu com 12 itens e abas compartilhadas em Relatórios e Cadastros, gaveta para registrar entrada e saída e para o detalhe da movimentação (rota interceptada `@gaveta`), alertas com a sugestão de compra na linha, ações de registro na lista de itens e fotos recortadas das pastilhas com `npm run pastilhas`. Componentes novos na 10.2 e foto do item na tabela 9.1. |
 | 1.21 | 13/11/2026 | Versão 3, segunda parte (10.9 e 10.2): cadastro e edição de item, cadastros de apoio e usuários abrem na gaveta, com as tabelas na largura toda; gaveta estreita para formulário curto. |
 | 1.22 | 13/11/2026 | Movimentações com título e filtros parados e rolagem só na lista (10.2): `alturaDaJanela` na `Pagina`, `rolagem` na `Tabela` e a variável `--altura-util`. |
+| 1.23 | 17/11/2026 | Alertas (10.9): colunas compartilhadas entre as linhas (subgrid), para o saldo e a sugestão não mudarem de posição conforme a coluna de ações. |

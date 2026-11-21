@@ -4,7 +4,7 @@
 |---|---|
 | **Projeto** | SICEI (Sistema Inteligente de Controle de Estoques Industriais), controle de estoque de pastilhas industriais |
 | **Documento** | 03, System Design e Stack |
-| **Versão** | 1.23 (para revisão) |
+| **Versão** | 1.24 (para revisão) |
 | **Base** | [01, Regras de Negócio](01-regras-de-negocio.md) · [02, Requisitos](02-requisitos.md) |
 
 Este documento explica **como** o SICEI vai ser construído para cumprir as regras e os requisitos. Cada decisão aponta para a regra ou o requisito que ela atende. As decisões principais estão resumidas como ADRs na seção 11.
@@ -402,6 +402,8 @@ Todo código que dá para testar isolado tem teste unitário, e código novo só
 | Ponta a ponta | Playwright, em dois projetos: celular (360 px) e computador (1366 px) | Celular: primeiro acesso com a checklist da senha; saída pela etiqueta QR com barra fixa e confirmação; estorno; criar usuário com a prévia do login; Consulta sem preços; verificação de integridade; relatório de reposição. Computador: tema escuro guardado; compra com fornecedor cadastrado na hora; parâmetros com aviso e histórico; antes → depois no log; importação com prévia; CSV de itens e movimentações; análise com itens escolhidos, foco pelo clique e CSV; nenhuma tela com rolagem horizontal | Fluxos principais do MVP nas duas larguras |
 | Estático | ESLint, `tsc`, Prettier | Estilo e tipos | Sem erros |
 
+**Nome de cada caso.** O nome do caso é a evidência no relatório, então ele aparece inteiro. Os casos gerados com `it.each(casos)('$descricao', ...)` eram cortados em 40 caracteres pelo Vitest ("critério do RF-08: saldo 12, consumo de…"), e o filtro `-t` também não encontrava o que vinha depois do corte. O `vitest.config.mts` define `taskTitleValueFormatTruncate: 1000`, e um teste em `src/lab/suites.test.ts` confere que a descrição chega completa.
+
 **CI (GitHub Actions)**, em todo push e pull request: instalar, rodar lint, typecheck, testes de unidade e integração (PostgreSQL como serviço), build, e2e. Só entra na branch principal o que passar.
 
 ### 9.3 Laboratório de testes para o avaliador (RNF-13)
@@ -664,3 +666,4 @@ O formulário de registro usa consultas de contêiner (`@container`) no lugar de
 | 1.21 | 13/11/2026 | Versão 3, segunda parte (10.9 e 10.2): cadastro e edição de item, cadastros de apoio e usuários abrem na gaveta, com as tabelas na largura toda; gaveta estreita para formulário curto. |
 | 1.22 | 13/11/2026 | Movimentações com título e filtros parados e rolagem só na lista (10.2): `alturaDaJanela` na `Pagina`, `rolagem` na `Tabela` e a variável `--altura-util`. |
 | 1.23 | 17/11/2026 | Alertas (10.9): colunas compartilhadas entre as linhas (subgrid), para o saldo e a sugestão não mudarem de posição conforme a coluna de ações. |
+| 1.24 | 21/11/2026 | Nome completo dos casos de teste (9.2): `taskTitleValueFormatTruncate` no Vitest, porque o padrão cortava o `$descricao` em 40 caracteres no relatório e no filtro `-t`. |

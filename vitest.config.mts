@@ -8,6 +8,9 @@ export default defineConfig({
     alias: { '@': path.resolve(import.meta.dirname, 'src') },
   },
   test: {
+    // o padrão (40) corta o $descricao do it.each, e o nome do caso é a evidência no relatório.
+    // 0 não desliga o corte (tira o último caractere); Infinity não passa para os workers.
+    taskTitleValueFormatTruncate: 1000,
     projects: [
       {
         extends: true,

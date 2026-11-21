@@ -103,3 +103,11 @@ describe('RNF-13 · Laboratório: comparação com o esperado do avaliador', () 
     expect(r.obtido).toBe('erro: quebrou')
   })
 })
+
+describe('RNF-13 · Relatório: nome completo dos casos gerados por it.each', () => {
+  const descricao =
+    'critério do RF-08: saldo 12, consumo de 4 → saldo 8 (descrição com mais de 40 letras)'
+  it.each([{ descricao }])('$descricao', (caso) => {
+    expect(expect.getState().currentTestName).toContain(caso.descricao)
+  })
+})

@@ -31,8 +31,10 @@
 
 > ### 🎓 Trabalho acadêmico com cliente real
 >
-> O SICEI é o trabalho acadêmico de Rafael Benevides, feito a partir da demanda real da
-> **DDA Metalúrgica** (Santa Catarina), primeira empresa a usar o sistema.
+> O SICEI é o trabalho acadêmico do **Grupo J**, Luciana da Silva Rafael e Rafael Benevides dos Santos
+> (UniSENAI SC, Análise e Desenvolvimento de Sistemas), feito a partir da demanda real da
+> **DDA Metalúrgica** (Santa Catarina), publicada na plataforma SAGA SENAI de Inovação. A DDA é a
+> primeira empresa a usar o sistema.
 >
 > **Professor:** em [/testes](https://sicei-ddausinagem.vercel.app/testes) os testes das regras
 > rodam no seu navegador, sem instalar nada, e dá para criar casos novos. O relatório completo,
@@ -198,7 +200,7 @@ O Documento do Sistema entregue na UC Projeto Aplicado IV (DOCX e PDF no templat
 
 ## 🤖 Uso de IA e autoria
 
-Este projeto foi feito com o Claude Code, assistente de programação da Anthropic. Os commits feitos pelo assistente trazem a linha `Co-Authored-By: Claude`. O autor definiu o que o sistema faz, aprovou cada etapa antes da seguinte, testou o sistema publicado e pediu as correções listadas abaixo. O assistente escreveu os documentos, o código e os testes a partir dessas decisões.
+Este projeto foi feito com o Claude Code, assistente de programação da Anthropic. Os commits feitos pelo assistente trazem a linha `Co-Authored-By: Claude`. O autor (Rafael Benevides) definiu o que o sistema faz, aprovou cada etapa antes da seguinte, testou o sistema publicado e pediu as correções listadas abaixo. O assistente escreveu os documentos, o código e os testes a partir dessas decisões.
 
 ### Decisões do autor
 
@@ -258,6 +260,13 @@ A redação dos documentos, o código (incluindo a implementação do design do 
 ### Como o autor acompanhou
 
 Aprovou cada etapa (regras, requisitos, system design) antes de a próxima começar, respondeu às dúvidas de negócio, testou cada entrega no sistema publicado, no computador e no celular, e devolveu com prints e PDFs o que precisava mudar.
+
+### Equipe
+
+| Integrante | Papel no projeto |
+|---|---|
+| Rafael Benevides dos Santos | Desenvolvimento com o assistente: decisões de negócio e de stack, design da interface, aprovação de cada etapa, testes no sistema publicado, publicação e pull requests. |
+| Luciana da Silva Rafael | Revisão e validação fora do GitHub: revisou os documentos antes de cada versão, validou as regras de negócio com a DDA, testou o sistema publicado no computador e no celular e preparou a divulgação do projeto no LinkedIn. Por isso não aparece como autora de commits. |
 
 ---
 
